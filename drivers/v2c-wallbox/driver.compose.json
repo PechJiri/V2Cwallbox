@@ -1,0 +1,114 @@
+{
+  "id": "v2c-wallbox",
+  "name": {
+    "en": "V2C Wallbox"
+  },
+  "class": "evcharger",
+  "capabilities": [
+    "measure_charge_state",
+    "measure_charge_power",
+    "measure_voltage_installation",
+    "measure_charge_energy",
+    "measure_slave_error",
+    "measure_charge_time",
+    "measure_paused",
+    "measure_locked",
+    "measure_intensity",
+    "measure_dynamic"
+  ],
+  "capabilitiesOptions": {
+    "measure_charge_power": {
+      "title": {
+        "en": "Current charging power"
+      },
+      "units": {
+        "en": "W"
+      }
+    },
+    "measure_charge_state": {
+      "title": {
+        "en": "Charge State"
+      }
+    },
+    "measure_voltage_installation": {
+      "title": {
+        "en": "Voltage Installation"
+      },
+      "units": {
+        "en": "V"
+      }
+    },
+    "measure_charge_energy": {
+      "title": {
+        "en": "Charged Energy"
+      },
+      "units": {
+        "en": "kWh"
+      }
+    },
+    "measure_slave_error": {
+      "title": {
+        "en": "Slave Error"
+      }
+    },
+    "measure_charge_time": {
+      "title": {
+        "en": "Charge Time"
+      },
+      "units": {
+        "en": "min"
+      }
+    },
+    "measure_paused": {
+      "title": {
+        "en": "Paused"
+      }
+    },
+    "measure_locked": {
+      "title": {
+        "en": "Locked"
+      }
+    },
+    "measure_intensity": {
+      "title": {
+        "en": "Intensity"
+      },
+      "units": {
+        "en": "A"
+      }
+    },
+    "measure_dynamic": {
+      "title": {
+        "en": "Dynamic"
+      }
+    }
+  },
+  "images": {
+    "small": "/drivers/v2c-wallbox/assets/images/small.png",
+    "large": "/drivers/v2c-wallbox/assets/images/large.png",
+    "xlarge": "/drivers/v2c-wallbox/assets/images/xlarge.png"
+  },
+  "pair": [
+    {
+      "id": "pair",
+      "navigation": {
+        "next": "list_my_devices"
+      }
+    },
+    {
+      "id": "list_my_devices",
+      "template": "list_devices",
+      "navigation": {
+        "next": "add_my_devices",
+        "prev": "pair"
+      },
+      "options": {
+        "singular": true
+      }
+    },
+    {
+      "id": "add_my_devices",
+      "template": "add_devices"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+    "type": "number",
+    "title": {
+        "en": "Charging time (min)"
+    },
+    "unit": "min",
+    "getable": true,
+    "setable": false,
+    "uiComponent": "sensor",
+    "decimals": 2,
+    "icon": "/assets/charge_time.svg"
+}

@@ -1,0 +1,12 @@
+{
+    "type": "number",
+    "title": {
+        "en": "Installation voltage"
+    },
+    "unit": "V",
+    "getable": true,
+    "setable": false,
+    "uiComponent": "sensor",
+    "decimals": 0,
+    "icon": "/assets/voltage_installation.svg"
+}

@@ -1,0 +1,9 @@
+[
+    {
+        "id": "v2c_ip",
+        "type": "text",
+        "label": {
+            "en": "V2C Wallbox IP"
+        }
+    }
+]
