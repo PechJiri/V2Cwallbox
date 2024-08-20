@@ -83,6 +83,7 @@
       }
     }
   },
+  "icon": "/drivers/v2c-wallbox/icon.svg",
   "images": {
     "small": "/drivers/v2c-wallbox/assets/images/small.png",
     "large": "/drivers/v2c-wallbox/assets/images/large.png",

@@ -36,6 +36,7 @@
     }
   ],
   "permissions": [],
+  "icon": "/assets/icon.svg",
   "images": {
     "small": "/assets/images/small.png",
     "large": "/assets/images/large.png",
