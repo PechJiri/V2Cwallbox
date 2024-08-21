@@ -11,44 +11,54 @@ class MyDevice extends Device {
         await this.setSettings({
             name: this.homey.settings.get('name'),
             v2c_ip: this.homey.settings.get('v2c_ip'),
+            update_interval: this.homey.settings.get('update_interval') || 5,  // Výchozí hodnota je 5 sekund
         });
 
-        if (!this.hasCapability('measure_charge_state')) {
-            await this.addCapability('measure_charge_state');
-        }
-        if (!this.hasCapability('measure_charge_power')) {
-            await this.addCapability('measure_charge_power');
-        }
-        if (!this.hasCapability('measure_voltage_installation')) {
-            await this.addCapability('measure_voltage_installation');
-        }
-        if (!this.hasCapability('measure_charge_energy')) {
-            await this.addCapability('measure_charge_energy');
-        }
-        if (!this.hasCapability('measure_slave_error')) {
-            await this.addCapability('measure_slave_error');
-        }
-        if (!this.hasCapability('measure_charge_time')) {
-            await this.addCapability('measure_charge_time');
-        }
-        if (!this.hasCapability('measure_paused')) {
-            await this.addCapability('measure_paused');
-        }
-        if (!this.hasCapability('measure_locked')) {
-            await this.addCapability('measure_locked');
-        }
-        if (!this.hasCapability('measure_intensity')) {
-            await this.addCapability('measure_intensity');
-        }
-        if (!this.hasCapability('measure_dynamic')) {
-            await this.addCapability('measure_dynamic');
+        this.registerCapabilities();
+        this.setupFlowCards();
+
+        this.updateInterval = this.homey.settings.get('update_interval') || 5;
+        this.startDataFetchInterval(this.updateInterval);
+    }
+
+    registerCapabilities() {
+        const capabilities = [
+            'measure_charge_state',
+            'measure_charge_power',
+            'measure_voltage_installation',
+            'measure_charge_energy',
+            'measure_slave_error',
+            'measure_charge_time',
+            'measure_paused',
+            'measure_locked',
+            'measure_intensity',
+            'measure_dynamic'
+        ];
+
+        capabilities.forEach(async (capability) => {
+            if (!this.hasCapability(capability)) {
+                await this.addCapability(capability);
+            }
+        });
+    }
+
+    setupFlowCards() {
+        this._powerBecomesGreaterThan = this.homey.flow.getDeviceTriggerCard('power-becomes-greater-than');
+        this._powerBecomesLessThan = this.homey.flow.getDeviceTriggerCard('power-becomes-less-than');
+        this._powerIsGreaterThan = this.homey.flow.getConditionCard('power-is-greater-than');
+        this._powerIsLessThan = this.homey.flow.getConditionCard('power-is-less-than');
+        this._carConnected = this.homey.flow.getDeviceTriggerCard('car-connected');
+        this._carCharging = this.homey.flow.getDeviceTriggerCard('car-start-charging');
+    }
+
+    startDataFetchInterval(interval) {
+        if (this.dataFetchInterval) {
+            this.homey.clearInterval(this.dataFetchInterval);
         }
 
-        this.getProductionData();
-
-        this.homey.setInterval(async () => {
+        this.dataFetchInterval = this.homey.setInterval(async () => {
             await this.getProductionData();
-        }, 1000 * 5);
+        }, 1000 * interval);  // Interval v sekundách
     }
 
     async getProductionData() {
@@ -107,6 +117,15 @@ class MyDevice extends Device {
             const dynamicValue = Boolean(deviceData.dynamic);
             await this.setCapabilityValue('measure_dynamic', dynamicValue);
 
+            // Trigger the relevant Flow cards if conditions are met
+            if (deviceData.chargeState === 1) {
+                this._carConnected.trigger(this, {}, {});
+            }
+
+            if (deviceData.chargeState === 2) {
+                this._carCharging.trigger(this, {}, {});
+            }
+
             if (!this.getAvailable()) {
                 await this.setAvailable();
             }
@@ -114,10 +133,6 @@ class MyDevice extends Device {
             this.error(`Unavailable (${error})`);
             this.setUnavailable(`Error retrieving data (${error})`);
         }
-    }
-
-    async onAdded() {
-        this.log('MyDevice has been added');
     }
 
     async onSettings({ oldSettings, newSettings, changedKeys }) {
@@ -129,7 +144,17 @@ class MyDevice extends Device {
             this.homey.settings.set(key, newSettings[key]);
             console.log(`${key}: ${newSettings[key]}`);
         }
+
+        if (changedKeys.includes('update_interval')) {
+            this.updateInterval = newSettings['update_interval'];
+            this.startDataFetchInterval(this.updateInterval);
+        }
+
         this.getProductionData();
+    }
+
+    async onAdded() {
+        this.log('MyDevice has been added');
     }
 
     async onRenamed(name) {
@@ -138,8 +163,10 @@ class MyDevice extends Device {
 
     async onDeleted() {
         this.log('MyDevice has been deleted');
+        if (this.dataFetchInterval) {
+            this.homey.clearInterval(this.dataFetchInterval);
+        }
     }
-
 }
 
 module.exports = MyDevice;

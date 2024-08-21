@@ -5,5 +5,17 @@
         "label": {
             "en": "V2C Wallbox IP"
         }
+    },
+    {
+        "id": "update_interval",
+        "type": "number",
+        "label": {
+            "en": "Pooling interval in sec (default is 5s)"
+        },
+        "hint": {
+            "en": "Set the interval for data updates from the Wallbox."
+        },
+        "value": 5,
+        "min": 1
     }
 ]

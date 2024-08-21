@@ -1,7 +1,7 @@
 {
     "type": "number",
     "title": {
-        "en": "Charging time (min)"
+        "en": "Car connected (min)"
     },
     "unit": "min",
     "getable": true,

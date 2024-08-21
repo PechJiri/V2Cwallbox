@@ -1,0 +1,21 @@
+{
+  "type": "condition",
+  "title": {
+    "en": "Car is connected"
+  },
+  "id": "car-connected-condition",
+  "capabilities": [
+    "measure_charge_state"
+  ],
+  "args": [],
+  "validate": {
+    "type": "function",
+    "js": "function() { return device.state.measure_charge_state === '1'; }",
+    "error": {
+      "en": "The car is not connected."
+    }
+  },
+  "description": {
+    "en": "This condition is true when the car is connected to the Wallbox."
+  }
+}

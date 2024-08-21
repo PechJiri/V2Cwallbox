@@ -1,5 +1,33 @@
 {
+  "id": "power-becomes-greater-than",
+  "type": "trigger",
   "title": {
     "en": "Power becomes greater than"
+  },
+  "titleFormatted": {
+    "en": "Power becomes greater than [[power]] W"
+  },
+  "args": [
+    {
+      "type": "number",
+      "name": "power",
+      "title": {
+        "en": "Power (W)"
+      },
+      "min": 0,
+      "step": 1,
+      "placeholder": {
+        "en": "Enter power in watts"
+      }
+    }
+  ],
+  "capabilities": [
+    "measure_power"
+  ],
+  "validate": {
+    "en": "power > argument"
+  },
+  "description": {
+    "en": "This trigger is activated when the power becomes greater than the specified value."
   }
 }

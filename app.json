@@ -51,30 +51,216 @@
   "flow": {
     "triggers": [
       {
+        "type": "trigger",
+        "title": {
+          "en": "Car is connected"
+        },
+        "id": "car-connected",
+        "capabilities": [
+          "measure_charge_state"
+        ],
+        "args": [],
+        "condition": {
+          "type": "function",
+          "js": "function() { return device.state.measure_charge_state === '1'; }"
+        },
+        "description": {
+          "en": "This flow triggers when the car is connected to the Wallbox."
+        }
+      },
+      {
+        "type": "trigger",
+        "title": {
+          "en": "Car starts charging"
+        },
+        "id": "car-start-charging",
+        "capabilities": [
+          "measure_charge_state"
+        ],
+        "args": [],
+        "condition": {
+          "type": "function",
+          "js": "function() { return device.state.measure_charge_state === '2'; }"
+        },
+        "description": {
+          "en": "This flow triggers when the car starts charging at the Wallbox."
+        }
+      },
+      {
+        "id": "power-becomes-greater-than",
+        "type": "trigger",
         "title": {
           "en": "Power becomes greater than"
         },
-        "id": "power-becomes-greater-than"
+        "titleFormatted": {
+          "en": "Power becomes greater than [[power]] W"
+        },
+        "args": [
+          {
+            "type": "number",
+            "name": "power",
+            "title": {
+              "en": "Power (W)"
+            },
+            "min": 0,
+            "step": 1,
+            "placeholder": {
+              "en": "Enter power in watts"
+            }
+          }
+        ],
+        "capabilities": [
+          "measure_power"
+        ],
+        "validate": {
+          "en": "power > argument"
+        },
+        "description": {
+          "en": "This trigger is activated when the power becomes greater than the specified value."
+        }
       },
       {
+        "id": "power-becomes-less-than",
+        "type": "trigger",
         "title": {
           "en": "Power becomes less than"
         },
-        "id": "power-becomes-less-than"
+        "titleFormatted": {
+          "en": "Power becomes less than [[power]] W"
+        },
+        "args": [
+          {
+            "type": "number",
+            "name": "power",
+            "title": {
+              "en": "Power (W)"
+            },
+            "min": 0,
+            "step": 1,
+            "placeholder": {
+              "en": "Enter power in watts"
+            }
+          }
+        ],
+        "capabilities": [
+          "measure_power"
+        ],
+        "validate": {
+          "en": "power < argument"
+        },
+        "description": {
+          "en": "This trigger is activated when the power becomes less than the specified value."
+        }
       }
     ],
     "conditions": [
       {
+        "type": "condition",
         "title": {
-          "en": "power is greater than"
+          "en": "Car is connected"
         },
-        "id": "power-is-greater-than"
+        "id": "car-connected-condition",
+        "capabilities": [
+          "measure_charge_state"
+        ],
+        "args": [],
+        "validate": {
+          "type": "function",
+          "js": "function() { return device.state.measure_charge_state === '1'; }",
+          "error": {
+            "en": "The car is not connected."
+          }
+        },
+        "description": {
+          "en": "This condition is true when the car is connected to the Wallbox."
+        }
       },
       {
+        "type": "condition",
         "title": {
-          "en": "power is less than"
+          "en": "Car is charging"
         },
-        "id": "power-is-less-than"
+        "id": "car-is-charging",
+        "capabilities": [
+          "measure_charge_state"
+        ],
+        "args": [],
+        "validate": {
+          "type": "function",
+          "js": "function() { return device.state.measure_charge_state === '2'; }",
+          "error": {
+            "en": "The car is not charging."
+          }
+        },
+        "description": {
+          "en": "This condition is true when the car is currently charging at the Wallbox."
+        }
+      },
+      {
+        "id": "power-is-greater-than",
+        "type": "condition",
+        "title": {
+          "en": "Power is greater than"
+        },
+        "titleFormatted": {
+          "en": "Power is greater than [[power]] W"
+        },
+        "args": [
+          {
+            "type": "number",
+            "name": "power",
+            "title": {
+              "en": "Power (W)"
+            },
+            "min": 0,
+            "step": 1,
+            "placeholder": {
+              "en": "Enter power in watts"
+            }
+          }
+        ],
+        "capabilities": [
+          "measure_power"
+        ],
+        "validate": {
+          "en": "power > argument"
+        },
+        "description": {
+          "en": "This condition is true when the power (W) is greater than the specified value."
+        }
+      },
+      {
+        "id": "power-is-less-than",
+        "type": "condition",
+        "title": {
+          "en": "Power is less than"
+        },
+        "titleFormatted": {
+          "en": "Power is less than [[power]] W"
+        },
+        "args": [
+          {
+            "type": "number",
+            "name": "power",
+            "title": {
+              "en": "Power (W)"
+            },
+            "min": 0,
+            "step": 1,
+            "placeholder": {
+              "en": "Enter power in watts"
+            }
+          }
+        ],
+        "capabilities": [
+          "measure_power"
+        ],
+        "validate": {
+          "en": "power < argument"
+        },
+        "description": {
+          "en": "This condition is true when the power (W) is less than the specified value."
+        }
       }
     ]
   },
@@ -129,12 +315,12 @@
         },
         "measure_slave_error": {
           "title": {
-            "en": "Slave Error"
+            "en": "Communication Error"
           }
         },
         "measure_charge_time": {
           "title": {
-            "en": "Charge Time"
+            "en": "Car Connected Time"
           },
           "units": {
             "en": "min"
@@ -200,6 +386,18 @@
           "label": {
             "en": "V2C Wallbox IP"
           }
+        },
+        {
+          "id": "update_interval",
+          "type": "number",
+          "label": {
+            "en": "Pooling interval in sec (default is 5s)"
+          },
+          "hint": {
+            "en": "Set the interval for data updates from the Wallbox."
+          },
+          "value": 5,
+          "min": 1
         }
       ]
     }
@@ -272,7 +470,7 @@
     "measure_charge_time": {
       "type": "number",
       "title": {
-        "en": "Charging time (min)"
+        "en": "Car connected (min)"
       },
       "unit": "min",
       "getable": true,
@@ -316,7 +514,7 @@
     "measure_slave_error": {
       "type": "enum",
       "title": {
-        "en": "Slave Error"
+        "en": "Communication Error"
       },
       "values": [
         {

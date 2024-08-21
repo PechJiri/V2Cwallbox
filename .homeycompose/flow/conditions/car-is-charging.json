@@ -1,0 +1,21 @@
+{
+  "type": "condition",
+  "title": {
+    "en": "Car is charging"
+  },
+  "id": "car-is-charging",
+  "capabilities": [
+    "measure_charge_state"
+  ],
+  "args": [],
+  "validate": {
+    "type": "function",
+    "js": "function() { return device.state.measure_charge_state === '2'; }",
+    "error": {
+      "en": "The car is not charging."
+    }
+  },
+  "description": {
+    "en": "This condition is true when the car is currently charging at the Wallbox."
+  }
+}

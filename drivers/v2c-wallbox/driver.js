@@ -10,6 +10,19 @@ class MyDriver extends Driver {
      */
     async onInit() {
         this.log('MyDriver has been initialized');
+        this.registerFlowCards();
+    }
+
+    /**
+     * Registers the flow cards for the driver.
+     */
+    registerFlowCards() {
+        this._powerBecomesGreaterThan = this.homey.flow.getDeviceTriggerCard('power-becomes-greater-than');
+        this._powerBecomesLessThan = this.homey.flow.getDeviceTriggerCard('power-becomes-less-than');
+        this._powerIsGreaterThan = this.homey.flow.getConditionCard('power-is-greater-than');
+        this._powerIsLessThan = this.homey.flow.getConditionCard('power-is-less-than');
+        this._carConnected = this.homey.flow.getDeviceTriggerCard('car-connected');
+        this._carCharging = this.homey.flow.getDeviceTriggerCard('car-start-charging');
     }
 
     /**

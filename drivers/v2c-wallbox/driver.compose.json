@@ -48,12 +48,12 @@
     },
     "measure_slave_error": {
       "title": {
-        "en": "Slave Error"
+        "en": "Communication Error"
       }
     },
     "measure_charge_time": {
       "title": {
-        "en": "Charge Time"
+        "en": "Car Connected Time"
       },
       "units": {
         "en": "min"

@@ -1,0 +1,18 @@
+{
+  "type": "trigger",
+  "title": {
+    "en": "Car starts charging"
+  },
+  "id": "car-start-charging",
+  "capabilities": [
+    "measure_charge_state"
+  ],
+  "args": [],
+  "condition": {
+    "type": "function",
+    "js": "function() { return device.state.measure_charge_state === '2'; }"
+  },
+  "description": {
+    "en": "This flow triggers when the car starts charging at the Wallbox."
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "trigger",
+  "title": {
+    "en": "Car is connected"
+  },
+  "id": "car-connected",
+  "capabilities": [
+    "measure_charge_state"
+  ],
+  "args": [],
+  "condition": {
+    "type": "function",
+    "js": "function() { return device.state.measure_charge_state === '1'; }"
+  },
+  "description": {
+    "en": "This flow triggers when the car is connected to the Wallbox."
+  }
+}
