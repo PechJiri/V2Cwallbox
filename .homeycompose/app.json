@@ -1,6 +1,6 @@
 {
   "id": "com.v2c.wallbox",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "brandColor": "#00275b",
@@ -11,8 +11,8 @@
     "en": "V2C Wallbox"
   },
   "description": {
-  "en": "The app allows you to monitor your V2C Wallbox online, retrieve complete data on charging progress, vehicle connection, and more, and control other devices in your home through flows based on this data."
-},
+    "en": "The app allows you to monitor your V2C Wallbox online, retrieve complete data on charging progress, vehicle connection, and more, and control other devices in your home through flows based on this data."
+  },
   "category": [
     "energy"
   ],

@@ -4,5 +4,8 @@
   },
   "1.0.1": {
     "en": "Changes in icons and pictures"
+  },
+  "1.0.2": {
+    "en": "Fixed and added flow cards, added option to custom pooling interval, minor fixes"
   }
 }
