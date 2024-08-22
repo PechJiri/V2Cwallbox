@@ -1,3 +1,5 @@
+'use strict';
+
 const fetch = require('node-fetch');
 
 class v2cAPI {
@@ -5,7 +7,6 @@ class v2cAPI {
         this.ip = ip;
     }
 
-    // Initialize the session (if needed)
     async initializeSession() {
         try {
             const url = `http://${this.ip}/RealTimeData`;
@@ -13,18 +14,17 @@ class v2cAPI {
 
             const response = await fetch(url);
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`HTTP error! Status: ${response.status}`);
             }
             const data = await response.json();
             console.log('Session initialized, data received:', data);
-            return true;  // Assuming initialization is successful
+            return true;
         } catch (error) {
             console.error('Failed to initialize session:', error);
             throw error;
         }
     }
 
-    // Fetch real-time data from the V2C wallbox
     async getData() {
         try {
             const url = `http://${this.ip}/RealTimeData`;
@@ -32,7 +32,7 @@ class v2cAPI {
 
             const response = await fetch(url);
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`HTTP error! Status: ${response.status}`);
             }
             const data = await response.json();
             return data;
@@ -42,23 +42,58 @@ class v2cAPI {
         }
     }
 
-    // Process the data to extract only the relevant fields
-    async processData(data) {
+    processData(data) {
         try {
-            const processedData = {
-                chargeState: data.ChargeState,
-                chargePower: data.ChargePower,
-                voltageInstallation: data.VoltageInstallation,
-                chargeEnergy: data.ChargeEnergy,
-                slaveError: data.SlaveError,
-                chargeTime: data.ChargeTime,
-                paused: data.Paused,
-                measure_locked: data.Locked,  // Zde nahrazujete 'locked' za 'measure_locked'
-                intensity: data.Intensity,
-                dynamic: data.Dynamic
+            const chargeStateMap = {
+                0: "0", // EV not connected
+                1: "1", // EV connected
+                2: "2", // Charging
+                3: "3", // Standby or unknown state
+                4: "0"  // Unknown or not charging
             };
 
+            const slaveErrorMap = {
+                0: "00",
+                1: "01",
+                2: "02",
+                3: "03",
+                4: "04",
+                5: "05",
+                6: "06",
+                7: "07",
+                8: "08",
+                9: "09",
+                10: "10"
+            };
+
+            // Process and validate the data
+            const processedData = {
+                chargeState: chargeStateMap[data.ChargeState] || "0",
+                chargePower: data.ChargePower !== undefined ? data.ChargePower : 0,
+                voltageInstallation: data.VoltageInstallation !== undefined ? data.VoltageInstallation : 0,
+                chargeEnergy: data.ChargeEnergy !== undefined ? data.ChargeEnergy : 0,
+                slaveError: slaveErrorMap[data.SlaveError] || "00",
+                chargeTime: data.ChargeTime !== undefined ? data.ChargeTime : 0,
+                paused: Boolean(data.Paused),
+                measure_locked: Boolean(data.Locked),
+                intensity: data.Intensity !== undefined ? data.Intensity : 0,
+                dynamic: Boolean(data.Dynamic)
+            };
+
+            console.log('Mapping ChargeState', data.ChargeState, 'to', processedData.chargeState);
+            console.log('Mapping SlaveError', data.SlaveError, 'to', processedData.slaveError);
             console.log('Processed Data:', processedData);
+
+            // Additional validation to check if essential data is present
+            const isValidDeviceData = processedData.chargeState !== "0" || 
+                                      processedData.voltageInstallation !== 0 || 
+                                      processedData.chargePower !== 0;
+
+            if (!isValidDeviceData) {
+                console.log("No valid device data found.");
+                return null;
+            }
+
             return processedData;
         } catch (error) {
             console.error('Failed to process data:', error);
@@ -66,7 +101,6 @@ class v2cAPI {
         }
     }
 
-    // Set a parameter on the wallbox
     async setParameter(parameter, value) {
         try {
             const url = `http://${this.ip}/write/${parameter}=${value}`;
@@ -86,7 +120,6 @@ class v2cAPI {
         }
     }
 
-    // Specific methods for each parameter
     async setPaused(paused) {
         return this.setParameter('Paused', paused);
     }

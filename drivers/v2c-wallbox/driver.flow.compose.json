@@ -1,34 +1,253 @@
 {
-    "triggers": [
-      {
-        "id": "car-connected",
-        "title": { "en": "Car is connected" },
-        "titleFormatted": { "en": "Car is connected" },
-        "description": { "en": "This flow triggers when the car is connected to the Wallbox." }
+  "triggers": [
+    {
+      "id": "car-connected",
+      "title": {
+        "en": "Car is connected"
       },
-      {
-        "id": "car-disconnected",
-        "title": { "en": "Car is disconnected" },
-        "titleFormatted": { "en": "Car is disconnected" },
-        "description": { "en": "This flow triggers when the car is disconnected from the Wallbox." }
-      },
-      {
-        "id": "car-start-charging",
-        "title": { "en": "Car starts charging" },
-        "titleFormatted": { "en": "Car starts charging" },
-        "description": { "en": "This flow triggers when the car starts charging at the Wallbox." }
+      "description": {
+        "en": "This flow triggers when the car is connected to the Wallbox."
       }
-    ],
-    "conditions": [
-      {
-        "id": "car-connected-condition",
-        "title": { "en": "Car is connected" },
-        "description": { "en": "This condition is true when the car is connected to the Wallbox." }
+    },
+    {
+      "id": "car-disconnected",
+      "title": {
+        "en": "Car is disconnected"
       },
-      {
-        "id": "car-is-charging",
-        "title": { "en": "Car is charging" },
-        "description": { "en": "This condition is true when the car is currently charging at the Wallbox." }
+      "description": {
+        "en": "This flow triggers when the car is disconnected from the Wallbox."
       }
-    ]
-  }
+    },
+    {
+      "id": "car-start-charging",
+      "title": {
+        "en": "Car starts charging"
+      },
+      "description": {
+        "en": "This flow triggers when the car starts charging at the Wallbox."
+      }
+    }
+  ],
+  "conditions": [
+    {
+      "id": "car-connected-condition",
+      "title": {
+        "en": "Car is connected"
+      },
+      "description": {
+        "en": "This condition is true when the car is connected to the Wallbox."
+      }
+    },
+    {
+      "id": "car-is-charging",
+      "title": {
+        "en": "Car is charging"
+      },
+      "description": {
+        "en": "This condition is true when the car is currently charging at the Wallbox."
+      }
+    },
+    {
+      "id": "power-greater-than",
+      "args": [
+        {
+          "name": "power",
+          "type": "number",
+          "title": {
+            "en": "Power (W)"
+          },
+          "min": 0
+        }
+      ],
+      "title": {
+        "en": "Power is greater than"
+      },
+      "titleFormatted": {
+        "en": "Power is greater than [[power]] W"
+      },
+      "description": {
+        "en": "This condition is true when the power exceeds the specified threshold."
+      }
+    },
+    {
+      "id": "power-less-than",
+      "args": [
+        {
+          "name": "power",
+          "type": "number",
+          "title": {
+            "en": "Power (W)"
+          },
+          "min": 0
+        }
+      ],
+      "title": {
+        "en": "Power is less than"
+      },
+      "titleFormatted": {
+        "en": "Power is less than [[power]] W"
+      },
+      "description": {
+        "en": "This condition is true when the power is below the specified threshold."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "set_paused",
+      "args": [
+        {
+          "name": "paused",
+          "type": "dropdown",
+          "title": {
+            "en": "Pause"
+          },
+          "values": [
+            {
+              "id": "1",
+              "label": {
+                "en": "Pause"
+              }
+            },
+            {
+              "id": "0",
+              "label": {
+                "en": "Resume"
+              }
+            }
+          ]
+        }
+      ],
+      "title": {
+        "en": "Set Charger State"
+      },
+      "titleFormatted": {
+        "en": "Set Charger State to [[paused]]"
+      }
+    },
+    {
+      "id": "set_locked",
+      "args": [
+        {
+          "name": "locked",
+          "type": "dropdown",
+          "title": {
+            "en": "Lock"
+          },
+          "values": [
+            {
+              "id": "1",
+              "label": {
+                "en": "Lock"
+              }
+            },
+            {
+              "id": "0",
+              "label": {
+                "en": "Unlock"
+              }
+            }
+          ]
+        }
+      ],
+      "title": {
+        "en": "Set Lock State"
+      },
+      "titleFormatted": {
+        "en": "Set Lock State to [[locked]]"
+      }
+    },
+    {
+      "id": "set_intensity",
+      "args": [
+        {
+          "name": "intensity",
+          "type": "number",
+          "title": {
+            "en": "Intensity"
+          },
+          "min": 6,
+          "max": 32
+        }
+      ],
+      "title": {
+        "en": "Set Charger Intensity"
+      },
+      "titleFormatted": {
+        "en": "Set Charger Intensity to [[intensity]] Amps"
+      }
+    },
+    {
+      "id": "set_dynamic",
+      "args": [
+        {
+          "name": "dynamic",
+          "type": "dropdown",
+          "title": {
+            "en": "Dynamic Mode"
+          },
+          "values": [
+            {
+              "id": "1",
+              "label": {
+                "en": "Enable"
+              }
+            },
+            {
+              "id": "0",
+              "label": {
+                "en": "Disable"
+              }
+            }
+          ]
+        }
+      ],
+      "title": {
+        "en": "Set Dynamic Mode"
+      },
+      "titleFormatted": {
+        "en": "Set Dynamic Mode to [[dynamic]]"
+      }
+    },
+    {
+      "id": "set_min_intensity",
+      "args": [
+        {
+          "name": "min_intensity",
+          "type": "number",
+          "title": {
+            "en": "Minimum Intensity"
+          },
+          "min": 6,
+          "max": 32
+        }
+      ],
+      "title": {
+        "en": "Set Minimum Intensity in Dynamic Mode"
+      },
+      "titleFormatted": {
+        "en": "Set Minimum Intensity in Dynamic Mode to [[min_intensity]] Amps"
+      }
+    },
+    {
+      "id": "set_max_intensity",
+      "args": [
+        {
+          "name": "max_intensity",
+          "type": "number",
+          "title": {
+            "en": "Maximum Intensity"
+          },
+          "min": 6,
+          "max": 32
+        }
+      ],
+      "title": {
+        "en": "Set Maximum Intensity in Dynamic Mode"
+      },
+      "titleFormatted": {
+        "en": "Set Maximum Intensity in Dynamic Mode to [[max_intensity]] Amps"
+      }
+    }
+  ]
+}

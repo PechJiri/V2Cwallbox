@@ -8,18 +8,19 @@ class MyDevice extends Device {
     async onInit() {
         this.log('MyDevice has been initialized');
 
-        // Initialize v2cAPI with the IP from settings
         const ip = this.homey.settings.get('v2c_ip');
+        if (!ip) {
+            this.error('IP address is not set.');
+            return this.setUnavailable('IP address is not set.');
+        }
         this.v2cApi = new v2cAPI(ip);
 
-        // Set initial settings for the device
         await this.setSettings({
             name: this.homey.settings.get('name'),
             v2c_ip: ip,
-            update_interval: this.homey.settings.get('update_interval') || 5,  // Default interval is 5 seconds
+            update_interval: this.homey.settings.get('update_interval') || 5,
         });
 
-        // Add capabilities to the device if they don't exist yet
         const capabilities = [
             'measure_charge_state',
             'measure_charge_power',
@@ -39,96 +40,89 @@ class MyDevice extends Device {
             }
         }
 
-        // Set up Flow cards
         this.setupFlowCards();
-
-        // Start fetching data at regular intervals
-        this.updateInterval = this.homey.settings.get('update_interval') || 5;
-        this.startDataFetchInterval(this.updateInterval);
+        this.startDataFetchInterval(this.homey.settings.get('update_interval') || 5);
     }
 
     setupFlowCards() {
-        // Register the Flow cards
-        this._carConnected = this.homey.flow.getDeviceTriggerCard('car-connected');
-        this._carCharging = this.homey.flow.getDeviceTriggerCard('car-start-charging');
-        this._carDisconnected = this.homey.flow.getDeviceTriggerCard('car-disconnected');
+        this.homey.flow.getDeviceTriggerCard('car-connected');
+        this.homey.flow.getDeviceTriggerCard('car-start-charging');
+        this.homey.flow.getDeviceTriggerCard('car-disconnected');
+
+        this._registerActionFlowCards();
+        this._registerConditionFlowCards();
+    }
+
+    _registerActionFlowCards() {
+        this._registerActionCard('set_paused', 'Paused');
+        this._registerActionCard('set_locked', 'Locked');
+        this._registerActionCard('set_intensity', 'Intensity');
+        this._registerActionCard('set_dynamic', 'Dynamic');
+        this._registerActionCard('set_min_intensity', 'MinIntensity');
+        this._registerActionCard('set_max_intensity', 'MaxIntensity');
+    }
+
+    _registerConditionFlowCards() {
+        this._registerConditionCard('car-connected-condition', 'measure_charge_state', "1");
+        this._registerConditionCard('car-is-charging', 'measure_charge_state', "2");
+        this._registerPowerConditionCard('power-greater-than', '>');
+        this._registerPowerConditionCard('power-less-than', '<');
+    }
+
+    _registerActionCard(cardId, setting) {
+        this.homey.flow.getActionCard(cardId).registerRunListener(async (args, state) => {
+            return this.v2cApi.setParameter(setting, args[setting.toLowerCase()]);
+        });
+    }
+
+    _registerConditionCard(cardId, capability, expectedValue) {
+        this.homey.flow.getConditionCard(cardId).registerRunListener(async (args, state) => {
+            return await this.getCapabilityValue(capability) === expectedValue;
+        });
+    }
+
+    _registerPowerConditionCard(cardId, operator) {
+        this.homey.flow.getConditionCard(cardId).registerRunListener(async (args, state) => {
+            const currentPower = await this.getCapabilityValue('measure_charge_power');
+            return operator === '>' ? currentPower > args.power : currentPower < args.power;
+        });
     }
 
     startDataFetchInterval(interval) {
-        // Clear any existing interval to avoid duplication
         if (this.dataFetchInterval) {
             this.homey.clearInterval(this.dataFetchInterval);
         }
 
-        // Start a new interval to fetch data regularly
         this.dataFetchInterval = this.homey.setInterval(async () => {
             await this.getProductionData();
-        }, 1000 * interval);  // Convert seconds to milliseconds
+        }, 1000 * interval);
     }
 
     async getProductionData() {
         try {
-            // Fetch data from the V2C API
             const baseSession = await this.v2cApi.getData();
-            const deviceData = await this.v2cApi.processData(baseSession);
+            const deviceData = this.v2cApi.processData(baseSession);
 
-            // Map charge states and errors
-            const chargeStateMap = {
-                0: "0",  // EV not connected
-                1: "1",  // EV connected
-                2: "2"   // Charging
-            };
-
+            const chargeStateMap = { 0: "0", 1: "1", 2: "2" };
             const slaveErrorMap = {
-                0: "00",
-                1: "01",
-                2: "02",
-                3: "03",
-                4: "04",
-                5: "05",
-                6: "06",
-                7: "07",
-                8: "08",
-                9: "09",
-                10: "10"
+                0: "00", 1: "01", 2: "02", 3: "03", 4: "04",
+                5: "05", 6: "06", 7: "07", 8: "08", 9: "09", 10: "10"
             };
 
-            const chargeStateValue = chargeStateMap[deviceData.chargeState] || "0";
-            const slaveErrorValue = slaveErrorMap[deviceData.slaveError] || "00";
-
-            // Update the device's capability values
-            await this.setCapabilityValue('measure_charge_state', chargeStateValue);
+            await this.setCapabilityValue('measure_charge_state', chargeStateMap[deviceData.chargeState] || "0");
             await this.setCapabilityValue('measure_charge_power', deviceData.chargePower);
             await this.setCapabilityValue('measure_voltage_installation', deviceData.voltageInstallation);
             await this.setCapabilityValue('measure_charge_energy', deviceData.chargeEnergy);
-            await this.setCapabilityValue('measure_slave_error', slaveErrorValue);
+            await this.setCapabilityValue('measure_slave_error', slaveErrorMap[deviceData.slaveError] || "00");
 
-            // Convert charge time from seconds to minutes and set it
-            const chargeTimeInMinutes = Math.floor(deviceData.chargeTime / 60);
-            await this.setCapabilityValue('measure_charge_time', chargeTimeInMinutes);
-
-            // Convert boolean values for paused and locked
+            await this.setCapabilityValue('measure_charge_time', Math.floor(deviceData.chargeTime / 60));
             await this.setCapabilityValue('measure_paused', Boolean(deviceData.paused));
             await this.setCapabilityValue('measure_locked', Boolean(deviceData.measure_locked));
-
-            // Convert intensity and dynamic values
             await this.setCapabilityValue('measure_intensity', Number(deviceData.intensity));
             await this.setCapabilityValue('measure_dynamic', Boolean(deviceData.dynamic));
 
-            // Trigger Flow cards based on charge state
-            if (deviceData.chargeState === 1) {
-                this._carConnected.trigger(this, {}, {});
-            }
+            this._triggerFlowCards(deviceData.chargeState);
 
-            if (deviceData.chargeState === 2) {
-                this._carCharging.trigger(this, {}, {});
-            }
-
-            if (deviceData.chargeState === 0) {
-                this._carDisconnected.trigger(this, {}, {});
-            }
-
-            // Set the device to available if not already set
             if (!this.getAvailable()) {
                 await this.setAvailable();
             }
@@ -138,21 +132,33 @@ class MyDevice extends Device {
         }
     }
 
+    _triggerFlowCards(chargeState) {
+        if (chargeState === 1) {
+            this.homey.flow.getDeviceTriggerCard('car-connected').trigger(this, {}, {});
+        }
+
+        if (chargeState === 2) {
+            this.homey.flow.getDeviceTriggerCard('car-start-charging').trigger(this, {}, {});
+        }
+
+        if (chargeState === 0) {
+            this.homey.flow.getDeviceTriggerCard('car-disconnected').trigger(this, {}, {});
+        }
+    }
+
     async onSettings({ oldSettings, newSettings, changedKeys }) {
         this.log('MyDevice settings were changed');
 
-        // Update settings and restart the interval if necessary
-        for (const key of changedKeys) {
+        changedKeys.forEach((key) => {
             this.homey.settings.set(key, newSettings[key]);
-        }
+        });
 
         if (changedKeys.includes('update_interval')) {
-            this.updateInterval = newSettings['update_interval'];
-            this.startDataFetchInterval(this.updateInterval);
+            this.startDataFetchInterval(newSettings['update_interval']);
         }
 
         if (changedKeys.includes('v2c_ip')) {
-            this.v2cApi = new v2cAPI(newSettings['v2c_ip']);  // Update the IP in v2cAPI
+            this.v2cApi = new v2cAPI(newSettings['v2c_ip']);
         }
 
         this.getProductionData();
