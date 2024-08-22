@@ -204,5 +204,135 @@
       "id": "add_my_devices",
       "template": "add_devices"
     }
-  ]
+  ],
+  "flow": {
+    "actions": [
+      {
+        "id": "set_paused",
+        "title": {
+          "en": "Set Charging State"
+        },
+        "titleFormatted": {
+          "en": "Set Charging State to {{paused}}"
+        },
+        "args": [
+          {
+            "name": "paused",
+            "type": "dropdown",
+            "title": {
+              "en": "Pause"
+            },
+            "values": [
+              { "id": "1", "label": { "en": "Pause" } },
+              { "id": "0", "label": { "en": "Charge" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "set_locked",
+        "title": {
+          "en": "Set Charger Lock State"
+        },
+        "titleFormatted": {
+          "en": "Set Charger Lock to {{locked}}"
+        },
+        "args": [
+          {
+            "name": "locked",
+            "type": "dropdown",
+            "title": {
+              "en": "Lock"
+            },
+            "values": [
+              { "id": "1", "label": { "en": "Lock" } },
+              { "id": "0", "label": { "en": "Unlock" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "set_intensity",
+        "title": {
+          "en": "Set Intensity"
+        },
+        "titleFormatted": {
+          "en": "Set Intensity to {{intensity}} Amps"
+        },
+        "args": [
+          {
+            "name": "intensity",
+            "type": "number",
+            "title": {
+              "en": "Intensity"
+            },
+            "min": 6,
+            "max": 32
+          }
+        ]
+      },
+      {
+        "id": "set_dynamic",
+        "title": {
+          "en": "Set Dynamic Mode"
+        },
+        "titleFormatted": {
+          "en": "Set Dynamic Mode to {{dynamic}}"
+        },
+        "args": [
+          {
+            "name": "dynamic",
+            "type": "dropdown",
+            "title": {
+              "en": "Dynamic Mode"
+            },
+            "values": [
+              { "id": "1", "label": { "en": "Enable" } },
+              { "id": "0", "label": { "en": "Disable" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "set_min_intensity",
+        "title": {
+          "en": "Set Minimum Intensity For Dynamic Mode"
+        },
+        "titleFormatted": {
+          "en": "Set Minimum Intensity For Dynamic Mode to {{min_intensity}} Amps"
+        },
+        "args": [
+          {
+            "name": "min_intensity",
+            "type": "number",
+            "title": {
+              "en": "Minimum Intensity"
+            },
+            "min": 6,
+            "max": 32
+          }
+        ]
+      },
+      {
+        "id": "set_max_intensity",
+        "title": {
+          "en": "Set Maximum Intensity"
+        },
+        "titleFormatted": {
+          "en": "Set Maximum Intensity For Dynamic Mode to {{max_intensity}} Amps"
+        },
+        "args": [
+          {
+            "name": "max_intensity",
+            "type": "number",
+            "title": {
+              "en": "Maximum Intensity"
+            },
+            "min": 6,
+            "max": 32
+          }
+        ]
+      }
+    ]
+  }
 }

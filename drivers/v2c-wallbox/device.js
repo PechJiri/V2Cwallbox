@@ -8,10 +8,14 @@ class MyDevice extends Device {
     async onInit() {
         this.log('MyDevice has been initialized');
 
+        // Initialize v2cAPI with the IP from settings
+        const ip = this.homey.settings.get('v2c_ip');
+        this.v2cApi = new v2cAPI(ip);
+
         // Set initial settings for the device
         await this.setSettings({
             name: this.homey.settings.get('name'),
-            v2c_ip: this.homey.settings.get('v2c_ip'),
+            v2c_ip: ip,
             update_interval: this.homey.settings.get('update_interval') || 5,  // Default interval is 5 seconds
         });
 
@@ -65,11 +69,8 @@ class MyDevice extends Device {
     async getProductionData() {
         try {
             // Fetch data from the V2C API
-            const ip = this.homey.settings.get('v2c_ip');
-            const v2cApi = new v2cAPI(ip);
-
-            const baseSession = await v2cApi.getData();
-            const deviceData = await v2cApi.processData(baseSession);
+            const baseSession = await this.v2cApi.getData();
+            const deviceData = await this.v2cApi.processData(baseSession);
 
             // Map charge states and errors
             const chargeStateMap = {
@@ -107,18 +108,12 @@ class MyDevice extends Device {
             await this.setCapabilityValue('measure_charge_time', chargeTimeInMinutes);
 
             // Convert boolean values for paused and locked
-            const pausedValue = Boolean(deviceData.paused);
-            const lockedValue = Boolean(deviceData.locked);
-
-            await this.setCapabilityValue('measure_paused', pausedValue);
-            await this.setCapabilityValue('measure_locked', lockedValue);
+            await this.setCapabilityValue('measure_paused', Boolean(deviceData.paused));
+            await this.setCapabilityValue('measure_locked', Boolean(deviceData.measure_locked));
 
             // Convert intensity and dynamic values
-            const intensityValue = Number(deviceData.intensity);
-            await this.setCapabilityValue('measure_intensity', intensityValue);
-
-            const dynamicValue = Boolean(deviceData.dynamic);
-            await this.setCapabilityValue('measure_dynamic', dynamicValue);
+            await this.setCapabilityValue('measure_intensity', Number(deviceData.intensity));
+            await this.setCapabilityValue('measure_dynamic', Boolean(deviceData.dynamic));
 
             // Trigger Flow cards based on charge state
             if (deviceData.chargeState === 1) {
@@ -145,18 +140,19 @@ class MyDevice extends Device {
 
     async onSettings({ oldSettings, newSettings, changedKeys }) {
         this.log('MyDevice settings were changed');
-        console.log(changedKeys);
-        console.log(newSettings);
 
         // Update settings and restart the interval if necessary
         for (const key of changedKeys) {
             this.homey.settings.set(key, newSettings[key]);
-            console.log(`${key}: ${newSettings[key]}`);
         }
 
         if (changedKeys.includes('update_interval')) {
             this.updateInterval = newSettings['update_interval'];
             this.startDataFetchInterval(this.updateInterval);
+        }
+
+        if (changedKeys.includes('v2c_ip')) {
+            this.v2cApi = new v2cAPI(newSettings['v2c_ip']);  // Update the IP in v2cAPI
         }
 
         this.getProductionData();
