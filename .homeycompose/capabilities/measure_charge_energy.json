@@ -3,10 +3,13 @@
     "title": {
         "en": "Charged energy (kWh)"
     },
-    "unit": "kWh",
+    "units": {
+        "en": "kWh"
+    },
+    "uiComponent": "sensor",
     "getable": true,
     "setable": false,
-    "uiComponent": "sensor",
     "decimals": 1,
+    "insights": true,
     "icon": "/assets/charge_energy.svg"
 }

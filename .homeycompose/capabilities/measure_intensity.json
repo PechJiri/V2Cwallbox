@@ -3,10 +3,13 @@
     "title": {
         "en": "Intensity (A)"
     },
-    "unit": "A",
+    "units": {
+        "en": "A"
+    },
+    "uiComponent": "sensor",
     "getable": true,
     "setable": false,
-    "uiComponent": "sensor",
     "decimals": 1,
+    "insights": true,
     "icon": "/assets/intensity.svg"
 }

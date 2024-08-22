@@ -12,7 +12,7 @@
     "en": "V2C Wallbox"
   },
   "description": {
-    "en": "The app allows you to monitor your V2C Wallbox online, retrieve complete data on charging progress, vehicle connection, and more, and control other devices in your home through flows based on this data."
+    "en": "Intelligence, innovation and maximum control at your fingertips"
   },
   "category": [
     "energy"
@@ -50,72 +50,6 @@
   "support": "mailto:jiri.pech@centrum.cz",
   "flow": {
     "triggers": [
-      {
-        "id": "power-becomes-greater-than",
-        "type": "trigger",
-        "title": {
-          "en": "Power becomes greater than"
-        },
-        "titleFormatted": {
-          "en": "Power becomes greater than [[power]] W"
-        },
-        "args": [
-          {
-            "type": "number",
-            "name": "power",
-            "title": {
-              "en": "Power (W)"
-            },
-            "min": 0,
-            "step": 1,
-            "placeholder": {
-              "en": "Enter power in watts"
-            }
-          }
-        ],
-        "capabilities": [
-          "measure_power"
-        ],
-        "validate": {
-          "en": "power > argument"
-        },
-        "description": {
-          "en": "This trigger is activated when the power becomes greater than the specified value."
-        }
-      },
-      {
-        "id": "power-becomes-less-than",
-        "type": "trigger",
-        "title": {
-          "en": "Power becomes less than"
-        },
-        "titleFormatted": {
-          "en": "Power becomes less than [[power]] W"
-        },
-        "args": [
-          {
-            "type": "number",
-            "name": "power",
-            "title": {
-              "en": "Power (W)"
-            },
-            "min": 0,
-            "step": 1,
-            "placeholder": {
-              "en": "Enter power in watts"
-            }
-          }
-        ],
-        "capabilities": [
-          "measure_power"
-        ],
-        "validate": {
-          "en": "power < argument"
-        },
-        "description": {
-          "en": "This trigger is activated when the power becomes less than the specified value."
-        }
-      },
       {
         "id": "car-connected",
         "title": {
@@ -176,72 +110,6 @@
     ],
     "conditions": [
       {
-        "id": "power-is-greater-than",
-        "type": "condition",
-        "title": {
-          "en": "Power is greater than"
-        },
-        "titleFormatted": {
-          "en": "Power is greater than [[power]] W"
-        },
-        "args": [
-          {
-            "type": "number",
-            "name": "power",
-            "title": {
-              "en": "Power (W)"
-            },
-            "min": 0,
-            "step": 1,
-            "placeholder": {
-              "en": "Enter power in watts"
-            }
-          }
-        ],
-        "capabilities": [
-          "measure_power"
-        ],
-        "validate": {
-          "en": "power > argument"
-        },
-        "description": {
-          "en": "This condition is true when the power (W) is greater than the specified value."
-        }
-      },
-      {
-        "id": "power-is-less-than",
-        "type": "condition",
-        "title": {
-          "en": "Power is less than"
-        },
-        "titleFormatted": {
-          "en": "Power is less than [[power]] W"
-        },
-        "args": [
-          {
-            "type": "number",
-            "name": "power",
-            "title": {
-              "en": "Power (W)"
-            },
-            "min": 0,
-            "step": 1,
-            "placeholder": {
-              "en": "Enter power in watts"
-            }
-          }
-        ],
-        "capabilities": [
-          "measure_power"
-        ],
-        "validate": {
-          "en": "power < argument"
-        },
-        "description": {
-          "en": "This condition is true when the power (W) is less than the specified value."
-        }
-      },
-      {
         "id": "car-connected-condition",
         "title": {
           "en": "Car is connected"
@@ -283,143 +151,176 @@
       },
       "class": "evcharger",
       "capabilities": [
-        "measure_charge_state",
-        "measure_charge_power",
-        "measure_voltage_installation",
+        "measure_dynamic",
         "measure_charge_energy",
-        "measure_slave_error",
+        "measure_charge_power",
+        "measure_charge_state",
         "measure_charge_time",
-        "measure_paused",
-        "measure_locked",
         "measure_intensity",
-        "measure_dynamic"
+        "measure_locked",
+        "measure_paused",
+        "measure_slave_error",
+        "measure_voltage_installation"
       ],
       "capabilitiesOptions": {
-        "measure_charge_power": {
+        "measure_dynamic": {
           "title": {
-            "en": "Current charging power"
-          },
-          "units": {
-            "en": "W"
-          },
-          "insights": {
-            "enabled": true,
-            "title": {
-              "en": "Charging Power"
-            }
-          }
-        },
-        "measure_charge_state": {
-          "title": {
-            "en": "Charge State"
-          },
-          "insights": {
-            "enabled": true,
-            "title": {
-              "en": "Charge State"
-            }
-          }
-        },
-        "measure_voltage_installation": {
-          "title": {
-            "en": "Voltage Installation"
-          },
-          "units": {
-            "en": "V"
-          },
-          "insights": {
-            "enabled": true,
-            "title": {
-              "en": "Voltage Installation"
-            }
+            "en": "Dynamic Mode"
           }
         },
         "measure_charge_energy": {
           "title": {
-            "en": "Charged Energy"
+            "en": "Charged energy (kWh)"
           },
           "units": {
             "en": "kWh"
+          }
+        },
+        "measure_charge_power": {
+          "title": {
+            "en": "Current charging power (W)"
           },
-          "insights": {
-            "enabled": true,
-            "title": {
-              "en": "Charged Energy"
+          "units": {
+            "en": "W"
+          }
+        },
+        "measure_charge_state": {
+          "title": {
+            "en": "Charger state"
+          },
+          "values": [
+            {
+              "id": "0",
+              "title": {
+                "en": "EV not connected"
+              }
+            },
+            {
+              "id": "1",
+              "title": {
+                "en": "EV connected"
+              }
+            },
+            {
+              "id": "2",
+              "title": {
+                "en": "Charging"
+              }
             }
+          ]
+        },
+        "measure_charge_time": {
+          "title": {
+            "en": "Car connected (min)"
+          },
+          "units": {
+            "en": "min"
+          }
+        },
+        "measure_intensity": {
+          "title": {
+            "en": "Intensity (A)"
+          },
+          "units": {
+            "en": "A"
+          }
+        },
+        "measure_locked": {
+          "title": {
+            "en": "Locked"
+          }
+        },
+        "measure_paused": {
+          "title": {
+            "en": "Paused"
           }
         },
         "measure_slave_error": {
           "title": {
             "en": "Communication Error"
           },
-          "insights": {
-            "enabled": true,
-            "title": {
-              "en": "Communication Error"
+          "values": [
+            {
+              "id": "00",
+              "title": {
+                "en": "No Error"
+              }
+            },
+            {
+              "id": "01",
+              "title": {
+                "en": "Communication"
+              }
+            },
+            {
+              "id": "02",
+              "title": {
+                "en": "Reading"
+              }
+            },
+            {
+              "id": "03",
+              "title": {
+                "en": "Slave"
+              }
+            },
+            {
+              "id": "04",
+              "title": {
+                "en": "Waiting WiFi"
+              }
+            },
+            {
+              "id": "05",
+              "title": {
+                "en": "Waiting communication"
+              }
+            },
+            {
+              "id": "06",
+              "title": {
+                "en": "Wrong IP"
+              }
+            },
+            {
+              "id": "07",
+              "title": {
+                "en": "Slave not found"
+              }
+            },
+            {
+              "id": "08",
+              "title": {
+                "en": "Wrong Slave"
+              }
+            },
+            {
+              "id": "09",
+              "title": {
+                "en": "No response"
+              }
+            },
+            {
+              "id": "10",
+              "title": {
+                "en": "Clamp not connected"
+              }
             }
-          }
+          ]
         },
-        "measure_charge_time": {
+        "measure_voltage_installation": {
           "title": {
-            "en": "Car Connected Time"
+            "en": "Installation voltage"
           },
           "units": {
-            "en": "min"
-          },
-          "insights": {
-            "enabled": true,
-            "title": {
-              "en": "Car Connected Time"
-            }
-          }
-        },
-        "measure_paused": {
-          "title": {
-            "en": "Paused"
-          },
-          "insights": {
-            "enabled": true,
-            "title": {
-              "en": "Paused"
-            }
-          }
-        },
-        "measure_locked": {
-          "title": {
-            "en": "Locked"
-          },
-          "insights": {
-            "enabled": true,
-            "title": {
-              "en": "Locked"
-            }
-          }
-        },
-        "measure_intensity": {
-          "title": {
-            "en": "Intensity"
-          },
-          "units": {
-            "en": "A"
-          },
-          "insights": {
-            "enabled": true,
-            "title": {
-              "en": "Intensity"
-            }
-          }
-        },
-        "measure_dynamic": {
-          "title": {
-            "en": "Dynamic"
-          },
-          "insights": {
-            "enabled": true,
-            "title": {
-              "en": "Dynamic"
-            }
+            "en": "V"
           }
         }
+      },
+      "images": {
+        "small": "/drivers/v2c-wallbox/assets/images/small.png",
+        "large": "/drivers/v2c-wallbox/assets/images/large.png",
+        "xlarge": "/drivers/v2c-wallbox/assets/images/xlarge.png"
       },
       "platforms": [
         "local"
@@ -427,11 +328,6 @@
       "connectivity": [
         "lan"
       ],
-      "images": {
-        "small": "/drivers/v2c-wallbox/assets/images/small.png",
-        "large": "/drivers/v2c-wallbox/assets/images/large.png",
-        "xlarge": "/drivers/v2c-wallbox/assets/images/xlarge.png"
-      },
       "pair": [
         {
           "id": "pair",
@@ -494,11 +390,14 @@
       "title": {
         "en": "Charged energy (kWh)"
       },
-      "unit": "kWh",
+      "units": {
+        "en": "kWh"
+      },
+      "uiComponent": "sensor",
       "getable": true,
       "setable": false,
-      "uiComponent": "sensor",
       "decimals": 1,
+      "insights": true,
       "icon": "/assets/charge_energy.svg"
     },
     "measure_charge_power": {
@@ -506,11 +405,14 @@
       "title": {
         "en": "Current charging power (W)"
       },
-      "unit": "W",
+      "units": {
+        "en": "W"
+      },
+      "uiComponent": "sensor",
       "getable": true,
       "setable": false,
-      "uiComponent": "sensor",
       "decimals": 0,
+      "insights": true,
       "icon": "/assets/charge_power.svg"
     },
     "measure_charge_state": {
@@ -548,11 +450,14 @@
       "title": {
         "en": "Car connected (min)"
       },
-      "unit": "min",
+      "units": {
+        "en": "min"
+      },
+      "uiComponent": "sensor",
       "getable": true,
       "setable": false,
-      "uiComponent": "sensor",
-      "decimals": 2,
+      "decimals": 0,
+      "insights": true,
       "icon": "/assets/charge_time.svg"
     },
     "measure_intensity": {
@@ -560,11 +465,14 @@
       "title": {
         "en": "Intensity (A)"
       },
-      "unit": "A",
+      "units": {
+        "en": "A"
+      },
+      "uiComponent": "sensor",
       "getable": true,
       "setable": false,
-      "uiComponent": "sensor",
       "decimals": 1,
+      "insights": true,
       "icon": "/assets/intensity.svg"
     },
     "measure_locked": {
@@ -670,11 +578,14 @@
       "title": {
         "en": "Installation voltage"
       },
-      "unit": "V",
+      "units": {
+        "en": "V"
+      },
+      "uiComponent": "sensor",
       "getable": true,
       "setable": false,
-      "uiComponent": "sensor",
       "decimals": 0,
+      "insights": true,
       "icon": "/assets/voltage_installation.svg"
     }
   }

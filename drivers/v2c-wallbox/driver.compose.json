@@ -5,143 +5,176 @@
   },
   "class": "evcharger",
   "capabilities": [
-    "measure_charge_state",
-    "measure_charge_power",
-    "measure_voltage_installation",
+    "measure_dynamic",
     "measure_charge_energy",
-    "measure_slave_error",
+    "measure_charge_power",
+    "measure_charge_state",
     "measure_charge_time",
-    "measure_paused",
-    "measure_locked",
     "measure_intensity",
-    "measure_dynamic"
+    "measure_locked",
+    "measure_paused",
+    "measure_slave_error",
+    "measure_voltage_installation"
   ],
   "capabilitiesOptions": {
-    "measure_charge_power": {
+    "measure_dynamic": {
       "title": {
-        "en": "Current charging power"
-      },
-      "units": {
-        "en": "W"
-      },
-      "insights": {
-        "enabled": true,
-        "title": {
-          "en": "Charging Power"
-        }
-      }
-    },
-    "measure_charge_state": {
-      "title": {
-        "en": "Charge State"
-      },
-      "insights": {
-        "enabled": true,
-        "title": {
-          "en": "Charge State"
-        }
-      }
-    },
-    "measure_voltage_installation": {
-      "title": {
-        "en": "Voltage Installation"
-      },
-      "units": {
-        "en": "V"
-      },
-      "insights": {
-        "enabled": true,
-        "title": {
-          "en": "Voltage Installation"
-        }
+        "en": "Dynamic Mode"
       }
     },
     "measure_charge_energy": {
       "title": {
-        "en": "Charged Energy"
+        "en": "Charged energy (kWh)"
       },
       "units": {
         "en": "kWh"
+      }
+    },
+    "measure_charge_power": {
+      "title": {
+        "en": "Current charging power (W)"
       },
-      "insights": {
-        "enabled": true,
-        "title": {
-          "en": "Charged Energy"
+      "units": {
+        "en": "W"
+      }
+    },
+    "measure_charge_state": {
+      "title": {
+        "en": "Charger state"
+      },
+      "values": [
+        {
+          "id": "0",
+          "title": {
+            "en": "EV not connected"
+          }
+        },
+        {
+          "id": "1",
+          "title": {
+            "en": "EV connected"
+          }
+        },
+        {
+          "id": "2",
+          "title": {
+            "en": "Charging"
+          }
         }
+      ]
+    },
+    "measure_charge_time": {
+      "title": {
+        "en": "Car connected (min)"
+      },
+      "units": {
+        "en": "min"
+      }
+    },
+    "measure_intensity": {
+      "title": {
+        "en": "Intensity (A)"
+      },
+      "units": {
+        "en": "A"
+      }
+    },
+    "measure_locked": {
+      "title": {
+        "en": "Locked"
+      }
+    },
+    "measure_paused": {
+      "title": {
+        "en": "Paused"
       }
     },
     "measure_slave_error": {
       "title": {
         "en": "Communication Error"
       },
-      "insights": {
-        "enabled": true,
-        "title": {
-          "en": "Communication Error"
+      "values": [
+        {
+          "id": "00",
+          "title": {
+            "en": "No Error"
+          }
+        },
+        {
+          "id": "01",
+          "title": {
+            "en": "Communication"
+          }
+        },
+        {
+          "id": "02",
+          "title": {
+            "en": "Reading"
+          }
+        },
+        {
+          "id": "03",
+          "title": {
+            "en": "Slave"
+          }
+        },
+        {
+          "id": "04",
+          "title": {
+            "en": "Waiting WiFi"
+          }
+        },
+        {
+          "id": "05",
+          "title": {
+            "en": "Waiting communication"
+          }
+        },
+        {
+          "id": "06",
+          "title": {
+            "en": "Wrong IP"
+          }
+        },
+        {
+          "id": "07",
+          "title": {
+            "en": "Slave not found"
+          }
+        },
+        {
+          "id": "08",
+          "title": {
+            "en": "Wrong Slave"
+          }
+        },
+        {
+          "id": "09",
+          "title": {
+            "en": "No response"
+          }
+        },
+        {
+          "id": "10",
+          "title": {
+            "en": "Clamp not connected"
+          }
         }
-      }
+      ]
     },
-    "measure_charge_time": {
+    "measure_voltage_installation": {
       "title": {
-        "en": "Car Connected Time"
+        "en": "Installation voltage"
       },
       "units": {
-        "en": "min"
-      },
-      "insights": {
-        "enabled": true,
-        "title": {
-          "en": "Car Connected Time"
-        }
-      }
-    },
-    "measure_paused": {
-      "title": {
-        "en": "Paused"
-      },
-      "insights": {
-        "enabled": true,
-        "title": {
-          "en": "Paused"
-        }
-      }
-    },
-    "measure_locked": {
-      "title": {
-        "en": "Locked"
-      },
-      "insights": {
-        "enabled": true,
-        "title": {
-          "en": "Locked"
-        }
-      }
-    },
-    "measure_intensity": {
-      "title": {
-        "en": "Intensity"
-      },
-      "units": {
-        "en": "A"
-      },
-      "insights": {
-        "enabled": true,
-        "title": {
-          "en": "Intensity"
-        }
-      }
-    },
-    "measure_dynamic": {
-      "title": {
-        "en": "Dynamic"
-      },
-      "insights": {
-        "enabled": true,
-        "title": {
-          "en": "Dynamic"
-        }
+        "en": "V"
       }
     }
+  },
+  "images": {
+    "small": "{{driverAssetsPath}}/images/small.png",
+    "large": "{{driverAssetsPath}}/images/large.png",
+    "xlarge": "{{driverAssetsPath}}/images/xlarge.png"
   },
   "platforms": [
     "local"
@@ -149,11 +182,6 @@
   "connectivity": [
     "lan"
   ],
-  "images": {
-    "small": "{{driverAssetsPath}}/images/small.png",
-    "large": "{{driverAssetsPath}}/images/large.png",
-    "xlarge": "{{driverAssetsPath}}/images/xlarge.png"
-  },
   "pair": [
     {
       "id": "pair",

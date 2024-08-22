@@ -3,10 +3,13 @@
     "title": {
         "en": "Current charging power (W)"
     },
-    "unit": "W",
+    "units": {
+        "en": "W"
+    },
+    "uiComponent": "sensor",
     "getable": true,
     "setable": false,
-    "uiComponent": "sensor",
     "decimals": 0,
+    "insights": true,
     "icon": "/assets/charge_power.svg"
 }

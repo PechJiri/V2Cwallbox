@@ -3,10 +3,13 @@
     "title": {
         "en": "Installation voltage"
     },
-    "unit": "V",
+    "units": {
+        "en": "V"
+    },
+    "uiComponent": "sensor",
     "getable": true,
     "setable": false,
-    "uiComponent": "sensor",
     "decimals": 0,
+    "insights": true,
     "icon": "/assets/voltage_installation.svg"
 }
