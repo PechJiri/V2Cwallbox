@@ -1,0 +1,34 @@
+{
+    "triggers": [
+      {
+        "id": "car-connected",
+        "title": { "en": "Car is connected" },
+        "titleFormatted": { "en": "Car is connected" },
+        "description": { "en": "This flow triggers when the car is connected to the Wallbox." }
+      },
+      {
+        "id": "car-disconnected",
+        "title": { "en": "Car is disconnected" },
+        "titleFormatted": { "en": "Car is disconnected" },
+        "description": { "en": "This flow triggers when the car is disconnected from the Wallbox." }
+      },
+      {
+        "id": "car-start-charging",
+        "title": { "en": "Car starts charging" },
+        "titleFormatted": { "en": "Car starts charging" },
+        "description": { "en": "This flow triggers when the car starts charging at the Wallbox." }
+      }
+    ],
+    "conditions": [
+      {
+        "id": "car-connected-condition",
+        "title": { "en": "Car is connected" },
+        "description": { "en": "This condition is true when the car is connected to the Wallbox." }
+      },
+      {
+        "id": "car-is-charging",
+        "title": { "en": "Car is charging" },
+        "description": { "en": "This condition is true when the car is currently charging at the Wallbox." }
+      }
+    ]
+  }

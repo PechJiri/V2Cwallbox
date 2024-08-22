@@ -4,6 +4,7 @@
     "en": "Car is connected"
   },
   "id": "car-connected",
+  "driver_id": "v2c-wallbox",
   "capabilities": [
     "measure_charge_state"
   ],

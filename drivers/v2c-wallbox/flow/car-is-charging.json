@@ -4,6 +4,7 @@
     "en": "Car is charging"
   },
   "id": "car-is-charging",
+  "driver_id": "v2c-wallbox",
   "capabilities": [
     "measure_charge_state"
   ],

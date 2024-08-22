@@ -1,6 +1,6 @@
 'use strict';
 
-const { Driver } = require('homey');  // Ujistěte se, že cesta je správná
+const { Driver } = require('homey');
 const { v2cAPI } = require('./api');
 
 class MyDriver extends Driver {
@@ -17,12 +17,14 @@ class MyDriver extends Driver {
      * Registers the flow cards for the driver.
      */
     registerFlowCards() {
+        // Register device-specific trigger and condition Flow cards
         this._powerBecomesGreaterThan = this.homey.flow.getDeviceTriggerCard('power-becomes-greater-than');
         this._powerBecomesLessThan = this.homey.flow.getDeviceTriggerCard('power-becomes-less-than');
         this._powerIsGreaterThan = this.homey.flow.getConditionCard('power-is-greater-than');
         this._powerIsLessThan = this.homey.flow.getConditionCard('power-is-less-than');
         this._carConnected = this.homey.flow.getDeviceTriggerCard('car-connected');
         this._carCharging = this.homey.flow.getDeviceTriggerCard('car-start-charging');
+        this._carDisconnected = this.homey.flow.getDeviceTriggerCard('car-disconnected');
     }
 
     /**
@@ -35,6 +37,7 @@ class MyDriver extends Driver {
             "ip": ""
         };
 
+        // Set handler for listing devices during pairing
         session.setHandler("list_devices", async () => {
             this.log("list_devices handler called");
             try {
@@ -45,6 +48,7 @@ class MyDriver extends Driver {
             }
         });
 
+        // Set handler for checking device connectivity
         session.setHandler("check", async (data) => {
             this.log("check handler called with data:", data);
             try {
@@ -55,6 +59,7 @@ class MyDriver extends Driver {
             }
         });
 
+        // Set handler for updating settings during pairing
         session.setHandler("settingsChanged", async (data) => {
             this.log("settingsChanged handler called with data:", data);
             this.settingsData = data;
@@ -62,6 +67,10 @@ class MyDriver extends Driver {
         });
     }
 
+    /**
+     * Handles the list_devices event during pairing.
+     * This function fetches and returns the list of devices found.
+     */
     async onPairListDevices(session) {
         this.log("onPairListDevices called");
         
@@ -80,7 +89,7 @@ class MyDriver extends Driver {
             const deviceName = baseSession.ID;  // Use ID as the device name
             const deviceMac = baseSession.IP;   // Use IP as the device MAC (just an example)
 
-            // If device name is found, add it to the devices list
+            // If device name and IP are found, add it to the devices list
             if (deviceName && deviceMac) {
                 devices.push({
                     name: deviceName,
@@ -99,6 +108,10 @@ class MyDriver extends Driver {
         }
     }
 
+    /**
+     * Handles the check event during pairing.
+     * This function checks the connectivity to the V2C Wallbox.
+     */
     async onCheck(data) {
         this.log("onCheck called with data:", data);
         let v2cApi = new v2cAPI(data.ip);

@@ -7,6 +7,6 @@
     "getable": true,
     "setable": false,
     "uiComponent": "sensor",
-    "decimals": 3,
+    "decimals": 1,
     "icon": "/assets/charge_energy.svg"
 }

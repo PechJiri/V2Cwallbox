@@ -23,11 +23,23 @@
       },
       "units": {
         "en": "W"
+      },
+      "insights": {
+        "enabled": true,
+        "title": {
+          "en": "Charging Power"
+        }
       }
     },
     "measure_charge_state": {
       "title": {
         "en": "Charge State"
+      },
+      "insights": {
+        "enabled": true,
+        "title": {
+          "en": "Charge State"
+        }
       }
     },
     "measure_voltage_installation": {
@@ -36,6 +48,12 @@
       },
       "units": {
         "en": "V"
+      },
+      "insights": {
+        "enabled": true,
+        "title": {
+          "en": "Voltage Installation"
+        }
       }
     },
     "measure_charge_energy": {
@@ -44,11 +62,23 @@
       },
       "units": {
         "en": "kWh"
+      },
+      "insights": {
+        "enabled": true,
+        "title": {
+          "en": "Charged Energy"
+        }
       }
     },
     "measure_slave_error": {
       "title": {
         "en": "Communication Error"
+      },
+      "insights": {
+        "enabled": true,
+        "title": {
+          "en": "Communication Error"
+        }
       }
     },
     "measure_charge_time": {
@@ -57,16 +87,34 @@
       },
       "units": {
         "en": "min"
+      },
+      "insights": {
+        "enabled": true,
+        "title": {
+          "en": "Car Connected Time"
+        }
       }
     },
     "measure_paused": {
       "title": {
         "en": "Paused"
+      },
+      "insights": {
+        "enabled": true,
+        "title": {
+          "en": "Paused"
+        }
       }
     },
     "measure_locked": {
       "title": {
         "en": "Locked"
+      },
+      "insights": {
+        "enabled": true,
+        "title": {
+          "en": "Locked"
+        }
       }
     },
     "measure_intensity": {
@@ -75,19 +123,36 @@
       },
       "units": {
         "en": "A"
+      },
+      "insights": {
+        "enabled": true,
+        "title": {
+          "en": "Intensity"
+        }
       }
     },
     "measure_dynamic": {
       "title": {
         "en": "Dynamic"
+      },
+      "insights": {
+        "enabled": true,
+        "title": {
+          "en": "Dynamic"
+        }
       }
     }
   },
-  "icon": "/drivers/v2c-wallbox/icon.svg",
+  "platforms": [
+    "local"
+  ],
+  "connectivity": [
+    "lan"
+  ],
   "images": {
-    "small": "/drivers/v2c-wallbox/assets/images/small.png",
-    "large": "/drivers/v2c-wallbox/assets/images/large.png",
-    "xlarge": "/drivers/v2c-wallbox/assets/images/xlarge.png"
+    "small": "{{driverAssetsPath}}/images/small.png",
+    "large": "{{driverAssetsPath}}/images/large.png",
+    "xlarge": "{{driverAssetsPath}}/images/xlarge.png"
   },
   "pair": [
     {

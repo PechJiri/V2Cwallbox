@@ -4,6 +4,7 @@
     "en": "Car starts charging"
   },
   "id": "car-start-charging",
+  "driver_id": "v2c-wallbox",
   "capabilities": [
     "measure_charge_state"
   ],
@@ -14,5 +15,8 @@
   },
   "description": {
     "en": "This flow triggers when the car starts charging at the Wallbox."
+  },
+  "titleFormatted": {
+    "en": "Car starts charging"
   }
 }
