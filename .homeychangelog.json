@@ -13,5 +13,8 @@
   },
   "1.0.4": {
     "en": "Fixed insights"
+  },
+  "1.1.0": {
+    "en": "Added THEN cards to control your wallbox"
   }
 }
