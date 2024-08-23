@@ -333,7 +333,7 @@
             "filter": "driver_id=v2c-wallbox"
           },
           {
-            "name": "min_intensity",
+            "name": "MinIntensity",
             "type": "number",
             "title": {
               "en": "Minimum Intensity"
@@ -346,7 +346,7 @@
           "en": "Set Minimum Intensity in Dynamic Mode"
         },
         "titleFormatted": {
-          "en": "Set Minimum Intensity in Dynamic Mode to [[min_intensity]] Amps"
+          "en": "Set Minimum Intensity in Dynamic Mode to [[MinIntensity]] Amps"
         }
       },
       {
@@ -358,7 +358,7 @@
             "filter": "driver_id=v2c-wallbox"
           },
           {
-            "name": "max_intensity",
+            "name": "MaxIntensity",
             "type": "number",
             "title": {
               "en": "Maximum Intensity"
@@ -371,7 +371,7 @@
           "en": "Set Maximum Intensity in Dynamic Mode"
         },
         "titleFormatted": {
-          "en": "Set Maximum Intensity in Dynamic Mode to [[max_intensity]] Amps"
+          "en": "Set Maximum Intensity in Dynamic Mode to [[MaxIntensity]] Amps"
         }
       }
     ]
@@ -708,11 +708,11 @@
               "en": "Set Minimum Intensity For Dynamic Mode"
             },
             "titleFormatted": {
-              "en": "Set Minimum Intensity For Dynamic Mode to {{min_intensity}} Amps"
+              "en": "Set Minimum Intensity For Dynamic Mode to {{MinIntensity}} Amps"
             },
             "args": [
               {
-                "name": "min_intensity",
+                "name": "MinIntensity",
                 "type": "number",
                 "title": {
                   "en": "Minimum Intensity"
@@ -728,11 +728,11 @@
               "en": "Set Maximum Intensity"
             },
             "titleFormatted": {
-              "en": "Set Maximum Intensity For Dynamic Mode to {{max_intensity}} Amps"
+              "en": "Set Maximum Intensity For Dynamic Mode to {{MaxIntensity}} Amps"
             },
             "args": [
               {
-                "name": "max_intensity",
+                "name": "MaxIntensity",
                 "type": "number",
                 "title": {
                   "en": "Maximum Intensity"

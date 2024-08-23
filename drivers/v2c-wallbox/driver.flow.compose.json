@@ -213,7 +213,7 @@
       "id": "set_min_intensity",
       "args": [
         {
-          "name": "min_intensity",
+          "name": "MinIntensity",
           "type": "number",
           "title": {
             "en": "Minimum Intensity"
@@ -226,14 +226,14 @@
         "en": "Set Minimum Intensity in Dynamic Mode"
       },
       "titleFormatted": {
-        "en": "Set Minimum Intensity in Dynamic Mode to [[min_intensity]] Amps"
+        "en": "Set Minimum Intensity in Dynamic Mode to [[MinIntensity]] Amps"
       }
     },
     {
       "id": "set_max_intensity",
       "args": [
         {
-          "name": "max_intensity",
+          "name": "MaxIntensity",
           "type": "number",
           "title": {
             "en": "Maximum Intensity"
@@ -246,7 +246,7 @@
         "en": "Set Maximum Intensity in Dynamic Mode"
       },
       "titleFormatted": {
-        "en": "Set Maximum Intensity in Dynamic Mode to [[max_intensity]] Amps"
+        "en": "Set Maximum Intensity in Dynamic Mode to [[MaxIntensity]] Amps"
       }
     }
   ]

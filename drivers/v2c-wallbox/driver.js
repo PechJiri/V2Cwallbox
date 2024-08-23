@@ -40,8 +40,12 @@ class MyDriver extends Driver {
 
     _registerActionCard(cardId, setting) {
         this.homey.flow.getActionCard(cardId).registerRunListener(async (args, state) => {
-            this.log(`Running action card ${cardId} with setting ${setting} and value ${args[setting.toLowerCase()]}`);
-            return this.setWallboxSetting(setting, args[setting.toLowerCase()]);
+            let value = args[setting.toLowerCase()];
+            if (value === undefined) {
+                value = args[setting];
+            }
+            this.log(`Running action card ${cardId} with setting ${setting} and value ${value}`);
+            return this.setWallboxSetting(setting, value);
         });
     }
 

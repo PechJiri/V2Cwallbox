@@ -71,7 +71,14 @@ class MyDevice extends Device {
 
     _registerActionCard(cardId, setting) {
         this.homey.flow.getActionCard(cardId).registerRunListener(async (args, state) => {
-            return this.v2cApi.setParameter(setting, args[setting.toLowerCase()]);
+            // Zkontrolujeme obě možnosti: s malými písmeny a s velkými písmeny
+            let value = args[setting.toLowerCase()];
+            if (value === undefined) {
+                value = args[setting];
+            }
+
+            console.log(`Attempting to set ${setting} with value: ${value}`);
+            return this.v2cApi.setParameter(setting, value);
         });
     }
 

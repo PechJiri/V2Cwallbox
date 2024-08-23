@@ -13,11 +13,14 @@ class v2cAPI {
             console.log(`Initializing session with URL: ${url}`);
 
             const response = await fetch(url);
+            const responseData = await response.json();
+            console.log('Response from session initialization:', responseData);
+
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            const data = await response.json();
-            console.log('Session initialized, data received:', data);
+
+            console.log('Session initialized, data received:', responseData);
             return true;
         } catch (error) {
             console.error('Failed to initialize session:', error);
@@ -31,10 +34,13 @@ class v2cAPI {
             console.log(`Fetching data from URL: ${url}`);
 
             const response = await fetch(url);
+            const data = await response.json();
+            console.log('Response from getData:', data);
+
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            const data = await response.json();
+
             return data;
         } catch (error) {
             console.error('Failed to fetch data:', error);
@@ -66,7 +72,6 @@ class v2cAPI {
                 10: "10"
             };
 
-            // Process and validate the data
             const processedData = {
                 chargeState: chargeStateMap[data.ChargeState] || "0",
                 chargePower: data.ChargePower !== undefined ? data.ChargePower : 0,
@@ -84,7 +89,6 @@ class v2cAPI {
             console.log('Mapping SlaveError', data.SlaveError, 'to', processedData.slaveError);
             console.log('Processed Data:', processedData);
 
-            // Additional validation to check if essential data is present
             const isValidDeviceData = processedData.chargeState !== "0" || 
                                       processedData.voltageInstallation !== 0 || 
                                       processedData.chargePower !== 0;
@@ -107,13 +111,15 @@ class v2cAPI {
             console.log(`Sending request to set ${parameter}: ${url}`);
 
             const response = await fetch(url, { method: 'GET' });
+            const responseData = await response.text();
+            console.log(`Response from setting ${parameter}:`, responseData);
 
             if (!response.ok) {
                 throw new Error(`Failed to set ${parameter}: ${response.statusText}`);
             }
 
             console.log(`${parameter} successfully set to ${value}`);
-            return true;
+            return responseData;
         } catch (error) {
             console.error(`Error setting ${parameter}:`, error);
             throw error;
