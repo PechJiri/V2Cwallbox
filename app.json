@@ -48,6 +48,7 @@
   "source": "https://github.com/PechJiri/V2Cwallbox",
   "homepage": "https://v2charge.com/",
   "support": "mailto:jiri.pech@centrum.cz",
+  "homeyCommunityTopicId": "114910",
   "flow": {
     "triggers": [
       {
