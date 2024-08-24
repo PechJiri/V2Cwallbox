@@ -48,6 +48,7 @@ class MyDevice extends Device {
         this.homey.flow.getDeviceTriggerCard('car-connected');
         this.homey.flow.getDeviceTriggerCard('car-start-charging');
         this.homey.flow.getDeviceTriggerCard('car-disconnected');
+        this.homey.flow.getDeviceTriggerCard('slave_error_changed');  // Přidána nová karta
 
         this._registerActionFlowCards();
         this._registerConditionFlowCards();
@@ -60,6 +61,7 @@ class MyDevice extends Device {
         this._registerActionCard('set_dynamic', 'Dynamic');
         this._registerActionCard('set_min_intensity', 'MinIntensity');
         this._registerActionCard('set_max_intensity', 'MaxIntensity');
+        this._registerActionCard('set_dynamic_power_mode', 'DynamicPowerMode');
     }
 
     _registerConditionFlowCards() {
@@ -71,10 +73,14 @@ class MyDevice extends Device {
 
     _registerActionCard(cardId, setting) {
         this.homey.flow.getActionCard(cardId).registerRunListener(async (args, state) => {
-            // Zkontrolujeme obě možnosti: s malými písmeny a s velkými písmeny
             let value = args[setting.toLowerCase()];
             if (value === undefined) {
                 value = args[setting];
+            }
+
+            if (value === undefined) {
+                this.error(`Value for setting ${setting} is undefined. Cannot proceed.`);
+                throw new Error(`Value for ${setting} is undefined`);
             }
 
             console.log(`Attempting to set ${setting} with value: ${value}`);
@@ -151,6 +157,26 @@ class MyDevice extends Device {
         if (chargeState === 0) {
             this.homey.flow.getDeviceTriggerCard('car-disconnected').trigger(this, {}, {});
         }
+    }
+
+    _triggerSlaveErrorChangedFlow(newError) {
+        const slaveErrorMap = {
+            "00": "No Error",
+            "01": "Communication",
+            "02": "Reading",
+            "03": "Slave",
+            "04": "Waiting WiFi",
+            "05": "Waiting communication",
+            "06": "Wrong IP",
+            "07": "Slave not found",
+            "08": "Wrong Slave",
+            "09": "No response",
+            "10": "Clamp not connected"
+        };
+
+        const errorDescription = slaveErrorMap[newError] || "Unknown Error";
+        this.homey.flow.getDeviceTriggerCard('slave_error_changed').trigger(this, { error_description: errorDescription });
+        this.log(`Triggered Slave Error Changed flow with error: ${errorDescription}`);
     }
 
     async onSettings({ oldSettings, newSettings, changedKeys }) {

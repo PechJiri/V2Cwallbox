@@ -26,6 +26,15 @@
       "description": {
         "en": "This flow triggers when the car starts charging at the Wallbox."
       }
+    },
+    {
+      "id": "slave_error_changed",
+      "title": {
+        "en": "Slave Error Changed"
+      },
+      "description": {
+        "en": "This flow triggers when the Slave Error changes."
+      }
     }
   ],
   "conditions": [
@@ -247,6 +256,32 @@
       },
       "titleFormatted": {
         "en": "Set Maximum Intensity in Dynamic Mode to [[MaxIntensity]] Amps"
+      }
+    },
+    {
+      "id": "set_dynamic_power_mode",
+      "args": [
+        {
+          "name": "DynamicPowerMode",
+          "type": "dropdown",
+          "title": {
+            "en": "Dynamic Power Mode"
+          },
+          "values": [
+            { "id": "0", "label": { "en": "Timed Power Enabled" } },
+            { "id": "1", "label": { "en": "Timed Power Disabled" } },
+            { "id": "2", "label": { "en": "FV Exclusive mode" } },
+            { "id": "3", "label": { "en": "FV+Min Power mode" } },
+            { "id": "4", "label": { "en": "Grid+FV mode" } },
+            { "id": "5", "label": { "en": "Without Charge mode" } }
+          ]
+        }
+      ],
+      "title": {
+        "en": "Set Dynamic Power Mode"
+      },
+      "titleFormatted": {
+        "en": "Set Dynamic Power Mode to [[DynamicPowerMode]]"
       }
     }
   ]

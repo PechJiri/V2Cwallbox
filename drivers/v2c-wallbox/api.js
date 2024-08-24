@@ -149,6 +149,11 @@ class v2cAPI {
     async setMaxIntensity(maxIntensity) {
         return this.setParameter('MaxIntensity', maxIntensity);
     }
+
+    async setDynamicPowerMode(dynamicPowerMode) {
+        console.log(`Setting DynamicPowerMode to ${dynamicPowerMode}`);
+        return this.setParameter('DynamicPowerMode', dynamicPowerMode);
+    }
 }
 
 module.exports = { v2cAPI };
