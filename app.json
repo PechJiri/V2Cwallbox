@@ -48,7 +48,7 @@
   "source": "https://github.com/PechJiri/V2Cwallbox",
   "homepage": "https://v2charge.com/",
   "support": "mailto:jiri.pech@centrum.cz",
-  "homeyCommunityTopicId": "114910",
+  "homeyCommunityTopicId": 114910,
   "flow": {
     "triggers": [
       {
@@ -202,6 +202,38 @@
         "description": {
           "en": "This condition is true when the power is below the specified threshold."
         }
+      },
+      {
+        "id": "charging-is-paused",
+        "title": {
+          "en": "Charging is paused"
+        },
+        "description": {
+          "en": "This condition is true when the charging is paused."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=v2c-wallbox"
+          }
+        ]
+      },
+      {
+        "id": "charging-is-not-paused",
+        "title": {
+          "en": "Charging is not paused"
+        },
+        "description": {
+          "en": "This condition is true when the charging is not paused."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=v2c-wallbox"
+          }
+        ]
       }
     ],
     "actions": [

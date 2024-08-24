@@ -69,6 +69,8 @@ class MyDevice extends Device {
         this._registerConditionCard('car-is-charging', 'measure_charge_state', "2");
         this._registerPowerConditionCard('power-greater-than', '>');
         this._registerPowerConditionCard('power-less-than', '<');
+        this._registerConditionCard('charging-is-paused', 'measure_paused', true);
+        this._registerConditionCard('charging-is-not-paused', 'measure_paused', false);
     }
 
     _registerActionCard(cardId, setting) {

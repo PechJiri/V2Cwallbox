@@ -99,6 +99,26 @@
       "description": {
         "en": "This condition is true when the power is below the specified threshold."
       }
+    },
+    {
+      "id": "charging-is-paused",
+      "title": {
+        "en": "Charging is paused"
+      },
+      "description": {
+        "en": "This condition is true when the charging is paused."
+      },
+      "args": []
+    },
+    {
+      "id": "charging-is-not-paused",
+      "title": {
+        "en": "Charging is not paused"
+      },
+      "description": {
+        "en": "This condition is true when the charging is not paused."
+      },
+      "args": []
     }
   ],
   "actions": [
