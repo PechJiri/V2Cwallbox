@@ -19,5 +19,8 @@
   },
   "1.1.1": {
     "en": "Fixes in THEN cards"
+  },
+  "1.2.0": {
+    "en": "Added widget"
   }
 }
