@@ -1,0 +1,17 @@
+{
+  "name": {
+    "en": "V2C Wallbox Status"
+  },
+  "settings": [],
+  "height": "50",
+  "api": {
+    "getStatus": {
+      "method": "GET",
+      "path": "/status"
+    },
+    "setPaused": {
+      "method": "POST",
+      "path": "/paused"
+    }
+  }
+}

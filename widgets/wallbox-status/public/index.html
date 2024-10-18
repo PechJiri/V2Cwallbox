@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V2C Wallbox Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--homey-background-color);
+            color: var(--homey-text-color);
+        }
+        #container {
+            display: flex;
+            width: 100%;
+            max-width: 400px;
+            height: 200px;
+            background-color: var(--homey-background-color);
+            border-radius: var(--homey-border-radius-default);
+        }
+        #imageContainer {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            border-radius: var(--homey-border-radius-default) 0 0 var(--homey-border-radius-default);
+        }
+        #deviceImage {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+        }
+        #infoContainer {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: var(--homey-su-2);
+        }
+        .label {
+            font-size: var(--homey-font-size-small);
+            color: var(--homey-text-color-light);
+            margin-bottom: var(--homey-su-1);
+            text-align: center;
+            width: 100%;
+        }
+        .value {
+            font-size: var(--homey-font-size-large);
+            font-weight: var(--homey-font-weight-bold);
+            margin-bottom: var(--homey-su-2);
+            text-align: center;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="imageContainer">
+            <img id="deviceImage" src="large.png" alt="V2C Wallbox">
+        </div>
+        <div id="infoContainer">
+            <div class="label">Charger state</div>
+            <div id="wallboxState" class="value">Loading...</div>
+            <div class="label">kW | kWh</div>
+            <div id="powerInfo" class="value">
+                <span id="powerKW">-.-</span>
+                <span>|</span>
+                <span id="powerKWh">-.-</span>
+            </div>
+        </div>
+    </div>
+    <script>
+        let Homey;
+        let isUpdating = false;
+        let updateInterval = 5000; // Výchozí hodnota je 5 sekund
+        let intervalId;
+
+        function onHomeyReady(_Homey) {
+            Homey = _Homey;
+            console.log('Homey is ready');
+            init();
+            Homey.ready();
+        }
+
+        function getChargeStateText(state) {
+            const stateMap = {
+                "0": "EV not connected",
+                "1": "EV connected",
+                "2": "Charging"
+            };
+            return stateMap[state] || "Unknown";
+        }
+
+        function updateUI(status) {
+            console.log('Updating UI with status:', status);
+            
+            document.getElementById('wallboxState').textContent = getChargeStateText(status.chargeState);
+            document.getElementById('powerKW').textContent = (status.chargePower / 1000).toFixed(1);
+            document.getElementById('powerKWh').textContent = status.chargeEnergy.toFixed(1);
+        }
+
+        function updateData() {
+            if (isUpdating) return;
+            isUpdating = true;
+            console.log('Fetching data...');
+
+            Homey.api('GET', '/status')
+                .then(result => {
+                    console.log('Data received from API:', result);
+                    updateUI(result);
+                })
+                .catch(error => {
+                    console.error('Error fetching wallbox status:', error);
+                })
+                .finally(() => {
+                    isUpdating = false;
+                });
+        }
+
+        function init() {
+            console.log('Initializing widget...');
+            loadUpdateInterval(); // Načteme frekvenci aktualizace
+            updateData();
+            intervalId = setInterval(updateData, updateInterval);
+        }
+
+        function loadUpdateInterval() {
+            // Zkontrolujeme nastavení zařízení, pokud je definováno
+            const settings = Homey.getSettings();
+            if (settings && settings.update_interval) {
+                updateInterval = parseInt(settings.update_interval, 10) * 1000; // Převést na milisekundy
+                console.log('Update interval set to:', updateInterval, 'ms');
+            } else {
+                console.log('Using default update interval of 5000 ms');
+            }
+        }
+
+        if (window.Homey) {
+            onHomeyReady(window.Homey);
+        } else {
+            document.addEventListener('homey_ready', function() {
+                onHomeyReady(window.Homey);
+            });
+        }
+    </script>
+</body>
+</html>
