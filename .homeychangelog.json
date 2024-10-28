@@ -25,5 +25,8 @@
   },
   "1.2.1": {
     "en": "Added monthly a yearly charged kWh, better logic on currently charged kWh"
+  },
+  "1.2.2": {
+    "en": "Fixed new capabilities"
   }
 }
