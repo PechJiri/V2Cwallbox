@@ -22,5 +22,8 @@
   },
   "1.2.0": {
     "en": "Added widget"
+  },
+  "1.2.1": {
+    "en": "Added monthly a yearly charged kWh, better logic on currently charged kWh"
   }
 }
