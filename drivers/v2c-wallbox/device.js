@@ -118,80 +118,111 @@ class MyDevice extends Device {
     async getProductionData() {
         try {
             const baseSession = await this.v2cApi.getData();
-            const deviceData = this.v2cApi.processData(baseSession);
-
-            const chargeStateMap = { 0: "0", 1: "1", 2: "2" };
-            const slaveErrorMap = {
-                0: "00", 1: "01", 2: "02", 3: "03", 4: "04",
-                5: "05", 6: "06", 7: "07", 8: "08", 9: "09", 10: "10"
-            };
-
-            await this.setCapabilityValue('measure_charge_state', chargeStateMap[deviceData.chargeState] || "0");
+            const deviceData = await this.v2cApi.processData(baseSession);
+    
+            if (!deviceData) {
+                throw new Error('No valid device data received');
+            }
+    
+            console.log('Device data received:', deviceData);
+    
+            // Update basic capabilities
+            await this.setCapabilityValue('measure_charge_state', deviceData.chargeState);
             await this.setCapabilityValue('measure_charge_power', deviceData.chargePower);
             await this.setCapabilityValue('measure_voltage_installation', deviceData.voltageInstallation);
-            await this.setCapabilityValue('measure_slave_error', slaveErrorMap[deviceData.slaveError] || "00");
-
-            // Aktuální datum pro měsíční a roční sledování
-            const currentYear = new Date().getFullYear();
-            const currentMonth = new Date().getMonth() + 1; // Měsíc je indexován od 0
-
-            // Aktualizace měsíční a roční energie při každém nabíjecím cyklu
-            if (deviceData.chargeState === 2) { // Auto nabíjí
-                // Kumulativní energie pro aktuální nabíjecí cyklus
-                const previousEnergy = await this.getStoreValue('accumulatedChargeEnergy') || 0;
-                const newAccumulatedEnergy = previousEnergy + deviceData.chargeEnergy;
-
-                await this.setStoreValue('accumulatedChargeEnergy', newAccumulatedEnergy);
-                await this.setCapabilityValue('measure_charge_energy', newAccumulatedEnergy);
-
-                // Kumulace měsíční energie
-                let storedMonthlyData = await this.getStoreValue('monthlyEnergyData') || { month: currentMonth, energy: 0 };
-                if (storedMonthlyData.month !== currentMonth) {
-                    // Pokud jsme v novém měsíci, resetujeme měsíční energii
-                    storedMonthlyData = { month: currentMonth, energy: deviceData.chargeEnergy };
-                } else {
-                    // Jinak přičítáme energii k měsíční kumulaci
-                    storedMonthlyData.energy += deviceData.chargeEnergy;
-                }
-                await this.setStoreValue('monthlyEnergyData', storedMonthlyData);
-                await this.setCapabilityValue('measure_monthly_energy', storedMonthlyData.energy);
-
-                // Kumulace roční energie
-                let storedYearlyData = await this.getStoreValue('yearlyEnergyData') || { year: currentYear, energy: 0 };
-                if (storedYearlyData.year !== currentYear) {
-                    // Pokud jsme v novém roce, resetujeme roční energii
-                    storedYearlyData = { year: currentYear, energy: deviceData.chargeEnergy };
-                } else {
-                    // Jinak přičítáme energii k roční kumulaci
-                    storedYearlyData.energy += deviceData.chargeEnergy;
-                }
-                await this.setStoreValue('yearlyEnergyData', storedYearlyData);
-                await this.setCapabilityValue('measure_yearly_energy', storedYearlyData.energy);
+            await this.setCapabilityValue('measure_slave_error', deviceData.slaveError);
+            await this.setCapabilityValue('measure_charge_time', Math.floor(deviceData.chargeTime / 60));
+            await this.setCapabilityValue('measure_paused', deviceData.paused);
+            await this.setCapabilityValue('measure_locked', deviceData.measure_locked);
+            await this.setCapabilityValue('measure_intensity', deviceData.intensity);
+            await this.setCapabilityValue('measure_dynamic', deviceData.dynamic);
+    
+            // Get current date information
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth() + 1;
+    
+            // Get previous state to detect state changes
+            const previousState = await this.getStoreValue('previousChargeState') || "0";
+            const currentState = deviceData.chargeState;
+            
+            console.log('Previous state:', previousState, 'Current state:', currentState);
+    
+            // Handle charge energy based on state and state changes
+            if (currentState === "2") { // Currently charging
+                const storedBaseEnergy = await this.getStoreValue('baseChargeEnergy') || 0;
                 
-            } else if (deviceData.chargeState === 1) { // Auto připojené, ale pauznuto
-                // Uchováme poslední známou kumulovanou hodnotu pro aktuální cyklus nabíjení
-                const previousEnergy = await this.getStoreValue('accumulatedChargeEnergy') || 0;
-                await this.setCapabilityValue('measure_charge_energy', previousEnergy);
-            } else { // Auto odpojeno
-                // Při odpojení vozidla resetujeme kumulativní energii pro aktuální cyklus
-                await this.setStoreValue('accumulatedChargeEnergy', 0);
+                if (previousState !== "2") {
+                    // Just started charging - store current API value as starting point
+                    console.log('Charging started. Current API energy:', deviceData.chargeEnergy);
+                    await this.setStoreValue('chargingStartEnergy', deviceData.chargeEnergy);
+                    await this.setCapabilityValue('measure_charge_energy', storedBaseEnergy + deviceData.chargeEnergy);
+                } else {
+                    // Continued charging - use current API value
+                    console.log('Continuing to charge. Base energy:', storedBaseEnergy, 'Current API energy:', deviceData.chargeEnergy);
+                    await this.setCapabilityValue('measure_charge_energy', storedBaseEnergy + deviceData.chargeEnergy);
+                }
+            } else if (currentState === "1" && previousState === "2") {
+                // Just stopped charging - store the accumulated energy
+                const storedBaseEnergy = await this.getStoreValue('baseChargeEnergy') || 0;
+                const finalEnergy = storedBaseEnergy + deviceData.chargeEnergy;
+                console.log('Charging paused. Storing accumulated energy:', finalEnergy);
+                await this.setStoreValue('baseChargeEnergy', finalEnergy);
+                await this.setCapabilityValue('measure_charge_energy', finalEnergy);
+            } else if (currentState === "1") {
+                // Still connected but not charging - maintain last value
+                const storedEnergy = await this.getStoreValue('baseChargeEnergy') || 0;
+                console.log('Connected but not charging. Maintaining stored energy:', storedEnergy);
+                await this.setCapabilityValue('measure_charge_energy', storedEnergy);
+            } else if (currentState === "0") {
+                // Disconnected - reset everything
+                console.log('Car disconnected, resetting all energy values');
+                await this.setStoreValue('baseChargeEnergy', 0);
+                await this.setStoreValue('chargingStartEnergy', 0);
                 await this.setCapabilityValue('measure_charge_energy', 0);
             }
-
-            await this.setCapabilityValue('measure_charge_time', Math.floor(deviceData.chargeTime / 60));
-            await this.setCapabilityValue('measure_paused', Boolean(deviceData.paused));
-            await this.setCapabilityValue('measure_locked', Boolean(deviceData.measure_locked));
-            await this.setCapabilityValue('measure_intensity', Number(deviceData.intensity));
-            await this.setCapabilityValue('measure_dynamic', Boolean(deviceData.dynamic));
-
-            this._triggerFlowCards(deviceData.chargeState);
-
+    
+            // Handle monthly and yearly energy totals
+            if (currentState === "1" && previousState === "2") {
+                // Only update monthly/yearly totals when charging stops
+                const energyIncrement = deviceData.chargeEnergy;
+                
+                // Monthly energy
+                let monthlyData = await this.getStoreValue('monthlyEnergyData') || { month: currentMonth, energy: 0 };
+                if (monthlyData.month !== currentMonth) {
+                    monthlyData = { month: currentMonth, energy: energyIncrement };
+                } else {
+                    monthlyData.energy += energyIncrement;
+                }
+                await this.setStoreValue('monthlyEnergyData', monthlyData);
+                await this.setCapabilityValue('measure_monthly_energy', monthlyData.energy);
+    
+                // Yearly energy
+                let yearlyData = await this.getStoreValue('yearlyEnergyData') || { year: currentYear, energy: 0 };
+                if (yearlyData.year !== currentYear) {
+                    yearlyData = { year: currentYear, energy: energyIncrement };
+                } else {
+                    yearlyData.energy += energyIncrement;
+                }
+                await this.setStoreValue('yearlyEnergyData', yearlyData);
+                await this.setCapabilityValue('measure_yearly_energy', yearlyData.energy);
+            }
+    
+            // Store current state for next comparison
+            await this.setStoreValue('previousChargeState', currentState);
+    
+            // Update device availability
             if (!this.getAvailable()) {
                 await this.setAvailable();
             }
+    
+            // Trigger flow cards
+            this._triggerFlowCards(currentState);
+    
         } catch (error) {
-            this.error(`Unavailable (${error})`);
-            this.setUnavailable(`Error retrieving data (${error})`);
+            this.error(`Error in getProductionData: ${error.message}`);
+            console.error('Full error:', error);
+            this.setUnavailable(`Error retrieving data: ${error.message}`);
         }
     }
 
