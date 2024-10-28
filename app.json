@@ -1008,6 +1008,21 @@
       "uiComponent": "sensor",
       "icon": "/assets/locked.svg"
     },
+    "measure_monthly_energy": {
+      "type": "number",
+      "title": {
+        "en": "Charged energy during this month (kWh)"
+      },
+      "units": {
+        "en": "kWh"
+      },
+      "uiComponent": "sensor",
+      "getable": true,
+      "setable": false,
+      "decimals": 1,
+      "insights": true,
+      "icon": "/assets/charge_energy.svg"
+    },
     "measure_paused": {
       "type": "boolean",
       "title": {
@@ -1110,6 +1125,21 @@
       "decimals": 0,
       "insights": true,
       "icon": "/assets/voltage_installation.svg"
+    },
+    "measure_yearly_energy": {
+      "type": "number",
+      "title": {
+        "en": "Charged energy during this year (kWh)"
+      },
+      "units": {
+        "en": "kWh"
+      },
+      "uiComponent": "sensor",
+      "getable": true,
+      "setable": false,
+      "decimals": 1,
+      "insights": true,
+      "icon": "/assets/charge_energy.svg"
     }
   }
 }

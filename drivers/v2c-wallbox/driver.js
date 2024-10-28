@@ -117,7 +117,24 @@ class MyDriver extends Driver {
 
             if (deviceName && deviceMac) {
                 this.log(`Device found: Name - ${deviceName}, MAC - ${deviceMac}`);
-                return [{ name: deviceName, data: { id: deviceMac } }];
+                return [{
+                    name: deviceName,
+                    data: { id: deviceMac },
+                    capabilities: [
+                        'measure_charge_state',
+                        'measure_charge_power',
+                        'measure_voltage_installation',
+                        'measure_charge_energy',
+                        'measure_slave_error',
+                        'measure_charge_time',
+                        'measure_paused',
+                        'measure_locked',
+                        'measure_intensity',
+                        'measure_dynamic',
+                        'measure_monthly_energy',   // Přidáno: nové měsíční capability
+                        'measure_yearly_energy'     // Přidáno: nové roční capability
+                    ]
+                }];
             } else {
                 this.log("No valid device data found.");
                 return [];

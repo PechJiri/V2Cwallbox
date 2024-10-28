@@ -31,7 +31,9 @@ class MyDevice extends Device {
             'measure_paused',
             'measure_locked',
             'measure_intensity',
-            'measure_dynamic'
+            'measure_dynamic',
+            'measure_yearly_energy',      // Přidáno: roční kumulativní energie
+            'measure_monthly_energy'      // Přidáno: měsíční kumulativní energie
         ];
 
         for (const capability of capabilities) {
@@ -127,8 +129,54 @@ class MyDevice extends Device {
             await this.setCapabilityValue('measure_charge_state', chargeStateMap[deviceData.chargeState] || "0");
             await this.setCapabilityValue('measure_charge_power', deviceData.chargePower);
             await this.setCapabilityValue('measure_voltage_installation', deviceData.voltageInstallation);
-            await this.setCapabilityValue('measure_charge_energy', deviceData.chargeEnergy);
             await this.setCapabilityValue('measure_slave_error', slaveErrorMap[deviceData.slaveError] || "00");
+
+            // Aktuální datum pro měsíční a roční sledování
+            const currentYear = new Date().getFullYear();
+            const currentMonth = new Date().getMonth() + 1; // Měsíc je indexován od 0
+
+            // Aktualizace měsíční a roční energie při každém nabíjecím cyklu
+            if (deviceData.chargeState === 2) { // Auto nabíjí
+                // Kumulativní energie pro aktuální nabíjecí cyklus
+                const previousEnergy = await this.getStoreValue('accumulatedChargeEnergy') || 0;
+                const newAccumulatedEnergy = previousEnergy + deviceData.chargeEnergy;
+
+                await this.setStoreValue('accumulatedChargeEnergy', newAccumulatedEnergy);
+                await this.setCapabilityValue('measure_charge_energy', newAccumulatedEnergy);
+
+                // Kumulace měsíční energie
+                let storedMonthlyData = await this.getStoreValue('monthlyEnergyData') || { month: currentMonth, energy: 0 };
+                if (storedMonthlyData.month !== currentMonth) {
+                    // Pokud jsme v novém měsíci, resetujeme měsíční energii
+                    storedMonthlyData = { month: currentMonth, energy: deviceData.chargeEnergy };
+                } else {
+                    // Jinak přičítáme energii k měsíční kumulaci
+                    storedMonthlyData.energy += deviceData.chargeEnergy;
+                }
+                await this.setStoreValue('monthlyEnergyData', storedMonthlyData);
+                await this.setCapabilityValue('measure_monthly_energy', storedMonthlyData.energy);
+
+                // Kumulace roční energie
+                let storedYearlyData = await this.getStoreValue('yearlyEnergyData') || { year: currentYear, energy: 0 };
+                if (storedYearlyData.year !== currentYear) {
+                    // Pokud jsme v novém roce, resetujeme roční energii
+                    storedYearlyData = { year: currentYear, energy: deviceData.chargeEnergy };
+                } else {
+                    // Jinak přičítáme energii k roční kumulaci
+                    storedYearlyData.energy += deviceData.chargeEnergy;
+                }
+                await this.setStoreValue('yearlyEnergyData', storedYearlyData);
+                await this.setCapabilityValue('measure_yearly_energy', storedYearlyData.energy);
+                
+            } else if (deviceData.chargeState === 1) { // Auto připojené, ale pauznuto
+                // Uchováme poslední známou kumulovanou hodnotu pro aktuální cyklus nabíjení
+                const previousEnergy = await this.getStoreValue('accumulatedChargeEnergy') || 0;
+                await this.setCapabilityValue('measure_charge_energy', previousEnergy);
+            } else { // Auto odpojeno
+                // Při odpojení vozidla resetujeme kumulativní energii pro aktuální cyklus
+                await this.setStoreValue('accumulatedChargeEnergy', 0);
+                await this.setCapabilityValue('measure_charge_energy', 0);
+            }
 
             await this.setCapabilityValue('measure_charge_time', Math.floor(deviceData.chargeTime / 60));
             await this.setCapabilityValue('measure_paused', Boolean(deviceData.paused));
