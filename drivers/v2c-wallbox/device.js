@@ -114,9 +114,36 @@ class MyDevice extends Device {
             await this.getProductionData();
         }, 1000 * interval);
     }
-
+   
+    async resetMonthlyAndYearlyDataIfNeeded() {
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1;
+    
+        // Reset monthly data
+        let monthlyData = await this.getStoreValue('monthlyEnergyData') || { month: currentMonth, energy: 0 };
+        if (monthlyData.month !== currentMonth) {
+            // New month, reset energy for monthly data
+            monthlyData = { month: currentMonth, energy: 0 };
+            await this.setStoreValue('monthlyEnergyData', monthlyData);
+            await this.setCapabilityValue('measure_monthly_energy', 0);
+        }
+    
+        // Reset yearly data
+        let yearlyData = await this.getStoreValue('yearlyEnergyData') || { year: currentYear, energy: 0 };
+        if (yearlyData.year !== currentYear) {
+            // New year, reset energy for yearly data
+            yearlyData = { year: currentYear, energy: 0 };
+            await this.setStoreValue('yearlyEnergyData', yearlyData);
+            await this.setCapabilityValue('measure_yearly_energy', 0);
+        }
+    }
+    
     async getProductionData() {
         try {
+            // Kontrola a případný reset měsíčních a ročních dat
+            await this.resetMonthlyAndYearlyDataIfNeeded();
+    
             const baseSession = await this.v2cApi.getData();
             const deviceData = await this.v2cApi.processData(baseSession);
     
@@ -186,24 +213,16 @@ class MyDevice extends Device {
             if (currentState === "1" && previousState === "2") {
                 // Only update monthly/yearly totals when charging stops
                 const energyIncrement = deviceData.chargeEnergy;
-                
+    
                 // Monthly energy
                 let monthlyData = await this.getStoreValue('monthlyEnergyData') || { month: currentMonth, energy: 0 };
-                if (monthlyData.month !== currentMonth) {
-                    monthlyData = { month: currentMonth, energy: energyIncrement };
-                } else {
-                    monthlyData.energy += energyIncrement;
-                }
+                monthlyData.energy += energyIncrement;
                 await this.setStoreValue('monthlyEnergyData', monthlyData);
                 await this.setCapabilityValue('measure_monthly_energy', monthlyData.energy);
     
                 // Yearly energy
                 let yearlyData = await this.getStoreValue('yearlyEnergyData') || { year: currentYear, energy: 0 };
-                if (yearlyData.year !== currentYear) {
-                    yearlyData = { year: currentYear, energy: energyIncrement };
-                } else {
-                    yearlyData.energy += energyIncrement;
-                }
+                yearlyData.energy += energyIncrement;
                 await this.setStoreValue('yearlyEnergyData', yearlyData);
                 await this.setCapabilityValue('measure_yearly_energy', yearlyData.energy);
             }
