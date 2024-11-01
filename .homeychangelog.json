@@ -28,5 +28,8 @@
   },
   "1.2.2": {
     "en": "Fixed new capabilities"
+  },
+  "1.2.3": {
+    "en": "Fixed reset of new capabilities"
   }
 }
