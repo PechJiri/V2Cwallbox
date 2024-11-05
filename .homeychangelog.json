@@ -31,5 +31,8 @@
   },
   "1.2.3": {
     "en": "Fixed reset of new capabilities"
+  },
+  "1.2.4": {
+    "en": "Added device timeline"
   }
 }
