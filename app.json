@@ -898,6 +898,23 @@
     }
   },
   "capabilities": {
+    "car_connected": {
+      "id": "car_connected",
+      "type": "boolean",
+      "title": {
+        "en": "Car connected"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": null,
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "Car has been connected"
+      },
+      "insightsTitleFalse": {
+        "en": "Car has been disconnected"
+      }
+    },
     "measure_dynamic": {
       "type": "boolean",
       "title": {

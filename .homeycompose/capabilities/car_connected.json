@@ -1,17 +1,17 @@
 {
+    "id": "car_connected",
     "type": "boolean",
     "title": {
-        "en": "Locked"
+      "en": "Car connected"
     },
     "getable": true,
     "setable": false,
+    "uiComponent": null,
     "insights": true,
     "insightsTitleTrue": {
-        "en": "Charger has been locked"
+        "en": "Car has been connected"
       },
     "insightsTitleFalse": {
-        "en": "Charger has been unlocked"
-      },
-    "uiComponent": "sensor",
-    "icon": "/assets/locked.svg"
+        "en": "Car has been disconnected"
+      }
 }

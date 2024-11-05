@@ -32,6 +32,7 @@ class MyDevice extends Device {
             'measure_locked',
             'measure_intensity',
             'measure_dynamic',
+            'car_connected',
             'measure_yearly_energy',      // Přidáno: roční kumulativní energie
             'measure_monthly_energy'      // Přidáno: měsíční kumulativní energie
         ];
@@ -164,6 +165,12 @@ class MyDevice extends Device {
             await this.setCapabilityValue('measure_intensity', deviceData.intensity);
             await this.setCapabilityValue('measure_dynamic', deviceData.dynamic);
     
+            if (deviceData.chargeState === "1" || deviceData.chargeState === "2") {
+                await this.setCapabilityValue('car_connected', true);
+            } else if (deviceData.chargeState === "0") {
+                await this.setCapabilityValue('car_connected', false);
+            }
+            
             // Get current date information
             const currentDate = new Date();
             const currentYear = currentDate.getFullYear();

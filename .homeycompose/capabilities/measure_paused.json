@@ -5,6 +5,13 @@
     },
     "getable": true,
     "setable": false,
+    "insights": true,
+    "insightsTitleTrue": {
+        "en": "Charger has been paused"
+      },
+    "insightsTitleFalse": {
+        "en": "Charger has been resumed"
+      },
     "uiComponent": "sensor",
     "icon": "/assets/paused.svg"
 }

@@ -85,5 +85,7 @@
             pattern="^((\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$" id="ip"
             placeholder="IP address" value="" oninput="settingsChanged()" />
     </div>
-    <button class="submit-button" id="check" onclick="check()"><span data-i18n="pair.v2cwallbox.check"></span></button>
+    <button class="submit-button" id="check" onclick="check()" aria-label="Check connection">
+        <span data-i18n="pair.v2cwallbox.check">Check</span>
+    </button>
 </div>
