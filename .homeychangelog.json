@@ -40,5 +40,8 @@
   },
   "1.2.6": {
     "en": "bugfix"
+  },
+  "1.2.7": {
+    "en": "code optimalisation"
   }
 }
