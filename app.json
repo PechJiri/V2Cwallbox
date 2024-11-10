@@ -337,107 +337,6 @@
         }
       },
       {
-        "id": "set_power",
-        "hint": {
-          "en": "Enter power in Watts. Both positive and negative values are accepted and will be converted to positive for calculation."
-        },
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=v2c-wallbox"
-          },
-          {
-            "name": "power",
-            "type": "number",
-            "title": {
-              "en": "Power"
-            },
-            "placeholder": {
-              "en": "5000"
-            },
-            "min": -22000,
-            "max": 22000,
-            "units": {
-              "en": "W"
-            }
-          },
-          {
-            "name": "phase_mode",
-            "type": "dropdown",
-            "title": {
-              "en": "Phase Mode"
-            },
-            "values": [
-              {
-                "id": "1",
-                "title": {
-                  "en": "Single Phase"
-                }
-              },
-              {
-                "id": "3",
-                "title": {
-                  "en": "Three Phase"
-                }
-              }
-            ]
-          },
-          {
-            "name": "voltage",
-            "type": "number",
-            "title": {
-              "en": "Voltage"
-            },
-            "min": 110,
-            "max": 400,
-            "units": {
-              "en": "V"
-            },
-            "placeholder": {
-              "en": "230"
-            }
-          },
-          {
-            "name": "voltage_type",
-            "type": "dropdown",
-            "title": {
-              "en": "Voltage Type"
-            },
-            "values": [
-              {
-                "id": "line_to_line",
-                "title": {
-                  "en": "Line-to-Line"
-                }
-              },
-              {
-                "id": "line_to_neutral",
-                "title": {
-                  "en": "Line-to-Neutral"
-                }
-              }
-            ]
-          }
-        ],
-        "title": {
-          "en": "Set Charging Power with Watts"
-        },
-        "titleFormatted": {
-          "en": "Set charging power to [[power]] W ([[phase_mode]] phase, [[voltage]] V, [[voltage_type]])"
-        },
-        "tokens": [
-          {
-            "name": "calculated_current",
-            "type": "number",
-            "title": {
-              "en": "Calculated Current AMPs"
-            },
-            "example": 16
-          }
-        ]
-      },
-      {
         "id": "set_dynamic",
         "args": [
           {
@@ -1161,7 +1060,7 @@
         "en": "Paused"
       },
       "getable": true,
-      "setable": true,
+      "setable": false,
       "insights": true,
       "insightsTitleTrue": {
         "en": "Charger has been paused"
@@ -1169,7 +1068,7 @@
       "insightsTitleFalse": {
         "en": "Charger has been resumed"
       },
-      "uiComponent": "button",
+      "uiComponent": "sensor",
       "icon": "/assets/paused.svg"
     },
     "measure_slave_error": {
@@ -1205,7 +1104,7 @@
         {
           "id": "04",
           "title": {
-            "en": "Waiting inverter WiFi"
+            "en": "Waiting WiFi"
           }
         },
         {

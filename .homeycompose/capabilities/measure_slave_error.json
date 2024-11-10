@@ -1,0 +1,78 @@
+{
+    "type": "enum",
+    "title": {
+        "en": "Communication Error"
+    },
+    "values": [
+        {
+            "id": "00",
+            "title": {
+                "en": "No Error"
+            }
+        },
+        {
+            "id": "01",
+            "title": {
+                "en": "Communication"
+            }
+        },
+        {
+            "id": "02",
+            "title": {
+                "en": "Reading"
+            }
+        },
+        {
+            "id": "03",
+            "title": {
+                "en": "Slave"
+            }
+        },
+        {
+            "id": "04",
+            "title": {
+                "en": "Waiting WiFi"
+            }
+        },
+        {
+            "id": "05",
+            "title": {
+                "en": "Waiting communication"
+            }
+        },
+        {
+            "id": "06",
+            "title": {
+                "en": "Wrong IP"
+            }
+        },
+        {
+            "id": "07",
+            "title": {
+                "en": "Slave not found"
+            }
+        },
+        {
+            "id": "08",
+            "title": {
+                "en": "Wrong Slave"
+            }
+        },
+        {
+            "id": "09",
+            "title": {
+                "en": "No response"
+            }
+        },
+        {
+            "id": "10",
+            "title": {
+                "en": "Clamp not connected"
+            }
+        }
+    ],
+    "getable": true,
+    "setable": false,
+    "uiComponent": "sensor",
+    "icon": "/assets/slave_error.svg"
+}

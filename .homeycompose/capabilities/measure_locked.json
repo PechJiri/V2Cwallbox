@@ -1,0 +1,17 @@
+{
+    "type": "boolean",
+    "title": {
+        "en": "Locked"
+    },
+    "getable": true,
+    "setable": false,
+    "insights": true,
+    "insightsTitleTrue": {
+        "en": "Charger has been locked"
+      },
+    "insightsTitleFalse": {
+        "en": "Charger has been unlocked"
+      },
+    "uiComponent": "sensor",
+    "icon": "/assets/locked.svg"
+}
