@@ -207,6 +207,117 @@
       }
     },
     {
+      "id": "set_power",
+      "args": [
+        {
+          "name": "power",
+          "type": "number",
+          "title": {
+            "en": "Power"
+          },
+          "placeholder": {
+            "en": "5000"
+          },
+          "min": -22000,
+          "max": 22000,
+          "units": {
+            "en": "W"
+          }
+        },
+        {
+          "name": "phase_mode",
+          "type": "dropdown",
+          "title": {
+            "en": "Phase Mode"  
+          },
+          "values": [
+            {
+              "id": "1",
+              "title": {
+                "en": "Single Phase"
+              }
+            },
+            {
+              "id": "3", 
+              "title": {
+                "en": "Three Phase"
+              }
+            }
+          ]
+        },
+        {
+          "name": "voltage",
+          "type": "number", 
+          "title": {
+            "en": "Voltage"
+          },
+          "min": 110,
+          "max": 400,
+          "units": {
+            "en": "V"
+          },
+          "placeholder": {
+            "en": "230"
+          }
+        },
+        {
+          "name": "voltage_type",
+          "type": "dropdown",
+          "title": {
+            "en": "Voltage Type"
+          },
+          "values": [
+            {
+              "id": "line_to_line",
+              "title": {
+                "en": "Line-to-Line"
+              }
+            },
+            {
+              "id": "line_to_neutral",
+              "title": {
+                "en": "Line-to-Neutral" 
+              }
+            }
+          ]
+        },
+        {
+          "name": "maxAmps",
+          "type": "number",
+          "title": {
+            "en": "Maximum Amps"
+          },
+          "min": 6,
+          "max": 32,
+          "placeholder": {
+            "en": "32"
+          },
+          "units": {
+            "en": "A"
+          }
+        }
+      ],
+      "title": {
+        "en": "Set Charging Power"
+      },
+      "hint": {
+        "en": "Enter power in Watts. Both positive and negative values are accepted and will be converted to positive for calculation. The resulting Ampere values are rounded mathematically and limited to a minimum of 6 Amps and a maximum defined by the specified value. If the wallbox has a neutral cable connected, select the Line-to-Neutral wiring type. For single-phase charging, either wiring type can be selected. However, make sure to also set the single-phase output directly in the wallbox menu."
+      },
+      "titleFormatted": {
+        "en": "Set charging power to [[power]] W ([[phase_mode]] phase, [[voltage]] V, [[voltage_type]] and max intensity [[maxAmps]] Amps)"
+      },
+      "tokens": [
+        {
+          "name": "calculated_current",
+          "type": "number",
+          "title": {
+            "en": "Calculated Current Amps"
+          },
+          "example": 16
+        }
+      ]
+    },    
+    {
       "id": "set_dynamic",
       "args": [
         {
