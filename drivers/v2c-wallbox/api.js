@@ -52,51 +52,34 @@ class v2cAPI {
         try {
             console.log('Raw data received:', data);
             
-            const chargeStateMap = {
-                0: "0", // EV not connected
-                1: "1", // EV connected
-                2: "2", // Charging
-                3: "3", // Standby or unknown state
-                4: "0"  // Unknown or not charging
-            };
+            // Konverze ChargeState - pouze stav 4 mapujeme na 0, jinak použijeme původní hodnotu
+            let chargeState = String(data.ChargeState);
+            if (data.ChargeState === 4 || data.ChargeState === undefined) {
+                chargeState = "0";
+            }
     
-            const slaveErrorMap = {
-                0: "00",
-                1: "01",
-                2: "02",
-                3: "03",
-                4: "04",
-                5: "05",
-                6: "06",
-                7: "07",
-                8: "08",
-                9: "09",
-                10: "10"
-            };
-    
-            // Ensure all numeric values are properly converted
+            // Základní zpracování dat s použitím nullish coalescing
             const processedData = {
-                chargeState: chargeStateMap[data.ChargeState] || "0",
-                chargePower: Number(data.ChargePower) || 0,
-                voltageInstallation: Number(data.VoltageInstallation) || 0,
-                // Convert ChargeEnergy to a number and ensure it's not NaN
-                chargeEnergy: Number(data.ChargeEnergy) || 0,
-                slaveError: slaveErrorMap[data.SlaveError] || "00",
-                chargeTime: Number(data.ChargeTime) || 0,
+                chargeState,
+                chargePower: data.ChargePower ?? 0,
+                voltageInstallation: data.VoltageInstallation ?? 0,
+                chargeEnergy: data.ChargeEnergy ?? 0,
+                // Slave Error - potřebujeme dvojciferný formát dle capability
+                slaveError: String(data.SlaveError ?? 0).padStart(2, '0'),
+                chargeTime: data.ChargeTime ?? 0,
+                // Boolean hodnoty
                 paused: Boolean(data.Paused),
                 measure_locked: Boolean(data.Locked),
-                intensity: Number(data.Intensity) || 0,
+                intensity: data.Intensity ?? 0,
                 dynamic: Boolean(data.Dynamic)
             };
     
             console.log('Processed data:', processedData);
-            console.log('Charge Energy value:', processedData.chargeEnergy);
     
-            const isValidDeviceData = processedData.chargeState !== "0" || 
-                                      processedData.voltageInstallation !== 0 || 
-                                      processedData.chargePower !== 0;
-    
-            if (!isValidDeviceData) {
+            // Validace dat - zjednodušená podmínka
+            if (data.ChargeState === undefined && 
+                !data.VoltageInstallation && 
+                !data.ChargePower) {
                 console.log("No valid device data found.");
                 return null;
             }

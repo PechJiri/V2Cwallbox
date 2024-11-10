@@ -39,11 +39,12 @@
         }
         #infoContainer {
             flex: 1;
-            display: flex;
+             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: center;  /* Změněno z flex-start na center */
             align-items: center;
             padding: var(--homey-su-2);
+            height: 100%;
         }
         .label {
             font-size: var(--homey-font-size-small);
@@ -58,6 +59,33 @@
             margin-bottom: var(--homey-su-2);
             text-align: center;
             width: 100%;
+        }
+        .control-button {
+            display: none;
+            background-color: #00275b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: var(--homey-font-size-small);
+            font-weight: var(--homey-font-weight-bold);
+            cursor: pointer;
+            margin-top: var(--homey-su-2);
+            transition: opacity 0.3s ease;
+            width: 80%;
+        }
+
+        .control-button:hover {
+            opacity: 0.9;
+        }
+
+        .control-button.visible {
+            display: block;
+        }
+
+        .control-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -75,12 +103,13 @@
                 <span>|</span>
                 <span id="powerKWh">-.-</span>
             </div>
+            <button id="controlButton" class="control-button">Pause</button>
         </div>
     </div>
-    <script>
+    <script type="text/javascript">
         let Homey;
         let isUpdating = false;
-        let updateInterval = 5000; // Výchozí hodnota je 5 sekund
+        let updateInterval = 5000;
         let intervalId;
 
         function onHomeyReady(_Homey) {
@@ -99,12 +128,64 @@
             return stateMap[state] || "Unknown";
         }
 
+        function updateControlButton(state, isPaused) {
+            const button = document.getElementById('controlButton');
+            
+            if (state === "0") {
+                button.classList.remove('visible');
+            } else {
+                button.classList.add('visible');
+            }
+
+            button.textContent = isPaused ? 'Resume' : 'Pause';
+        }
+
+        function setupControlButton() {
+        const button = document.getElementById('controlButton');
+            button.addEventListener('click', async () => {
+            try {
+            button.disabled = true;
+            
+            // Získání aktuálního stavu
+            const result = await Homey.api('GET', '/status');
+            const currentPausedState = result.paused;
+            
+            console.log('Current paused state:', currentPausedState);
+            console.log('Setting new paused state to:', !currentPausedState);
+            
+            // Změna stavu přes API
+            const setPausedResult = await Homey.api('POST', '/paused', { 
+                paused: !currentPausedState 
+            });
+            console.log('setPaused response:', setPausedResult);
+            
+            if (!setPausedResult.success) {
+                throw new Error('Failed to set paused state');
+            }
+            
+            // Počkáme chvíli pro jistotu
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Aktualizace UI
+            await updateData();
+            } catch (error) {
+            console.error('Error toggling pause state:', error);
+            // Případně můžeme zobrazit chybu uživateli
+            // alert('Failed to change charging state');
+             } finally {
+            button.disabled = false;
+             }
+            });
+        }
+        
         function updateUI(status) {
             console.log('Updating UI with status:', status);
             
             document.getElementById('wallboxState').textContent = getChargeStateText(status.chargeState);
             document.getElementById('powerKW').textContent = (status.chargePower / 1000).toFixed(1);
             document.getElementById('powerKWh').textContent = status.chargeEnergy.toFixed(1);
+
+            updateControlButton(status.chargeState, status.paused);
         }
 
         function updateData() {
@@ -125,22 +206,22 @@
                 });
         }
 
-        function init() {
-            console.log('Initializing widget...');
-            loadUpdateInterval(); // Načteme frekvenci aktualizace
-            updateData();
-            intervalId = setInterval(updateData, updateInterval);
-        }
-
         function loadUpdateInterval() {
-            // Zkontrolujeme nastavení zařízení, pokud je definováno
             const settings = Homey.getSettings();
             if (settings && settings.update_interval) {
-                updateInterval = parseInt(settings.update_interval, 10) * 1000; // Převést na milisekundy
+                updateInterval = parseInt(settings.update_interval, 10) * 1000;
                 console.log('Update interval set to:', updateInterval, 'ms');
             } else {
                 console.log('Using default update interval of 5000 ms');
             }
+        }
+
+        function init() {
+            console.log('Initializing widget...');
+            setupControlButton();
+            loadUpdateInterval();
+            updateData();
+            intervalId = setInterval(updateData, updateInterval);
         }
 
         if (window.Homey) {

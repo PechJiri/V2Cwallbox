@@ -2,24 +2,28 @@
 
 const { Device } = require('homey');
 const { v2cAPI } = require('./api');
+const PowerCalculator = require('../../lib/power_calculator');
 
 class MyDevice extends Device {
-
+    /**
+     * onInit je volána při inicializaci zařízení
+     */
     async onInit() {
         this.log('MyDevice has been initialized');
 
-        const ip = this.homey.settings.get('v2c_ip');
+        // Inicializace proměnných pro cache
+        this.lastResponse = null;
+        this.lastResponseTime = null;
+
+        const ip = this.getSetting('v2c_ip');
         if (!ip) {
             this.error('IP address is not set.');
             return this.setUnavailable('IP address is not set.');
         }
         this.v2cApi = new v2cAPI(ip);
 
-        await this.setSettings({
-            name: this.homey.settings.get('name'),
-            v2c_ip: ip,
-            update_interval: this.homey.settings.get('update_interval') || 5,
-        });
+        // Nastavení základních hodnot
+        const updateInterval = this.getSetting('update_interval') || 5;
 
         const capabilities = [
             'measure_charge_state',
@@ -33,8 +37,8 @@ class MyDevice extends Device {
             'measure_intensity',
             'measure_dynamic',
             'car_connected',
-            'measure_yearly_energy',      // Přidáno: roční kumulativní energie
-            'measure_monthly_energy'      // Přidáno: měsíční kumulativní energie
+            'measure_yearly_energy',
+            'measure_monthly_energy'
         ];
 
         for (const capability of capabilities) {
@@ -42,6 +46,50 @@ class MyDevice extends Device {
                 await this.addCapability(capability);
             }
         }
+
+        this.registerCapabilityListener('measure_paused', async (value) => {
+            try {
+                this.log('measure_paused button pressed, setting state to:', value);
+                
+                // Zavolání API pro změnu stavu
+                await this.v2cApi.setParameter('Paused', value ? '1' : '0');
+                
+                // Aktualizace hodnoty capability
+                await this.setCapabilityValue('measure_paused', value);
+                
+                return true;
+            } catch (error) {
+                this.error('Failed to set paused state:', error);
+                throw new Error('Failed to set paused state');
+            }
+        });
+
+        // Registrace nové flow karty set_power
+        this.setPowerAction = this.homey.flow.getActionCard('set_power');
+        this.setPowerAction.registerRunListener(async (args, state) => {
+            try {
+                // Výpočet proudu
+                const current = PowerCalculator.calculateCurrent(
+                    args.power,
+                    args.phase_mode, 
+                    args.voltage,
+                    args.voltage_type,
+                    args.maxAmps
+                );
+                
+                // Nastavení proudu přes API
+                await this.v2cApi.setParameter('Intensity', current.toString());
+                
+                // Vrácení tokenu s vypočteným proudem
+                return {
+                    calculated_current: current
+                };
+                
+            } catch (error) {
+                this.error('Failed to set power:', error);
+                throw error;
+            }
+        });
 
         this.setupFlowCards();
         this.startDataFetchInterval(this.homey.settings.get('update_interval') || 5);
@@ -51,7 +99,7 @@ class MyDevice extends Device {
         this.homey.flow.getDeviceTriggerCard('car-connected');
         this.homey.flow.getDeviceTriggerCard('car-start-charging');
         this.homey.flow.getDeviceTriggerCard('car-disconnected');
-        this.homey.flow.getDeviceTriggerCard('slave_error_changed');  // Přidána nová karta
+        this.homey.flow.getDeviceTriggerCard('slave_error_changed');
 
         this._registerActionFlowCards();
         this._registerConditionFlowCards();
@@ -124,7 +172,6 @@ class MyDevice extends Device {
         // Reset monthly data
         let monthlyData = await this.getStoreValue('monthlyEnergyData') || { month: currentMonth, energy: 0 };
         if (monthlyData.month !== currentMonth) {
-            // New month, reset energy for monthly data
             monthlyData = { month: currentMonth, energy: 0 };
             await this.setStoreValue('monthlyEnergyData', monthlyData);
             await this.setCapabilityValue('measure_monthly_energy', 0);
@@ -133,7 +180,6 @@ class MyDevice extends Device {
         // Reset yearly data
         let yearlyData = await this.getStoreValue('yearlyEnergyData') || { year: currentYear, energy: 0 };
         if (yearlyData.year !== currentYear) {
-            // New year, reset energy for yearly data
             yearlyData = { year: currentYear, energy: 0 };
             await this.setStoreValue('yearlyEnergyData', yearlyData);
             await this.setCapabilityValue('measure_yearly_energy', 0);
@@ -142,107 +188,74 @@ class MyDevice extends Device {
     
     async getProductionData() {
         try {
-            // Kontrola a případný reset měsíčních a ročních dat
+            const now = Date.now();
+            if (this.lastResponse && this.lastResponseTime && (now - this.lastResponseTime < 1000)) {
+                return this.processDeviceData(this.lastResponse);
+            }
+    
             await this.resetMonthlyAndYearlyDataIfNeeded();
     
             const baseSession = await this.v2cApi.getData();
             const deviceData = await this.v2cApi.processData(baseSession);
     
+            this.lastResponse = baseSession;
+            this.lastResponseTime = now;
+    
             if (!deviceData) {
                 throw new Error('No valid device data received');
             }
     
-            console.log('Device data received:', deviceData);
-    
-            // Update basic capabilities
-            await this.setCapabilityValue('measure_charge_state', deviceData.chargeState);
-            await this.setCapabilityValue('measure_charge_power', deviceData.chargePower);
-            await this.setCapabilityValue('measure_voltage_installation', deviceData.voltageInstallation);
-            await this.setCapabilityValue('measure_slave_error', deviceData.slaveError);
-            await this.setCapabilityValue('measure_charge_time', Math.floor(deviceData.chargeTime / 60));
-            await this.setCapabilityValue('measure_paused', deviceData.paused);
-            await this.setCapabilityValue('measure_locked', deviceData.measure_locked);
-            await this.setCapabilityValue('measure_intensity', deviceData.intensity);
-            await this.setCapabilityValue('measure_dynamic', deviceData.dynamic);
-    
-            if (deviceData.chargeState === "1" || deviceData.chargeState === "2") {
-                await this.setCapabilityValue('car_connected', true);
-            } else if (deviceData.chargeState === "0") {
-                await this.setCapabilityValue('car_connected', false);
-            }
-            
-            // Get current date information
-            const currentDate = new Date();
-            const currentYear = currentDate.getFullYear();
-            const currentMonth = currentDate.getMonth() + 1;
-    
-            // Get previous state to detect state changes
             const previousState = await this.getStoreValue('previousChargeState') || "0";
             const currentState = deviceData.chargeState;
-            
-            console.log('Previous state:', previousState, 'Current state:', currentState);
     
-            // Handle charge energy based on state and state changes
-            if (currentState === "2") { // Currently charging
-                const storedBaseEnergy = await this.getStoreValue('baseChargeEnergy') || 0;
-                
-                if (previousState !== "2") {
-                    // Just started charging - store current API value as starting point
-                    console.log('Charging started. Current API energy:', deviceData.chargeEnergy);
-                    await this.setStoreValue('chargingStartEnergy', deviceData.chargeEnergy);
-                    await this.setCapabilityValue('measure_charge_energy', storedBaseEnergy + deviceData.chargeEnergy);
-                } else {
-                    // Continued charging - use current API value
-                    console.log('Continuing to charge. Base energy:', storedBaseEnergy, 'Current API energy:', deviceData.chargeEnergy);
-                    await this.setCapabilityValue('measure_charge_energy', storedBaseEnergy + deviceData.chargeEnergy);
-                }
-            } else if (currentState === "1" && previousState === "2") {
-                // Just stopped charging - store the accumulated energy
-                const storedBaseEnergy = await this.getStoreValue('baseChargeEnergy') || 0;
-                const finalEnergy = storedBaseEnergy + deviceData.chargeEnergy;
-                console.log('Charging paused. Storing accumulated energy:', finalEnergy);
-                await this.setStoreValue('baseChargeEnergy', finalEnergy);
-                await this.setCapabilityValue('measure_charge_energy', finalEnergy);
-            } else if (currentState === "1") {
-                // Still connected but not charging - maintain last value
-                const storedEnergy = await this.getStoreValue('baseChargeEnergy') || 0;
-                console.log('Connected but not charging. Maintaining stored energy:', storedEnergy);
-                await this.setCapabilityValue('measure_charge_energy', storedEnergy);
-            } else if (currentState === "0") {
-                // Disconnected - reset everything
-                console.log('Car disconnected, resetting all energy values');
-                await this.setStoreValue('baseChargeEnergy', 0);
-                await this.setStoreValue('chargingStartEnergy', 0);
-                await this.setCapabilityValue('measure_charge_energy', 0);
+            let chargeEnergy = 0;
+            const storedBaseEnergy = await this.getStoreValue('baseChargeEnergy') || 0;
+    
+            switch(currentState) {
+                case "2":
+                    chargeEnergy = storedBaseEnergy + deviceData.chargeEnergy;
+                    if (previousState !== "2") {
+                        await this.setStoreValue('chargingStartEnergy', deviceData.chargeEnergy);
+                    }
+                    break;
+                case "1":
+                    if (previousState === "2") {
+                        chargeEnergy = storedBaseEnergy + deviceData.chargeEnergy;
+                        await this.setStoreValue('baseChargeEnergy', chargeEnergy);
+                    } else {
+                        chargeEnergy = storedBaseEnergy;
+                    }
+                    break;
+                case "0":
+                    await this.setStoreValue('baseChargeEnergy', 0);
+                    await this.setStoreValue('chargingStartEnergy', 0);
+                    break;
             }
     
-            // Handle monthly and yearly energy totals
+            await Promise.all([
+                this.setCapabilityValue('measure_charge_state', deviceData.chargeState),
+                this.setCapabilityValue('measure_charge_power', deviceData.chargePower),
+                this.setCapabilityValue('measure_voltage_installation', deviceData.voltageInstallation),
+                this.setCapabilityValue('measure_slave_error', deviceData.slaveError),
+                this.setCapabilityValue('measure_charge_time', Math.floor(deviceData.chargeTime / 60)),
+                this.setCapabilityValue('measure_paused', deviceData.paused),
+                this.setCapabilityValue('measure_locked', deviceData.measure_locked),
+                this.setCapabilityValue('measure_intensity', deviceData.intensity),
+                this.setCapabilityValue('measure_dynamic', deviceData.dynamic),
+                this.setCapabilityValue('measure_charge_energy', chargeEnergy),
+                this.setCapabilityValue('car_connected', ["1", "2"].includes(currentState))
+            ]);
+    
             if (currentState === "1" && previousState === "2") {
-                // Only update monthly/yearly totals when charging stops
-                const energyIncrement = deviceData.chargeEnergy;
-    
-                // Monthly energy
-                let monthlyData = await this.getStoreValue('monthlyEnergyData') || { month: currentMonth, energy: 0 };
-                monthlyData.energy += energyIncrement;
-                await this.setStoreValue('monthlyEnergyData', monthlyData);
-                await this.setCapabilityValue('measure_monthly_energy', monthlyData.energy);
-    
-                // Yearly energy
-                let yearlyData = await this.getStoreValue('yearlyEnergyData') || { year: currentYear, energy: 0 };
-                yearlyData.energy += energyIncrement;
-                await this.setStoreValue('yearlyEnergyData', yearlyData);
-                await this.setCapabilityValue('measure_yearly_energy', yearlyData.energy);
+                await this.updateEnergyTotals(deviceData.chargeEnergy);
             }
     
-            // Store current state for next comparison
             await this.setStoreValue('previousChargeState', currentState);
     
-            // Update device availability
             if (!this.getAvailable()) {
                 await this.setAvailable();
             }
     
-            // Trigger flow cards
             this._triggerFlowCards(currentState);
     
         } catch (error) {
@@ -250,6 +263,22 @@ class MyDevice extends Device {
             console.error('Full error:', error);
             this.setUnavailable(`Error retrieving data: ${error.message}`);
         }
+    }
+    
+    async updateEnergyTotals(energyIncrement) {
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1;
+    
+        let monthlyData = await this.getStoreValue('monthlyEnergyData') || { month: currentMonth, energy: 0 };
+        monthlyData.energy += energyIncrement;
+        await this.setStoreValue('monthlyEnergyData', monthlyData);
+        await this.setCapabilityValue('measure_monthly_energy', monthlyData.energy);
+    
+        let yearlyData = await this.getStoreValue('yearlyEnergyData') || { year: currentYear, energy: 0 };
+        yearlyData.energy += energyIncrement;
+        await this.setStoreValue('yearlyEnergyData', yearlyData);
+        await this.setCapabilityValue('measure_yearly_energy', yearlyData.energy);
     }
 
     _triggerFlowCards(chargeState) {
