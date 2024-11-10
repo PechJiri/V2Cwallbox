@@ -34,5 +34,8 @@
   },
   "1.2.4": {
     "en": "Added device timeline"
+  },
+  "1.2.5": {
+    "en": "updated widget, added button for pause/resume charging, added new flow card which converts W to Amps for charger"
   }
 }
