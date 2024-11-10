@@ -188,8 +188,10 @@ class MyDevice extends Device {
     
     async getProductionData() {
         try {
+            // Cache kontrola - ponecháme beze změny
             const now = Date.now();
-            if (this.lastResponse && this.lastResponseTime && (now - this.lastResponseTime < 1000)) {
+            if (this.lastResponse && this.lastResponseTime && 
+                (now - this.lastResponseTime < 1000)) {
                 return this.processDeviceData(this.lastResponse);
             }
     
@@ -205,20 +207,23 @@ class MyDevice extends Device {
                 throw new Error('No valid device data received');
             }
     
+            // Získáme předchozí stav pro porovnání
             const previousState = await this.getStoreValue('previousChargeState') || "0";
             const currentState = deviceData.chargeState;
     
+            // Aktualizace energie a stavu nabíjení
             let chargeEnergy = 0;
             const storedBaseEnergy = await this.getStoreValue('baseChargeEnergy') || 0;
     
             switch(currentState) {
-                case "2":
+                case "2": // Nabíjení
                     chargeEnergy = storedBaseEnergy + deviceData.chargeEnergy;
                     if (previousState !== "2") {
                         await this.setStoreValue('chargingStartEnergy', deviceData.chargeEnergy);
                     }
                     break;
-                case "1":
+    
+                case "1": // Připojeno
                     if (previousState === "2") {
                         chargeEnergy = storedBaseEnergy + deviceData.chargeEnergy;
                         await this.setStoreValue('baseChargeEnergy', chargeEnergy);
@@ -226,12 +231,14 @@ class MyDevice extends Device {
                         chargeEnergy = storedBaseEnergy;
                     }
                     break;
-                case "0":
+    
+                case "0": // Odpojeno
                     await this.setStoreValue('baseChargeEnergy', 0);
                     await this.setStoreValue('chargingStartEnergy', 0);
                     break;
             }
     
+            // Hromadná aktualizace capabilities
             await Promise.all([
                 this.setCapabilityValue('measure_charge_state', deviceData.chargeState),
                 this.setCapabilityValue('measure_charge_power', deviceData.chargePower),
@@ -246,6 +253,7 @@ class MyDevice extends Device {
                 this.setCapabilityValue('car_connected', ["1", "2"].includes(currentState))
             ]);
     
+            // Aktualizace měsíční a roční energie
             if (currentState === "1" && previousState === "2") {
                 await this.updateEnergyTotals(deviceData.chargeEnergy);
             }
@@ -263,6 +271,25 @@ class MyDevice extends Device {
             console.error('Full error:', error);
             this.setUnavailable(`Error retrieving data: ${error.message}`);
         }
+    }
+    
+    // Nová pomocná metoda pro aktualizaci měsíční a roční energie
+    async updateEnergyTotals(energyIncrement) {
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1;
+    
+        // Měsíční energie
+        let monthlyData = await this.getStoreValue('monthlyEnergyData') || { month: currentMonth, energy: 0 };
+        monthlyData.energy += energyIncrement;
+        await this.setStoreValue('monthlyEnergyData', monthlyData);
+        await this.setCapabilityValue('measure_monthly_energy', monthlyData.energy);
+    
+        // Roční energie
+        let yearlyData = await this.getStoreValue('yearlyEnergyData') || { year: currentYear, energy: 0 };
+        yearlyData.energy += energyIncrement;
+        await this.setStoreValue('yearlyEnergyData', yearlyData);
+        await this.setCapabilityValue('measure_yearly_energy', yearlyData.energy);
     }
     
     async updateEnergyTotals(energyIncrement) {
