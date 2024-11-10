@@ -37,5 +37,8 @@
   },
   "1.2.5": {
     "en": "updated widget, added button for pause/resume charging, added new flow card which converts W to Amps for charger"
+  },
+  "1.2.6": {
+    "en": "bugfix"
   }
 }
