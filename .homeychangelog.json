@@ -46,5 +46,8 @@
   },
   "1.2.8": {
     "en": "small change to widget"
+  },
+  "1.2.9": {
+    "en": "code optimalisation"
   }
 }
