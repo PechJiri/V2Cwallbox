@@ -92,7 +92,7 @@
     },
     "measure_slave_error": {
       "title": {
-        "en": "Communication Error"
+        "en": "Inverter Communication Error"
       },
       "values": [
         {

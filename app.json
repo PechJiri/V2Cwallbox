@@ -697,7 +697,7 @@
         },
         "measure_slave_error": {
           "title": {
-            "en": "Communication Error"
+            "en": "Inverter Communication Error"
           },
           "values": [
             {
@@ -1196,7 +1196,7 @@
       "insightsTitleFalse": {
         "en": "Charger has been resumed"
       },
-      "uiComponent": "button",
+      "uiComponent": "toggle",
       "icon": "/assets/paused.svg"
     },
     "measure_slave_error": {
@@ -1232,7 +1232,7 @@
         {
           "id": "04",
           "title": {
-            "en": "Waiting WiFi"
+            "en": "Waiting inverter WiFi"
           }
         },
         {

@@ -1,6 +1,7 @@
 'use strict';
 
 const Homey = require('homey');
+const PowerCalculator = require('../../lib/power_calculator');
 
 class FlowCardManager {
     constructor(homey, device) {
@@ -14,6 +15,10 @@ class FlowCardManager {
             conditions: new Map(),
             actions: new Map()
         };
+
+        if (this.logger) {
+            PowerCalculator.setLogger(this.logger);
+        }
 
         // Definice základních triggerů
         this._basicTriggers = [
@@ -173,10 +178,23 @@ class FlowCardManager {
                 {
                     id: 'set_paused',
                     handler: async (args) => {
-                        await this.device.v2cApi.setPaused(args.paused);
-                        return true;
+                        // Převod hodnoty dropdown na boolean
+                        const paused = args.paused === '1'; // Dropdown hodnota je '1' pro Pause, '0' pro Resume.
+                
+                        // API volání k zařízení
+                        await this.device.v2cApi.setParameter('Paused', paused ? '1' : '0');
+                
+                        // Synchronizace capability measure_paused
+                        await this.device.setCapabilityValue('measure_paused', paused);
+                
+                        // Logování
+                        if (this.logger) {
+                            this.logger.debug('Capability measure_paused nastavena', { paused });
+                        }
+                
+                        return true; // Vrací úspěšný výsledek Flow kartě
                     }
-                },
+                },                
                 {
                     id: 'set_locked',
                     handler: async (args) => {
@@ -218,7 +236,34 @@ class FlowCardManager {
                         await this.device.v2cApi.setDynamicPowerMode(args.DynamicPowerMode);
                         return true;
                     }
-                }
+                },
+                {
+                    id: 'set_power',
+                    handler: async (args) => {
+                        const { power, phase_mode, voltage, voltage_type, maxAmps } = args;
+                
+                        // Výpočet proudu
+                        const calculatedCurrent = PowerCalculator.calculateCurrent(power, phase_mode, voltage, voltage_type, maxAmps);
+                
+                        // Nastavení parametru Intensity na zařízení
+                        await this.device.v2cApi.setParameter('Intensity', calculatedCurrent);
+                
+                        // Logování
+                        if (this.logger) {
+                            this.logger.debug('Výpočet proudu a nastavení Intensity', {
+                                power,
+                                phase_mode,
+                                voltage,
+                                voltage_type,
+                                maxAmps,
+                                calculated_current: calculatedCurrent
+                            });
+                        }
+                
+                        // Vrácení tokenu
+                        return { calculated_current: calculatedCurrent };
+                    }
+                }                                
             ];
 
             // Registrace všech základních akcí

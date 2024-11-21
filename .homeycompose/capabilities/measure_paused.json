@@ -12,6 +12,6 @@
     "insightsTitleFalse": {
         "en": "Charger has been resumed"
       },
-    "uiComponent": "button",
+    "uiComponent": "toggle",
     "icon": "/assets/paused.svg"
 }
