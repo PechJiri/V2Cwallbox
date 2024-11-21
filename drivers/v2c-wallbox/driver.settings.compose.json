@@ -17,5 +17,16 @@
         },
         "value": 5,
         "min": 1
+    },
+    {
+        "id": "enable_logging",
+        "type": "checkbox",
+        "label": {
+            "en": "Enable Debug Logging"
+        },
+        "value": true,
+        "hint": {
+            "en": "Enable detailed logging for debugging purposes"
+        }
     }
 ]

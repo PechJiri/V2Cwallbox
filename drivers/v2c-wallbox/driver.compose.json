@@ -14,7 +14,8 @@
     "measure_locked",
     "measure_paused",
     "measure_slave_error",
-    "measure_voltage_installation"
+    "measure_voltage_installation",
+    "car_connected"
   ],
   "capabilitiesOptions": {
     "measure_dynamic": {

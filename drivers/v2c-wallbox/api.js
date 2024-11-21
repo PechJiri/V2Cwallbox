@@ -1,29 +1,38 @@
 'use strict';
 
 const fetch = require('node-fetch');
+const Logger = require('../../lib/Logger');
+const DataValidator = require('../../lib/DataValidator');
 
 class v2cAPI {
-    constructor(ip) {
+    constructor(homey, ip) {
         this.ip = ip;
+        this.logger = new Logger(homey, 'V2C-API');
+        this.logger.setEnabled(false);
+        this.validator = new DataValidator(this.logger);
+    }
+
+    setLoggingEnabled(enabled) {
+        this.logger.setEnabled(enabled);
     }
 
     async initializeSession() {
         try {
             const url = `http://${this.ip}/RealTimeData`;
-            console.log(`Initializing session with URL: ${url}`);
+            this.logger.debug('Inicializace session', { url });
 
             const response = await fetch(url);
             const responseData = await response.json();
-            console.log('Response from session initialization:', responseData);
+            this.logger.debug('Odpověď z inicializace session', { responseData });
 
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
 
-            console.log('Session initialized, data received:', responseData);
+            this.logger.log('Session úspěšně inicializována', { data: responseData });
             return true;
         } catch (error) {
-            console.error('Failed to initialize session:', error);
+            this.logger.error('Selhala inicializace session', error, { ip: this.ip });
             throw error;
         }
     }
@@ -31,11 +40,11 @@ class v2cAPI {
     async getData() {
         try {
             const url = `http://${this.ip}/RealTimeData`;
-            console.log(`Fetching data from URL: ${url}`);
+            this.logger.debug('Načítání dat', { url });
 
             const response = await fetch(url);
             const data = await response.json();
-            console.log('Response from getData:', data);
+            this.logger.debug('Odpověď z getData', { data });
 
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -43,50 +52,26 @@ class v2cAPI {
 
             return data;
         } catch (error) {
-            console.error('Failed to fetch data:', error);
+            this.logger.error('Selhalo načtení dat', error, { ip: this.ip });
             throw error;
         }
     }
 
     processData(data) {
         try {
-            console.log('Raw data received:', data);
+            this.logger.debug('Zpracování surových dat', { rawData: data });
             
-            // Konverze ChargeState - pouze stav 4 mapujeme na 0, jinak použijeme původní hodnotu
-            let chargeState = String(data.ChargeState);
-            if (data.ChargeState === 4 || data.ChargeState === undefined) {
-                chargeState = "0";
-            }
-    
-            // Základní zpracování dat s použitím nullish coalescing
-            const processedData = {
-                chargeState,
-                chargePower: data.ChargePower ?? 0,
-                voltageInstallation: data.VoltageInstallation ?? 0,
-                chargeEnergy: data.ChargeEnergy ?? 0,
-                // Slave Error - potřebujeme dvojciferný formát dle capability
-                slaveError: String(data.SlaveError ?? 0).padStart(2, '0'),
-                chargeTime: data.ChargeTime ?? 0,
-                // Boolean hodnoty
-                paused: Boolean(data.Paused),
-                measure_locked: Boolean(data.Locked),
-                intensity: data.Intensity ?? 0,
-                dynamic: Boolean(data.Dynamic)
-            };
-    
-            console.log('Processed data:', processedData);
-    
-            // Validace dat - zjednodušená podmínka
-            if (data.ChargeState === undefined && 
-                !data.VoltageInstallation && 
-                !data.ChargePower) {
-                console.log("No valid device data found.");
+            // Použití validátoru pro zpracování dat
+            const processedData = this.validator.validateAndProcessData(data);
+            
+            if (!processedData) {
+                this.logger.warn("Nebyla nalezena platná data zařízení");
                 return null;
             }
-    
+
             return processedData;
         } catch (error) {
-            console.error('Failed to process data:', error);
+            this.logger.error('Selhalo zpracování dat', error);
             throw error;
         }
     }
@@ -94,20 +79,34 @@ class v2cAPI {
     async setParameter(parameter, value) {
         try {
             const url = `http://${this.ip}/write/${parameter}=${value}`;
-            console.log(`Sending request to set ${parameter}: ${url}`);
+            this.logger.debug(`Nastavování parametru ${parameter}`, { 
+                url, 
+                hodnota: value 
+            });
 
             const response = await fetch(url, { method: 'GET' });
             const responseData = await response.text();
-            console.log(`Response from setting ${parameter}:`, responseData);
+            
+            this.logger.debug(`Odpověď na nastavení ${parameter}`, { 
+                odpověď: responseData 
+            });
 
             if (!response.ok) {
                 throw new Error(`Failed to set ${parameter}: ${response.statusText}`);
             }
 
-            console.log(`${parameter} successfully set to ${value}`);
+            this.logger.log(`Parametr ${parameter} úspěšně nastaven`, {
+                parametr: parameter,
+                hodnota: value,
+                odpověď: responseData
+            });
+            
             return responseData;
         } catch (error) {
-            console.error(`Error setting ${parameter}:`, error);
+            this.logger.error(`Chyba při nastavování parametru ${parameter}`, error, {
+                parametr: parameter,
+                hodnota: value
+            });
             throw error;
         }
     }
@@ -137,7 +136,7 @@ class v2cAPI {
     }
 
     async setDynamicPowerMode(dynamicPowerMode) {
-        console.log(`Setting DynamicPowerMode to ${dynamicPowerMode}`);
+        this.logger.debug('Nastavení DynamicPowerMode', { hodnota: dynamicPowerMode });
         return this.setParameter('DynamicPowerMode', dynamicPowerMode);
     }
 }
