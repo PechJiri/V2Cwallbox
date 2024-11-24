@@ -38,22 +38,30 @@ class v2cAPI {
     }
 
     async getData() {
-        try {
-            const url = `http://${this.ip}/RealTimeData`;
-            this.logger.debug('Načítání dat', { url });
-
-            const response = await fetch(url);
-            const data = await response.json();
-            this.logger.debug('Odpověď z getData', { data });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+        const maxRetries = 3;
+        const retryDelay = 1000; // 1 sekunda mezi pokusy
+        
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                const url = `http://${this.ip}/RealTimeData`;
+                this.logger.debug('Načítání dat', { url, attempt });
+    
+                const response = await fetch(url, { 
+                    timeout: 5000 
+                });
+                
+                const data = await response.json();
+                return data;
+                
+            } catch (error) {
+                if (attempt === maxRetries) {
+                    this.logger.error('Selhalo načtení dat po všech pokusech', error);
+                    throw error;
+                }
+                
+                this.logger.debug(`Pokus ${attempt} selhal, čekám před dalším pokusem`);
+                await new Promise(resolve => setTimeout(resolve, retryDelay));
             }
-
-            return data;
-        } catch (error) {
-            this.logger.error('Selhalo načtení dat', error, { ip: this.ip });
-            throw error;
         }
     }
 
