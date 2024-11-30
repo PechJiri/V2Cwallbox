@@ -1,17 +1,17 @@
 {
     "type": "boolean",
     "title": {
-        "en": "Dynamic Mode"
+        "en": "Timer"
     },
     "getable": true,
     "setable": true,
     "insights": true,
     "insightsTitleTrue": {
-        "en": "Dynamic mode turned On"
-      },
+        "en": "Timer turned On"
+    },
     "insightsTitleFalse": {
-        "en": "Dynamic mode turned Off"
-      },
+        "en": "Timer turned Off"
+    },
     "uiComponent": "sensor",
-    "icon": "/assets/dynamic_mode.svg"
+    "icon": "/assets/timer.svg"
 }

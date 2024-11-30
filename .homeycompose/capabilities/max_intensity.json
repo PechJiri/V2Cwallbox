@@ -1,0 +1,17 @@
+{
+    "type": "number",
+    "title": {
+        "en": "Maximum Dynamic Intensity"
+    },
+    "units": {
+        "en": "A"
+    },
+    "min": 6,
+    "max": 32,
+    "getable": true,
+    "setable": true,
+    "decimals": 0,
+    "insights": false,
+    "uiComponent": "sensor",
+    "icon": "/assets/max_intensity.svg"
+}

@@ -78,8 +78,23 @@ class V2CWallboxDriver extends Driver {
                         'measure_dynamic',
                         'measure_monthly_energy',
                         'measure_yearly_energy',
-                        'car_connected'
-                    ]
+                        'car_connected',
+                        'measure_house_power',
+                        'measure_fv_power',
+                        'measure_battery_power',
+                        'min_intensity',
+                        'max_intensity',
+                        'firmware_version',
+                        'signal_status',
+                        'timer_state'
+                    ],
+                    settings: {
+                        v2c_ip: this.settingsData.ip,
+                        update_interval: 5,
+                        enable_logging: true,
+                        min_intensity: 6,
+                        max_intensity: 32
+                    }
                 }];
             } else {
                 this.logger.warn("Nebyla nalezena platná data zařízení");
@@ -100,6 +115,20 @@ class V2CWallboxDriver extends Driver {
 
         try {
             const isConnected = await v2cApi.initializeSession();
+            
+            if (isConnected) {
+                // Pokud je připojení úspěšné, získáme i další údaje
+                const deviceData = await v2cApi.getData();
+                this.logger.debug("Získána dodatečná data zařízení", deviceData);
+                
+                // Kontrola verze firmware
+                if (deviceData.FirmwareVersion) {
+                    this.logger.debug("Detekována verze firmware", {
+                        version: deviceData.FirmwareVersion
+                    });
+                }
+            }
+
             const status = isConnected 
                 ? "pair.v2cwallbox.connection_ok"
                 : "pair.v2cwallbox.connection_error";

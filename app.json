@@ -616,16 +616,26 @@
         "lan"
       ],
       "capabilities": [
-        "measure_dynamic",
-        "measure_charge_energy",
-        "measure_charge_power",
         "measure_charge_state",
+        "measure_dynamic",
+        "measure_charge_power",
+        "measure_charge_energy",
         "measure_charge_time",
         "measure_intensity",
+        "measure_monthly_energy",
+        "measure_yearly_energy",
         "measure_locked",
-        "measure_paused",
+        "timer_state",
         "measure_slave_error",
-        "measure_voltage_installation"
+        "measure_house_power",
+        "measure_fv_power",
+        "measure_battery_power",
+        "min_intensity",
+        "max_intensity",
+        "firmware_version",
+        "signal_status",
+        "measure_voltage_installation",
+        "measure_paused"
       ],
       "images": {
         "small": "/drivers/v2c-wallbox/assets/images/small.png",
@@ -667,13 +677,13 @@
           "id": "update_interval",
           "type": "number",
           "label": {
-            "en": "Pooling interval in sec (default is 5s)"
+            "en": "Pooling interval in sec (default and minimum is 5s)"
           },
           "hint": {
             "en": "Set the interval for data updates from the Wallbox."
           },
           "value": 5,
-          "min": 1
+          "min": 5
         },
         {
           "id": "enable_logging",
@@ -685,6 +695,90 @@
           "hint": {
             "en": "Enable detailed logging for debugging purposes"
           }
+        },
+        {
+          "id": "min_intensity",
+          "type": "number",
+          "label": {
+            "en": "Minimum Dynamic Charging Amps"
+          },
+          "hint": {
+            "en": "Minimum charging power in Amperes (6-32A)"
+          },
+          "value": 6,
+          "min": 6,
+          "max": 32,
+          "units": {
+            "en": "A"
+          }
+        },
+        {
+          "id": "max_intensity",
+          "type": "number",
+          "label": {
+            "en": "Maximum Dynamic Charging Amps"
+          },
+          "hint": {
+            "en": "Maximum charging power in Amperes (6-32A)"
+          },
+          "value": 32,
+          "min": 6,
+          "max": 32,
+          "units": {
+            "en": "A"
+          }
+        },
+        {
+          "id": "dynamic_power_mode",
+          "type": "dropdown",
+          "label": {
+            "en": "Dynamic Power Mode"
+          },
+          "value": "disabled",
+          "values": [
+            {
+              "id": "disabled",
+              "label": {
+                "en": "Disabled"
+              }
+            },
+            {
+              "id": "0",
+              "label": {
+                "en": "Timed Power Enabled"
+              }
+            },
+            {
+              "id": "1",
+              "label": {
+                "en": "Timed Power Disabled"
+              }
+            },
+            {
+              "id": "2",
+              "label": {
+                "en": "FV Exclusive mode"
+              }
+            },
+            {
+              "id": "3",
+              "label": {
+                "en": "FV+Min Power mode"
+              }
+            },
+            {
+              "id": "4",
+              "label": {
+                "en": "Grid+FV mode"
+              }
+            },
+            {
+              "id": "5",
+              "label": {
+                "en": "Without Charge mode"
+              }
+            }
+          ]
         }
       ]
     }
@@ -727,13 +821,56 @@
         "en": "Car has been disconnected"
       }
     },
+    "firmware_version": {
+      "type": "string",
+      "title": {
+        "en": "Firmware Version"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/firmware.svg"
+    },
+    "max_intensity": {
+      "type": "number",
+      "title": {
+        "en": "Maximum Dynamic Intensity"
+      },
+      "units": {
+        "en": "A"
+      },
+      "min": 6,
+      "max": 32,
+      "getable": true,
+      "setable": true,
+      "decimals": 0,
+      "insights": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/max_intensity.svg"
+    },
+    "measure_battery_power": {
+      "type": "number",
+      "title": {
+        "en": "House Battery Power"
+      },
+      "units": {
+        "en": "W"
+      },
+      "uiComponent": "sensor",
+      "getable": true,
+      "setable": false,
+      "decimals": 0,
+      "insights": true,
+      "icon": "/assets/battery_power.svg"
+    },
     "measure_dynamic": {
       "type": "boolean",
       "title": {
         "en": "Dynamic Mode"
       },
       "getable": true,
-      "setable": false,
+      "setable": true,
       "insights": true,
       "insightsTitleTrue": {
         "en": "Dynamic mode turned On"
@@ -743,6 +880,36 @@
       },
       "uiComponent": "sensor",
       "icon": "/assets/dynamic_mode.svg"
+    },
+    "measure_fv_power": {
+      "type": "number",
+      "title": {
+        "en": "PV Power"
+      },
+      "units": {
+        "en": "W"
+      },
+      "uiComponent": "sensor",
+      "getable": true,
+      "setable": false,
+      "decimals": 0,
+      "insights": true,
+      "icon": "/assets/fv_power.svg"
+    },
+    "measure_house_power": {
+      "type": "number",
+      "title": {
+        "en": "House Power"
+      },
+      "units": {
+        "en": "W"
+      },
+      "uiComponent": "sensor",
+      "getable": true,
+      "setable": false,
+      "decimals": 0,
+      "insights": true,
+      "icon": "/assets/house_power.svg"
     },
     "measure_charge_energy": {
       "type": "number",
@@ -990,6 +1157,71 @@
       "decimals": 1,
       "insights": true,
       "icon": "/assets/charge_energy.svg"
+    },
+    "min_intensity": {
+      "type": "number",
+      "title": {
+        "en": "Minimum Dynamic Intensity"
+      },
+      "units": {
+        "en": "A"
+      },
+      "min": 6,
+      "max": 32,
+      "getable": true,
+      "setable": true,
+      "decimals": 0,
+      "insights": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/min_intensity.svg"
+    },
+    "signal_status": {
+      "type": "enum",
+      "title": {
+        "en": "Wifi Signal Status"
+      },
+      "values": [
+        {
+          "id": "1",
+          "title": {
+            "en": "Low"
+          }
+        },
+        {
+          "id": "2",
+          "title": {
+            "en": "Medium"
+          }
+        },
+        {
+          "id": "3",
+          "title": {
+            "en": "Good"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/signal.svg"
+    },
+    "timer_state": {
+      "type": "boolean",
+      "title": {
+        "en": "Timer"
+      },
+      "getable": true,
+      "setable": true,
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "Timer turned On"
+      },
+      "insightsTitleFalse": {
+        "en": "Timer turned Off"
+      },
+      "uiComponent": "sensor",
+      "icon": "/assets/timer.svg"
     }
   }
 }

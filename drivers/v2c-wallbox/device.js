@@ -64,7 +64,7 @@ class MyDevice extends Device {
         const capabilities = [
             'measure_charge_state',
             'measure_charge_power',
-            'measure_voltage_installation',
+            'measure_voltage_installation', 
             'measure_charge_energy',
             'measure_slave_error',
             'measure_charge_time',
@@ -74,9 +74,18 @@ class MyDevice extends Device {
             'measure_dynamic',
             'car_connected',
             'measure_yearly_energy',
-            'measure_monthly_energy'
+            'measure_monthly_energy',
+            'measure_house_power',    // Spotřeba domu
+            'measure_fv_power',       // Výkon FVE
+            'measure_battery_power',  // Výkon baterie
+            'min_intensity',          // Min proud (6-32A)
+            'max_intensity',          // Max proud (6-32A)
+            'firmware_version',       // Verze firmware
+            'signal_status',          // Síla signálu (1-3)
+            'timer_state'            // Stav časovače
         ];
-
+    
+        // Přidání chybějících capabilities
         for (const capability of capabilities) {
             if (!this.hasCapability(capability)) {
                 this.logger.debug(`Přidávání capability: ${capability}`);
@@ -116,25 +125,37 @@ class MyDevice extends Device {
         const currentYear = currentDate.getFullYear();
         const currentMonth = currentDate.getMonth() + 1;
     
+        // Initialize variables outside the try-catch block
+        let monthlyData = { month: currentMonth, energy: 0 };
+        let yearlyData = { year: currentYear, energy: 0 };
+    
         try {
-            // Reset měsíčních dat
-            let monthlyData = await this.getStoreValue('monthlyEnergyData') || { month: currentMonth, energy: 0 };
+            // Reset monthly data
+            const storedMonthlyData = await this.getStoreValue('monthlyEnergyData');
+            if (storedMonthlyData) {
+                monthlyData = storedMonthlyData;
+            }
+    
             if (monthlyData.month !== currentMonth) {
-                this.logger.debug('Reset měsíčních dat', { 
-                    starýMěsíc: monthlyData.month, 
-                    novýMěsíc: currentMonth 
+                this.logger.debug('Reset měsíčních dat', {
+                    oldMonth: monthlyData.month,
+                    newMonth: currentMonth,
                 });
                 monthlyData = { month: currentMonth, energy: 0 };
                 await this.setStoreValue('monthlyEnergyData', monthlyData);
                 await this.setCapabilityValue('measure_monthly_energy', 0);
             }
     
-            // Reset ročních dat
-            let yearlyData = await this.getStoreValue('yearlyEnergyData') || { year: currentYear, energy: 0 };
+            // Reset yearly data
+            const storedYearlyData = await this.getStoreValue('yearlyEnergyData');
+            if (storedYearlyData) {
+                yearlyData = storedYearlyData;
+            }
+    
             if (yearlyData.year !== currentYear) {
-                this.logger.debug('Reset ročních dat', { 
-                    starýRok: yearlyData.year, 
-                    novýRok: currentYear 
+                this.logger.debug('Reset ročních dat', {
+                    oldYear: yearlyData.year,
+                    newYear: currentYear,
                 });
                 yearlyData = { year: currentYear, energy: 0 };
                 await this.setStoreValue('yearlyEnergyData', yearlyData);
@@ -143,7 +164,16 @@ class MyDevice extends Device {
         } catch (error) {
             this.logger.error('Chyba při resetu měsíčních/ročních dat', error);
         }
+    
+        // Log outside the try-catch block for safety
+        this.logger.debug('Aktuální statistiky před resetem', {
+            monthly: monthlyData,
+            yearly: yearlyData,
+            currentMonth: currentMonth,
+            currentYear: currentYear,
+        });
     }
+    
     
     async getProductionData() {
         try {
@@ -156,7 +186,7 @@ class MyDevice extends Device {
             await this.resetMonthlyAndYearlyDataIfNeeded();
     
             const baseSession = await this.v2cApi.getData();
-    
+            
             // Validace a zpracování dat pomocí DataValidator
             const deviceData = this.dataValidator.validateAndProcessData(baseSession);
             if (!deviceData) {
@@ -166,13 +196,13 @@ class MyDevice extends Device {
             this.lastResponse = baseSession;
             this.lastResponseTime = now;
     
+            // Zpracování dat
             const previousState = await this.getStoreValue('previousChargeState') || "0";
             const currentState = deviceData.chargeState;
-    
             const chargeEnergy = await this.processEnergyData(deviceData, previousState, currentState);
     
+            // Aktualizace capabilities
             await this.updateCapabilities(deviceData, currentState, chargeEnergy);
-    
             await this.handleStateChanges(currentState, previousState, deviceData);
     
             if (!this.getAvailable()) {
@@ -187,63 +217,111 @@ class MyDevice extends Device {
     async processEnergyData(deviceData, previousState, currentState) {
         let chargeEnergy = 0;
         const storedBaseEnergy = await this.getStoreValue('baseChargeEnergy') || 0;
-
-        switch(currentState) {
-            case "2":
-                chargeEnergy = storedBaseEnergy + deviceData.chargeEnergy;
-                if (previousState !== "2") {
-                    await this.setStoreValue('chargingStartEnergy', deviceData.chargeEnergy);
-                }
-                break;
-
-            case "1":
-                if (previousState === "2") {
+        let energyToAdd = 0;
+    
+        try {
+            switch (currentState) {
+                case "2": // Nabíjení
                     chargeEnergy = storedBaseEnergy + deviceData.chargeEnergy;
-                    await this.setStoreValue('baseChargeEnergy', chargeEnergy);
-                } else {
+                    if (previousState !== "2") {
+                        await this.setStoreValue('chargingStartEnergy', deviceData.chargeEnergy);
+                    }
+                    break;
+    
+                case "0": // Odpojeno
+                    if (previousState === "2" || previousState === "1") {
+                        // Výpočet energie k přičtení
+                        const startEnergy = await this.getStoreValue('chargingStartEnergy') || 0;
+                        energyToAdd = deviceData.chargeEnergy - startEnergy;
+    
+                        // Aktualizace měsíčních dat
+                        const monthlyData = await this.getStoreValue('monthlyEnergyData') || { 
+                            month: new Date().getMonth() + 1, 
+                            energy: 0 
+                        };
+                        monthlyData.energy += energyToAdd;
+                        await this.setStoreValue('monthlyEnergyData', monthlyData);
+                        await this.setCapabilityValue('measure_monthly_energy', monthlyData.energy);
+    
+                        // Aktualizace ročních dat
+                        const yearlyData = await this.getStoreValue('yearlyEnergyData') || { 
+                            year: new Date().getFullYear(), 
+                            energy: 0 
+                        };
+                        yearlyData.energy += energyToAdd;
+                        await this.setStoreValue('yearlyEnergyData', yearlyData);
+                        await this.setCapabilityValue('measure_yearly_energy', yearlyData.energy);
+    
+                        this.logger.debug('Přidána energie do statistik při odpojení', {
+                            energyToAdd,
+                            monthlyTotal: monthlyData.energy,
+                            yearlyTotal: yearlyData.energy
+                        });
+                    }
+    
+                    // Reset všech hodnot pro novou relaci
+                    await this.setStoreValue('baseChargeEnergy', 0);
+                    await this.setStoreValue('chargingStartEnergy', 0);
+                    chargeEnergy = 0;
+                    break;
+    
+                case "1": // Připojeno, ale nenabíjí
+                    if (previousState === "2") {
+                        chargeEnergy = storedBaseEnergy + deviceData.chargeEnergy;
+                        await this.setStoreValue('baseChargeEnergy', chargeEnergy);
+                    } else {
+                        chargeEnergy = storedBaseEnergy;
+                    }
+                    break;
+    
+                default:
                     chargeEnergy = storedBaseEnergy;
-                }
-                break;
-
-            case "0":
-                await this.setStoreValue('baseChargeEnergy', 0);
-                await this.setStoreValue('chargingStartEnergy', 0);
-                break;
+                    break;
+            }
+    
+            return chargeEnergy;
+    
+        } catch (error) {
+            this.logger.error('Chyba při zpracování dat o energii', error);
+            throw error;
         }
-
-        this.logger.debug('Zpracování dat o energii', { 
-            currentState, 
-            previousState, 
-            chargeEnergy 
-        });
-
-        return chargeEnergy;
-    }
+    }    
 
     async updateCapabilities(deviceData, currentState, chargeEnergy) {
         try {
-            // Aktualizace všech relevantních schopností
+
+            const timerState = typeof deviceData.timer_state === 'boolean' 
+            ? deviceData.timer_state 
+            : Boolean(deviceData.timer_state);
+
+            // Aktualizace všech capabilities
             await Promise.all([
-                this.setCapabilityValue('measure_charge_state', deviceData.chargeState), // Stav nabíjení
-                this.setCapabilityValue('measure_charge_power', deviceData.chargePower), // Okamžitý výkon
-                this.setCapabilityValue('measure_voltage_installation', deviceData.voltageInstallation), // Napětí
-                this.setCapabilityValue('measure_slave_error', deviceData.slaveError), // Chyba slave
-                this.setCapabilityValue('measure_charge_time', Math.floor(deviceData.chargeTime / 60)), // Čas nabíjení v minutách
-                this.setCapabilityValue('measure_paused', deviceData.paused), // Stav pauzy
-                this.setCapabilityValue('measure_locked', deviceData.measure_locked), // Zamčení zařízení
-                this.setCapabilityValue('measure_intensity', deviceData.intensity), // Intenzita proudu (A)
-                this.setCapabilityValue('measure_dynamic', deviceData.dynamic), // Dynamický režim
-                this.setCapabilityValue('car_connected', ["1", "2"].includes(currentState)), // Připojení auta
-                this.setCapabilityValue('measure_charge_energy', chargeEnergy) // Kumulativní energie (kWh)
+                this.setCapabilityValue('measure_charge_state', deviceData.chargeState),
+                this.setCapabilityValue('measure_charge_power', deviceData.chargePower),
+                this.setCapabilityValue('measure_voltage_installation', deviceData.voltageInstallation),
+                this.setCapabilityValue('measure_slave_error', deviceData.slaveError),
+                this.setCapabilityValue('measure_charge_time', Math.floor(deviceData.chargeTime / 60)),
+                this.setCapabilityValue('measure_paused', deviceData.paused),
+                this.setCapabilityValue('measure_locked', deviceData.measure_locked),
+                this.setCapabilityValue('measure_intensity', deviceData.intensity),
+                this.setCapabilityValue('measure_dynamic', deviceData.dynamic),
+                this.setCapabilityValue('car_connected', ["1", "2"].includes(currentState)),
+                this.setCapabilityValue('measure_charge_energy', chargeEnergy),
+                this.setCapabilityValue('measure_house_power', deviceData.housePower),
+                this.setCapabilityValue('measure_fv_power', deviceData.fvPower),
+                this.setCapabilityValue('measure_battery_power', deviceData.batteryPower),
+                this.setCapabilityValue('min_intensity', deviceData.minIntensity),
+                this.setCapabilityValue('max_intensity', deviceData.maxIntensity),
+                this.setCapabilityValue('firmware_version', deviceData.firmwareVersion),
+                this.setCapabilityValue('signal_status', deviceData.signalStatus),
+                this.setCapabilityValue('timer_state', deviceData.timer_state || false)
             ]);
     
-            // Logování aktualizovaných hodnot
             this.logger.debug('Capabilities byly úspěšně aktualizovány', { 
                 deviceData, 
                 chargeEnergy 
             });
         } catch (error) {
-            // Zaznamenání chyby při aktualizaci
             this.logger.error('Chyba při aktualizaci capabilities', error);
             throw error;
         }
@@ -289,30 +367,53 @@ class MyDevice extends Device {
             newSettings, 
             changedKeys 
         });
-
+    
         try {
-            // Aktualizace nastavení v Homey
-            changedKeys.forEach((key) => {
+            // Pro každou změněnou hodnotu
+            for (const key of changedKeys) {
+                switch (key) {
+                    // Nová nastavení
+                    case 'min_intensity':
+                        await this.v2cApi.setMinIntensity(newSettings.min_intensity);
+                        break;
+                        
+                    case 'max_intensity':
+                        await this.v2cApi.setMaxIntensity(newSettings.max_intensity);
+                        break;
+                        
+                    case 'dynamic_power_mode':
+                        if (newSettings.dynamic_power_mode === 'disabled') {
+                            // Vypneme dynamický mód
+                            await this.v2cApi.setDynamic('0');
+                        } else {
+                            // Zapneme dynamický mód a nastavíme požadovaný režim
+                            await this.v2cApi.setDynamic('1');
+                            await this.v2cApi.setDynamicPowerMode(newSettings.dynamic_power_mode);
+                        }
+                        break;
+    
+                    // Původní nastavení
+                    case 'update_interval':
+                        this.startDataFetchInterval(newSettings.update_interval);
+                        break;
+                        
+                    case 'v2c_ip':
+                        this.v2cApi = new v2cAPI(this.homey, newSettings.v2c_ip);
+                        break;
+                        
+                    case 'enable_logging':
+                        this.logger.setEnabled(newSettings.enable_logging);
+                        this.v2cApi.setLoggingEnabled(newSettings.enable_logging);
+                        break;
+                }
+    
+                // Aktualizace nastavení v Homey
                 this.homey.settings.set(key, newSettings[key]);
-            });
-
-            // Kontrola změny intervalu aktualizace
-            if (changedKeys.includes('update_interval')) {
-                this.startDataFetchInterval(newSettings['update_interval']);
             }
-
-            // Kontrola změny IP adresy
-            if (changedKeys.includes('v2c_ip')) {
-                this.v2cApi = new v2cAPI(this.homey, newSettings['v2c_ip']);
-            }
-
-            // Kontrola změny logování
-            if (changedKeys.includes('enable_logging')) {
-                this.logger.setEnabled(newSettings['enable_logging']);
-                this.v2cApi.setLoggingEnabled(newSettings['enable_logging']);
-            }
-
-            this.getProductionData();
+    
+            // Aktualizace dat ze zařízení
+            await this.getProductionData();
+    
         } catch (error) {
             this.logger.error('Chyba při ukládání nastavení', error);
             throw error;

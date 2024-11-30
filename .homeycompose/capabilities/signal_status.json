@@ -1,0 +1,31 @@
+{
+    "type": "enum",
+    "title": {
+        "en": "Wifi Signal Status"
+    },
+    "values": [
+        {
+            "id": "1",
+            "title": {
+                "en": "Low"
+            }
+        },
+        {
+            "id": "2",
+            "title": {
+                "en": "Medium"
+            }
+        },
+        {
+            "id": "3",
+            "title": {
+                "en": "Good"
+            }
+        }
+    ],
+    "getable": true,
+    "setable": false,
+    "insights": false,
+    "uiComponent": "sensor",
+    "icon": "/assets/signal.svg"
+}

@@ -10,13 +10,13 @@
         "id": "update_interval",
         "type": "number",
         "label": {
-            "en": "Pooling interval in sec (default is 5s)"
+            "en": "Pooling interval in sec (default and minimum is 5s)"
         },
         "hint": {
             "en": "Set the interval for data updates from the Wallbox."
         },
         "value": 5,
-        "min": 1
+        "min": 5
     },
     {
         "id": "enable_logging",
@@ -28,5 +28,89 @@
         "hint": {
             "en": "Enable detailed logging for debugging purposes"
         }
+    },
+    {
+        "id": "min_intensity",
+        "type": "number",
+        "label": {
+            "en": "Minimum Dynamic Charging Amps"
+        },
+        "hint": {
+            "en": "Minimum charging power in Amperes (6-32A)"
+        },
+        "value": 6,
+        "min": 6,
+        "max": 32,
+        "units": {
+            "en": "A"
+        }
+    },
+    {
+        "id": "max_intensity",
+        "type": "number",
+        "label": {
+            "en": "Maximum Dynamic Charging Amps"
+        },
+        "hint": {
+            "en": "Maximum charging power in Amperes (6-32A)"
+        },
+        "value": 32,
+        "min": 6,
+        "max": 32,
+        "units": {
+            "en": "A"
+        }
+    },
+    {
+        "id": "dynamic_power_mode",
+        "type": "dropdown",
+        "label": {
+            "en": "Dynamic Power Mode"
+        },
+        "value": "disabled",
+        "values": [
+            {
+                "id": "disabled",
+                "label": {
+                    "en": "Disabled"
+                }
+            },
+            {
+                "id": "0",
+                "label": {
+                    "en": "Timed Power Enabled"
+                }
+            },
+            {
+                "id": "1",
+                "label": {
+                    "en": "Timed Power Disabled"
+                }
+            },
+            {
+                "id": "2",
+                "label": {
+                    "en": "FV Exclusive mode"
+                }
+            },
+            {
+                "id": "3",
+                "label": {
+                    "en": "FV+Min Power mode"
+                }
+            },
+            {
+                "id": "4",
+                "label": {
+                    "en": "Grid+FV mode"
+                }
+            },
+            {
+                "id": "5",
+                "label": {
+                    "en": "Without Charge mode"
+                }
+            }
+        ]
     }
 ]

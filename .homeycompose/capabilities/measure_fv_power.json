@@ -1,0 +1,15 @@
+{
+    "type": "number",
+    "title": {
+        "en": "PV Power"
+    },
+    "units": {
+        "en": "W"
+    },
+    "uiComponent": "sensor",
+    "getable": true,
+    "setable": false,
+    "decimals": 0,
+    "insights": true,
+    "icon": "/assets/fv_power.svg"
+}

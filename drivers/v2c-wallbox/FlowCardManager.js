@@ -172,29 +172,22 @@ class FlowCardManager {
             if (this.logger) {
                 this.logger.debug('Inicializace actions...');
             }
-
+    
             // Definice základních akcí
             const basicActions = [
+                // Původní akce
                 {
                     id: 'set_paused',
                     handler: async (args) => {
-                        // Převod hodnoty dropdown na boolean
-                        const paused = args.paused === '1'; // Dropdown hodnota je '1' pro Pause, '0' pro Resume.
-                
-                        // API volání k zařízení
+                        const paused = args.paused === '1';
                         await this.device.v2cApi.setParameter('Paused', paused ? '1' : '0');
-                
-                        // Synchronizace capability measure_paused
                         await this.device.setCapabilityValue('measure_paused', paused);
-                
-                        // Logování
                         if (this.logger) {
                             this.logger.debug('Capability measure_paused nastavena', { paused });
                         }
-                
-                        return true; // Vrací úspěšný výsledek Flow kartě
+                        return true;
                     }
-                },                
+                },
                 {
                     id: 'set_locked',
                     handler: async (args) => {
@@ -209,31 +202,60 @@ class FlowCardManager {
                         return true;
                     }
                 },
+    
+                // Aktualizované akce pro dynamický režim
                 {
                     id: 'set_dynamic',
                     handler: async (args) => {
-                        await this.device.v2cApi.setDynamic(args.dynamic);
-                        return true;
-                    }
-                },
-                {
-                    id: 'set_min_intensity',
-                    handler: async (args) => {
-                        await this.device.v2cApi.setMinIntensity(args.MinIntensity);
-                        return true;
-                    }
-                },
-                {
-                    id: 'set_max_intensity',
-                    handler: async (args) => {
-                        await this.device.v2cApi.setMaxIntensity(args.MaxIntensity);
+                        const dynamic = args.dynamic;
+                        const currentSettings = this.device.getSettings();
+    
+                        if (dynamic === '0') {
+                            // Vypnutí dynamického režimu
+                            await this.device.setSettings({
+                                dynamic_power_mode: 'disabled'
+                            });
+                        } else {
+                            // Zapnutí dynamického režimu
+                            const mode = currentSettings.dynamic_power_mode === 'disabled' 
+                                ? '0'  // Výchozí režim při zapnutí
+                                : currentSettings.dynamic_power_mode;
+                            
+                            await this.device.setSettings({
+                                dynamic_power_mode: mode
+                            });
+                        }
                         return true;
                     }
                 },
                 {
                     id: 'set_dynamic_power_mode',
                     handler: async (args) => {
-                        await this.device.v2cApi.setDynamicPowerMode(args.DynamicPowerMode);
+                        const mode = args.DynamicPowerMode;
+                        
+                        await this.device.setSettings({
+                            dynamic_power_mode: mode
+                        });
+                        return true;
+                    }
+                },
+    
+                // Aktualizované akce pro min/max intensity
+                {
+                    id: 'set_min_intensity',
+                    handler: async (args) => {
+                        await this.device.setSettings({
+                            min_intensity: args.MinIntensity
+                        });
+                        return true;
+                    }
+                },
+                {
+                    id: 'set_max_intensity',
+                    handler: async (args) => {
+                        await this.device.setSettings({
+                            max_intensity: args.MaxIntensity
+                        });
                         return true;
                     }
                 },
@@ -241,31 +263,24 @@ class FlowCardManager {
                     id: 'set_power',
                     handler: async (args) => {
                         const { power, phase_mode, voltage, voltage_type, maxAmps } = args;
-                
-                        // Výpočet proudu
-                        const calculatedCurrent = PowerCalculator.calculateCurrent(power, phase_mode, voltage, voltage_type, maxAmps);
-                
-                        // Nastavení parametru Intensity na zařízení
+                        const calculatedCurrent = PowerCalculator.calculateCurrent(
+                            power, phase_mode, voltage, voltage_type, maxAmps
+                        );
+                        
                         await this.device.v2cApi.setParameter('Intensity', calculatedCurrent);
-                
-                        // Logování
+                        
                         if (this.logger) {
                             this.logger.debug('Výpočet proudu a nastavení Intensity', {
-                                power,
-                                phase_mode,
-                                voltage,
-                                voltage_type,
-                                maxAmps,
+                                power, phase_mode, voltage, voltage_type, maxAmps,
                                 calculated_current: calculatedCurrent
                             });
                         }
-                
-                        // Vrácení tokenu
+                        
                         return { calculated_current: calculatedCurrent };
                     }
-                }                                
+                }
             ];
-
+    
             // Registrace všech základních akcí
             for (const action of basicActions) {
                 const card = this.homey.flow.getActionCard(action.id);
@@ -277,6 +292,9 @@ class FlowCardManager {
                 
                 card.registerRunListener(async (args) => {
                     try {
+                        if (this.logger) {
+                            this.logger.debug(`Spouštím akci ${action.id}`, { args });
+                        }
                         return await action.handler(args);
                     } catch (error) {
                         if (this.logger) {
@@ -285,14 +303,14 @@ class FlowCardManager {
                         throw error;
                     }
                 });
-
+    
                 this._flowCards.actions.set(action.id, card);
                 
                 if (this.logger) {
                     this.logger.debug(`Registrována akce: ${action.id}`);
                 }
             }
-
+    
         } catch (error) {
             if (this.logger) {
                 this.logger.error('Chyba při inicializaci akcí:', error);

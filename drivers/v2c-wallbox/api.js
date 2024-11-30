@@ -14,6 +14,7 @@ class v2cAPI {
 
     setLoggingEnabled(enabled) {
         this.logger.setEnabled(enabled);
+        this.validator.setLoggingEnabled(enabled);
     }
 
     async initializeSession() {
@@ -39,7 +40,7 @@ class v2cAPI {
 
     async getData() {
         const maxRetries = 3;
-        const retryDelay = 1000; // 1 sekunda mezi pokusy
+        const retryDelay = 5000; // 1 sekunda mezi pokusy
         
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
@@ -51,6 +52,10 @@ class v2cAPI {
                 });
                 
                 const data = await response.json();
+                
+                // Logování kompletní raw odpovědi z API
+                this.logger.debug('Raw API Response:', data);
+                
                 return data;
                 
             } catch (error) {
@@ -69,7 +74,6 @@ class v2cAPI {
         try {
             this.logger.debug('Zpracování surových dat', { rawData: data });
             
-            // Použití validátoru pro zpracování dat
             const processedData = this.validator.validateAndProcessData(data);
             
             if (!processedData) {
@@ -77,7 +81,9 @@ class v2cAPI {
                 return null;
             }
 
+            this.logger.debug('Zpracovaná data:', processedData);
             return processedData;
+            
         } catch (error) {
             this.logger.error('Selhalo zpracování dat', error);
             throw error;
@@ -119,6 +125,7 @@ class v2cAPI {
         }
     }
 
+    // Původní SET metody
     async setPaused(paused) {
         return this.setParameter('Paused', paused);
     }
@@ -128,6 +135,9 @@ class v2cAPI {
     }
 
     async setIntensity(intensity) {
+        if (intensity < 6 || intensity > 32) {
+            throw new Error('Intensity musí být mezi 6 a 32 A');
+        }
         return this.setParameter('Intensity', intensity);
     }
 
@@ -135,17 +145,69 @@ class v2cAPI {
         return this.setParameter('Dynamic', dynamic);
     }
 
+    async setDynamicPowerMode(dynamicPowerMode) {
+        this.logger.debug('Nastavení DynamicPowerMode', { hodnota: dynamicPowerMode });
+        return this.setParameter('DynamicPowerMode', dynamicPowerMode);
+    }
+
+    // Nové SET metody
     async setMinIntensity(minIntensity) {
+        if (minIntensity < 6 || minIntensity > 32) {
+            throw new Error('MinIntensity musí být mezi 6 a 32 A');
+        }
         return this.setParameter('MinIntensity', minIntensity);
     }
 
     async setMaxIntensity(maxIntensity) {
+        if (maxIntensity < 6 || maxIntensity > 32) {
+            throw new Error('MaxIntensity musí být mezi 6 a 32 A');
+        }
         return this.setParameter('MaxIntensity', maxIntensity);
     }
 
-    async setDynamicPowerMode(dynamicPowerMode) {
-        this.logger.debug('Nastavení DynamicPowerMode', { hodnota: dynamicPowerMode });
-        return this.setParameter('DynamicPowerMode', dynamicPowerMode);
+    async setTimer(enabled) {
+        return this.setParameter('Timer', enabled ? '1' : '0');
+    }
+
+    // Nové GET metody pro individuální hodnoty
+    async getHousePower() {
+        const data = await this.getData();
+        return data.HousePower || 0;
+    }
+
+    async getFVPower() {
+        const data = await this.getData();
+        return data.FVPower || 0;
+    }
+
+    async getBatteryPower() {
+        const data = await this.getData();
+        return data.BatteryPower || 0;
+    }
+
+    async getMinIntensity() {
+        const data = await this.getData();
+        return Math.max(6, Math.min(32, data.MinIntensity || 6));
+    }
+
+    async getMaxIntensity() {
+        const data = await this.getData();
+        return Math.max(6, Math.min(32, data.MaxIntensity || 32));
+    }
+
+    async getFirmwareVersion() {
+        const data = await this.getData();
+        return data.FirmwareVersion || '';
+    }
+
+    async getSignalStatus() {
+        const data = await this.getData();
+        return String(data.SignalStatus || '2');
+    }
+
+    async getTimer() {
+        const data = await this.getData();
+        return data.Timer === 1;
     }
 }
 
