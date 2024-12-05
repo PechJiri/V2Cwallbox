@@ -35,6 +35,38 @@
       "description": {
         "en": "This flow triggers when the Slave Error changes."
       }
+    },
+    {
+      "id": "connection_state_changed",
+      "title": {
+        "en": "API connection state changed"
+      },
+      "args": [
+        {
+          "name": "connection_state",
+          "type": "dropdown",
+          "title": {
+            "en": "State changed to"
+          },
+          "values": [
+            {
+              "id": "error",
+              "title": {
+                "en": "Error"
+              }
+            },
+            {
+              "id": "ok",
+              "title": {
+                "en": "(re-)Connected"
+              }
+            }
+          ]
+        }
+      ],
+      "titleFormatted": {
+        "en": "Connection state changed to [[connection_state]]"
+      }
     }
   ],
   "conditions": [
@@ -119,6 +151,12 @@
         "en": "This condition is true when the charging is not paused."
       },
       "args": []
+    },
+    {
+      "id": "is_connection_error",
+      "title": {
+        "en": "API connection has error"
+      }
     }
   ],
   "actions": [

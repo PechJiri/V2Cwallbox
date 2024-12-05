@@ -1,0 +1,18 @@
+{
+    "type": "boolean",
+    "title": {
+      "en": "Communication Error",
+      "cs": "Chyba komunikace"
+    },
+    "getable": true,
+    "setable": false,
+    "insights": true,
+    "insightsTitleTrue": {
+        "en": "API communication error has occured"
+      },
+    "insightsTitleFalse": {
+        "en": "API communication OK"
+      },
+    "uiComponent": "sensor",
+    "icon": "/assets/slave_error.svg"
+  }

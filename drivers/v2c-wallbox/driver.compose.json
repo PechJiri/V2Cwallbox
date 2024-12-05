@@ -26,7 +26,8 @@
         "firmware_version",
         "signal_status",
         "measure_voltage_installation",
-        "measure_paused"
+        "measure_paused",
+        "measure_connection_error"
     ],
   "images": {
     "small": "{{driverAssetsPath}}/images/small.png",

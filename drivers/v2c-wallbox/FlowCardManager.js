@@ -40,6 +40,15 @@ class FlowCardManager {
             {
                 id: 'slave_error_changed',
                 capability: 'measure_slave_error'
+            },
+            {
+                id: 'connection_state_changed',
+                capability: 'measure_connection_error',
+                hasArgs: true,  // přidáme příznak že má argumenty
+                comparison: (state, args) => {
+                    const hasError = args.connection_state === 'error';
+                    return state === hasError;
+                }
             }
         ];
 
@@ -74,6 +83,11 @@ class FlowCardManager {
                 id: 'power-less-than',
                 capability: 'measure_charge_power',
                 comparison: (current, value) => current < value
+            },
+            {
+                id: 'is_connection_error',
+                capability: 'measure_connection_error',
+                comparison: (state) => state === true
             }
         ];
     }
@@ -119,7 +133,15 @@ class FlowCardManager {
                 if (card.listenerCount('run') > 0) {
                     card.removeAllListeners('run');
                 }
-
+    
+                // Pokud má trigger argumenty, registrujeme runListener
+                if (trigger.hasArgs) {
+                    card.registerRunListener(async (args, state) => {
+                        const currentValue = await this.device.getCapabilityValue(trigger.capability);
+                        return trigger.comparison(currentValue, args);
+                    });
+                }
+    
                 this._flowCards.triggers.set(trigger.id, card);
                 
                 if (this.logger) {
@@ -334,6 +356,12 @@ class FlowCardManager {
 
     async triggerSlaveErrorChanged(errorDescription) {
         await this._triggerCard('slave_error_changed', { error_description: errorDescription });
+    }
+
+    async triggerConnectionStateChanged(hasError) {
+        await this._triggerCard('connection_state_changed', {}, { 
+            newState: hasError
+        });
     }
 
     async _triggerCard(cardId, tokens = {}, state = {}) {
