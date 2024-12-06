@@ -211,55 +211,60 @@ class MyDevice extends Device {
     
             await this.resetMonthlyAndYearlyDataIfNeeded();
     
-            const baseSession = await this.v2cApi.getData();
-            
-            // Validace a zpracování dat pomocí DataValidator
-            const deviceData = this.dataValidator.validateAndProcessData(baseSession);
-            if (!deviceData) {
-                throw new Error('Data z API jsou neplatná.');
-            }
+            try {
+                const baseSession = await this.v2cApi.getData();
+                
+                // Validace a zpracování dat pomocí DataValidator
+                const deviceData = this.dataValidator.validateAndProcessData(baseSession);
+                if (!deviceData) {
+                    throw new Error('Data z API jsou neplatná.');
+                }
     
-            this.lastResponse = baseSession;
-            this.lastResponseTime = now;
+                this.lastResponse = baseSession;
+                this.lastResponseTime = now;
     
-            // Zpracování dat
-            const previousState = await this.getStoreValue('previousChargeState') || "0";
-            const currentState = deviceData.chargeState;
-            const chargeEnergy = await this.processEnergyData(deviceData, previousState, currentState);
+                // Zpracování dat
+                const previousState = await this.getStoreValue('previousChargeState') || "0";
+                const currentState = deviceData.chargeState;
+                const chargeEnergy = await this.processEnergyData(deviceData, previousState, currentState);
     
-            // Aktualizace capabilities
-            await this.updateCapabilities(deviceData, currentState, chargeEnergy);
-            await this.handleStateChanges(currentState, previousState, deviceData);
+                // Aktualizace capabilities
+                await this.updateCapabilities(deviceData, currentState, chargeEnergy);
+                await this.handleStateChanges(currentState, previousState, deviceData);
     
-            // Kontrola změny stavu komunikace
-            const hadError = await this.getCapabilityValue('measure_connection_error');
-            if (hadError) {
-                // Byla chyba a teď je komunikace OK
-                await this.setCapabilityValue('measure_connection_error', false);
-                await this.flowCardManager.triggerConnectionStateChanged(false);
-            }
+                // Kontrola změny stavu komunikace - pouze pokud před tím byla chyba
+                const hadError = await this.getCapabilityValue('measure_connection_error');
+                if (hadError) {
+                    await this.setCapabilityValue('measure_connection_error', false);
+                    await this.flowCardManager.triggerConnectionStateChanged('ok');
+                }
     
-            this._lastSuccessfulUpdate = now;
+                this._lastSuccessfulUpdate = now;
     
-            if (!this.getAvailable()) {
-                await this.setAvailable();
+                if (!this.getAvailable()) {
+                    await this.setAvailable();
+                }
+            } catch (error) {
+                // Přidáme kontrolu, zda error neobsahuje informaci o vyčerpání všech pokusů
+                if (error.message.includes('Všechny pokusy selhaly')) {
+                    const hadError = await this.getCapabilityValue('measure_connection_error');
+                    if (!hadError) {
+                        await this.setCapabilityValue('measure_connection_error', true);
+                        await this.flowCardManager.triggerConnectionStateChanged('error');
+                    }
+    
+                    // Kontrola délky výpadku
+                    const errorDuration = now - (this._lastSuccessfulUpdate || 0);
+                    if (errorDuration > 5 * 60 * 1000) { // 5 minut
+                        this.setUnavailable(`Chyba při získávání dat: ${error.message}`);
+                    }
+                } else {
+                    // Pokud nejde o vyčerpání všech pokusů, pouze zalogujeme
+                    this.logger.debug('Dočasná chyba při získávání dat', error);
+                }
             }
         } catch (error) {
-            this.logger.error('Chyba při získávání dat', error);
-            
-            // Kontrola změny stavu komunikace
-            const hadError = await this.getCapabilityValue('measure_connection_error');
-            if (!hadError) {
-                // Nebyla chyba a teď nastala
-                await this.setCapabilityValue('measure_connection_error', true);
-                await this.flowCardManager.triggerConnectionStateChanged(true);
-            }
-    
-            // Kontrola délky výpadku
-            const errorDuration = now - (this._lastSuccessfulUpdate || 0);
-            if (errorDuration > 5 * 60 * 1000) { // 5 minut
-                this.setUnavailable(`Chyba při získávání dat: ${error.message}`);
-            }
+            this.logger.error('Kritická chyba při zpracování dat', error);
         }
     }   
 

@@ -40,7 +40,8 @@ class v2cAPI {
 
     async getData() {
         const maxRetries = 3;
-        const retryDelay = 5000; // 1 sekunda mezi pokusy
+        const retryDelay = 5000;
+        let lastError = null;
         
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
@@ -52,16 +53,14 @@ class v2cAPI {
                 });
                 
                 const data = await response.json();
-                
-                // Logování kompletní raw odpovědi z API
                 this.logger.debug('Raw API Response:', data);
-                
                 return data;
                 
             } catch (error) {
+                lastError = error;
                 if (attempt === maxRetries) {
                     this.logger.error('Selhalo načtení dat po všech pokusech', error);
-                    throw error;
+                    throw new Error(`Všechny pokusy selhaly: ${error.message}`);
                 }
                 
                 this.logger.debug(`Pokus ${attempt} selhal, čekám před dalším pokusem`);
