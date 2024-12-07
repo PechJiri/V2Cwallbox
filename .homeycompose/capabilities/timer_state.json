@@ -1,17 +1,50 @@
 {
-    "type": "boolean",
-    "title": {
-        "en": "Timer"
-    },
-    "getable": true,
-    "setable": true,
-    "insights": true,
-    "insightsTitleTrue": {
-        "en": "Timer turned On"
-    },
-    "insightsTitleFalse": {
-        "en": "Timer turned Off"
-    },
-    "uiComponent": "sensor",
-    "icon": "/assets/timer.svg"
+  "type": "boolean",
+  "title": {
+    "en": "Timer",
+    "nl": "Timer",
+    "da": "Timer",
+    "de": "Timer",
+    "es": "Temporizador",
+    "fr": "Minuteur",
+    "it": "Timer",
+    "no": "Timer",
+    "sv": "Timer",
+    "pl": "Stoper",
+    "ru": "Таймер",
+    "ko": "타이머"
+  },
+  "getable": true,
+  "setable": true,
+  "insights": true,
+  "insightsTitleTrue": {
+    "en": "Timer turned On",
+    "nl": "Timer ingeschakeld",
+    "da": "Timer tændt",
+    "de": "Timer eingeschaltet",
+    "es": "Temporizador activado",
+    "fr": "Minuteur activé",
+    "it": "Timer acceso",
+    "no": "Timer slått på",
+    "sv": "Timer påslagen",
+    "pl": "Stoper włączony",
+    "ru": "Таймер включен",
+    "ko": "타이머 켜짐"
+  },
+  "insightsTitleFalse": {
+    "en": "Timer turned Off",
+    "nl": "Timer uitgeschakeld",
+    "da": "Timer slukket",
+    "de": "Timer ausgeschaltet",
+    "es": "Temporizador desactivado",
+    "fr": "Minuteur désactivé",
+    "it": "Timer spento",
+    "no": "Timer slått av",
+    "sv": "Timer avstängd",
+    "pl": "Stoper wyłączony",
+    "ru": "Таймер выключен",
+    "ko": "타이머 꺼짐"
+  },
+  "uiComponent": "sensor",
+  "icon": "/assets/timer.svg"
 }

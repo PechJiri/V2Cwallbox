@@ -1,78 +1,210 @@
 {
-    "type": "enum",
-    "title": {
-        "en": "Inverter Comm Error"
+  "type": "enum",
+  "title": {
+    "en": "Inverter Comm Error",
+    "nl": "Omvormer Comm-fout",
+    "da": "Inverter Komm Fejl",
+    "de": "Wechselrichter-Kommunikationsfehler",
+    "es": "Error de Comunicación del Inversor",
+    "fr": "Erreur de Communication de l'Inverter",
+    "it": "Errore di Comunicazione Inverter",
+    "no": "Inverter Kommunikasjonsfeil",
+    "sv": "Inverter Kommunikationsfel",
+    "pl": "Błąd Komunikacji Inwertera",
+    "ru": "Ошибка Связи Инвертора",
+    "ko": "인버터 통신 오류"
+  },
+  "values": [
+    {
+      "id": "00",
+      "title": {
+        "en": "No Error",
+        "nl": "Geen Fout",
+        "da": "Ingen Fejl",
+        "de": "Kein Fehler",
+        "es": "Sin Error",
+        "fr": "Pas d'Erreur",
+        "it": "Nessun Errore",
+        "no": "Ingen Feil",
+        "sv": "Inget Fel",
+        "pl": "Brak Błędu",
+        "ru": "Нет Ошибки",
+        "ko": "오류 없음"
+      }
     },
-    "values": [
-        {
-            "id": "00",
-            "title": {
-                "en": "No Error"
-            }
-        },
-        {
-            "id": "01",
-            "title": {
-                "en": "Communication"
-            }
-        },
-        {
-            "id": "02",
-            "title": {
-                "en": "Reading"
-            }
-        },
-        {
-            "id": "03",
-            "title": {
-                "en": "Slave"
-            }
-        },
-        {
-            "id": "04",
-            "title": {
-                "en": "Waiting inverter WiFi"
-            }
-        },
-        {
-            "id": "05",
-            "title": {
-                "en": "Waiting communication"
-            }
-        },
-        {
-            "id": "06",
-            "title": {
-                "en": "Wrong IP"
-            }
-        },
-        {
-            "id": "07",
-            "title": {
-                "en": "Slave not found"
-            }
-        },
-        {
-            "id": "08",
-            "title": {
-                "en": "Wrong Slave"
-            }
-        },
-        {
-            "id": "09",
-            "title": {
-                "en": "No response"
-            }
-        },
-        {
-            "id": "10",
-            "title": {
-                "en": "Clamp not connected"
-            }
-        }
-    ],
-    "getable": true,
-    "setable": false,
-    "uiComponent": "sensor",
-    "icon": "/assets/slave_error.svg"
+    {
+      "id": "01",
+      "title": {
+        "en": "Communication",
+        "nl": "Communicatie",
+        "da": "Kommunikation",
+        "de": "Kommunikation",
+        "es": "Comunicación",
+        "fr": "Communication",
+        "it": "Comunicazione",
+        "no": "Kommunikasjon",
+        "sv": "Kommunikation",
+        "pl": "Komunikacja",
+        "ru": "Связь",
+        "ko": "통신"
+      }
+    },
+    {
+      "id": "02",
+      "title": {
+        "en": "Reading",
+        "nl": "Lezen",
+        "da": "Læsning",
+        "de": "Lesen",
+        "es": "Leyendo",
+        "fr": "Lecture",
+        "it": "Lettura",
+        "no": "Lesing",
+        "sv": "Läsning",
+        "pl": "Odczyt",
+        "ru": "Чтение",
+        "ko": "읽기"
+      }
+    },
+    {
+      "id": "03",
+      "title": {
+        "en": "Slave",
+        "nl": "Slave",
+        "da": "Slave",
+        "de": "Slave",
+        "es": "Esclavo",
+        "fr": "Esclave",
+        "it": "Slave",
+        "no": "Slave",
+        "sv": "Slav",
+        "pl": "Podrzędny",
+        "ru": "Ведомый",
+        "ko": "슬레이브"
+      }
+    },
+    {
+      "id": "04",
+      "title": {
+        "en": "Waiting inverter WiFi",
+        "nl": "Wachten op omvormer WiFi",
+        "da": "Venter på inverter WiFi",
+        "de": "Warten auf Wechselrichter-WiFi",
+        "es": "Esperando WiFi del inversor",
+        "fr": "En attente du WiFi de l'inverter",
+        "it": "In attesa di WiFi dell'inverter",
+        "no": "Venter på inverter WiFi",
+        "sv": "Väntar på inverter WiFi",
+        "pl": "Czekam na WiFi inwertera",
+        "ru": "Ожидание WiFi инвертора",
+        "ko": "인버터 WiFi 대기 중"
+      }
+    },
+    {
+      "id": "05",
+      "title": {
+        "en": "Waiting communication",
+        "nl": "Wachten op communicatie",
+        "da": "Venter på kommunikation",
+        "de": "Warten auf Kommunikation",
+        "es": "Esperando comunicación",
+        "fr": "En attente de communication",
+        "it": "In attesa di comunicazione",
+        "no": "Venter på kommunikasjon",
+        "sv": "Väntar på kommunikation",
+        "pl": "Czekanie na komunikację",
+        "ru": "Ожидание связи",
+        "ko": "통신 대기 중"
+      }
+    },
+    {
+      "id": "06",
+      "title": {
+        "en": "Wrong IP",
+        "nl": "Verkeerd IP",
+        "da": "Forkert IP",
+        "de": "Falsche IP",
+        "es": "IP Incorrecta",
+        "fr": "Mauvaise IP",
+        "it": "IP Errato",
+        "no": "Feil IP",
+        "sv": "Fel IP",
+        "pl": "Zły IP",
+        "ru": "Неправильный IP",
+        "ko": "잘못된 IP"
+      }
+    },
+    {
+      "id": "07",
+      "title": {
+        "en": "Slave not found",
+        "nl": "Slave niet gevonden",
+        "da": "Slave ikke fundet",
+        "de": "Slave nicht gefunden",
+        "es": "Esclavo no encontrado",
+        "fr": "Esclave non trouvé",
+        "it": "Slave non trovato",
+        "no": "Slave ikke funnet",
+        "sv": "Slav hittades inte",
+        "pl": "Nie znaleziono podrzędnego",
+        "ru": "Ведомый не найден",
+        "ko": "슬레이브를 찾을 수 없음"
+      }
+    },
+    {
+      "id": "08",
+      "title": {
+        "en": "Wrong Slave",
+        "nl": "Verkeerde Slave",
+        "da": "Forkert Slave",
+        "de": "Falscher Slave",
+        "es": "Esclavo Incorrecto",
+        "fr": "Mauvais Esclave",
+        "it": "Slave Errato",
+        "no": "Feil Slave",
+        "sv": "Fel Slav",
+        "pl": "Zły podrzędny",
+        "ru": "Неправильный Ведомый",
+        "ko": "잘못된 슬레이브"
+      }
+    },
+    {
+      "id": "09",
+      "title": {
+        "en": "No response",
+        "nl": "Geen reactie",
+        "da": "Intet svar",
+        "de": "Keine Antwort",
+        "es": "Sin respuesta",
+        "fr": "Pas de réponse",
+        "it": "Nessuna risposta",
+        "no": "Ingen respons",
+        "sv": "Inget svar",
+        "pl": "Brak odpowiedzi",
+        "ru": "Нет ответа",
+        "ko": "응답 없음"
+      }
+    },
+    {
+      "id": "10",
+      "title": {
+        "en": "Clamp not connected",
+        "nl": "Klem niet verbonden",
+        "da": "Klem ikke forbundet",
+        "de": "Klemme nicht verbunden",
+        "es": "Abrazadera no conectada",
+        "fr": "Pince non connectée",
+        "it": "Morsetto non collegato",
+        "no": "Klemme ikke tilkoblet",
+        "sv": "Klämma inte ansluten",
+        "pl": "Zacisk nie jest podłączony",
+        "ru": "Зажим не подключен",
+        "ko": "클램프가 연결되지 않음"
+      }
+    }
+  ],
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/slave_error.svg"
 }

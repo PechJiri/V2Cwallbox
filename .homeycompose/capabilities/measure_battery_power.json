@@ -1,15 +1,37 @@
 {
-    "type": "number",
-    "title": {
-        "en": "House Battery Power"
-    },
-    "units": {
-        "en": "W"
-    },
-    "uiComponent": "sensor",
-    "getable": true,
-    "setable": false,
-    "decimals": 0,
-    "insights": true,
-    "icon": "/assets/battery_power.svg"
+  "type": "number",
+  "title": {
+    "en": "House Battery Power",
+    "nl": "Huisbatterijvermogen",
+    "da": "Husets Batteristrøm",
+    "de": "Hausbatterieleistung",
+    "es": "Potencia de la Batería de la Casa",
+    "fr": "Puissance de la Batterie de la Maison",
+    "it": "Potenza della Batteria di Casa",
+    "no": "Husets Batterikraft",
+    "sv": "Husets Batterikraft",
+    "pl": "Moc Akumulatora Domowego",
+    "ru": "Мощность Домашней Батареи",
+    "ko": "가정용 배터리 전원"
+  },
+  "units": {
+    "en": "W",
+    "nl": "W",
+    "da": "W",
+    "de": "W",
+    "es": "W",
+    "fr": "W",
+    "it": "W",
+    "no": "W",
+    "sv": "W",
+    "pl": "W",
+    "ru": "Вт",
+    "ko": "와트"
+  },
+  "uiComponent": "sensor",
+  "getable": true,
+  "setable": false,
+  "decimals": 0,
+  "insights": true,
+  "icon": "/assets/battery_power.svg"
 }

@@ -1,15 +1,37 @@
 {
-    "type": "number",
-    "title": {
-        "en": "Charged energy during this year (kWh)"
-    },
-    "units": {
-        "en": "kWh"
-    },
-    "uiComponent": "sensor",
-    "getable": true,
-    "setable": false,
-    "decimals": 1,
-    "insights": true,
-    "icon": "/assets/charge_energy.svg"
+  "type": "number",
+  "title": {
+    "en": "Charged energy during this year (kWh)",
+    "nl": "Opgeladen energie dit jaar (kWh)",
+    "da": "Opladet energi i løbet af dette år (kWh)",
+    "de": "Geladene Energie in diesem Jahr (kWh)",
+    "es": "Energía cargada durante este año (kWh)",
+    "fr": "Énergie chargée cette année (kWh)",
+    "it": "Energia caricata durante quest'anno (kWh)",
+    "no": "Ladet energi i løpet av dette året (kWh)",
+    "sv": "Laddad energi under detta år (kWh)",
+    "pl": "Ładowana energia w tym roku (kWh)",
+    "ru": "Заряженная энергия в этом году (кВтч)",
+    "ko": "올해 충전된 에너지 (kWh)"
+  },
+  "units": {
+    "en": "kWh",
+    "nl": "kWh",
+    "da": "kWh",
+    "de": "kWh",
+    "es": "kWh",
+    "fr": "kWh",
+    "it": "kWh",
+    "no": "kWh",
+    "sv": "kWh",
+    "pl": "kWh",
+    "ru": "кВтч",
+    "ko": "kWh"
+  },
+  "uiComponent": "sensor",
+  "getable": true,
+  "setable": false,
+  "decimals": 1,
+  "insights": true,
+  "icon": "/assets/charge_energy.svg"
 }

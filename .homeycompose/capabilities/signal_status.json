@@ -1,31 +1,75 @@
 {
-    "type": "enum",
-    "title": {
-        "en": "Wifi Signal Status"
+  "type": "enum",
+  "title": {
+    "en": "Wifi Signal Status",
+    "nl": "Wifi-signaalstatus",
+    "da": "Wifi-signalstatus",
+    "de": "WLAN-Signalstatus",
+    "es": "Estado de la señal Wifi",
+    "fr": "État du signal Wifi",
+    "it": "Stato del segnale Wifi",
+    "no": "Wifi-signalstatus",
+    "sv": "Wifi-signalstyrka",
+    "pl": "Status sygnału Wifi",
+    "ru": "Статус сигнала Wifi",
+    "ko": "와이파이 신호 상태"
+  },
+  "values": [
+    {
+      "id": "1",
+      "title": {
+        "en": "Low",
+        "nl": "Laag",
+        "da": "Lav",
+        "de": "Niedrig",
+        "es": "Baja",
+        "fr": "Faible",
+        "it": "Basso",
+        "no": "Lav",
+        "sv": "Låg",
+        "pl": "Niski",
+        "ru": "Низкий",
+        "ko": "낮음"
+      }
     },
-    "values": [
-        {
-            "id": "1",
-            "title": {
-                "en": "Low"
-            }
-        },
-        {
-            "id": "2",
-            "title": {
-                "en": "Medium"
-            }
-        },
-        {
-            "id": "3",
-            "title": {
-                "en": "Good"
-            }
-        }
-    ],
-    "getable": true,
-    "setable": false,
-    "insights": false,
-    "uiComponent": "sensor",
-    "icon": "/assets/signal.svg"
+    {
+      "id": "2",
+      "title": {
+        "en": "Medium",
+        "nl": "Middel",
+        "da": "Mellem",
+        "de": "Mittel",
+        "es": "Media",
+        "fr": "Moyen",
+        "it": "Medio",
+        "no": "Middels",
+        "sv": "Medel",
+        "pl": "Średni",
+        "ru": "Средний",
+        "ko": "중간"
+      }
+    },
+    {
+      "id": "3",
+      "title": {
+        "en": "Good",
+        "nl": "Goed",
+        "da": "God",
+        "de": "Gut",
+        "es": "Buena",
+        "fr": "Bon",
+        "it": "Buono",
+        "no": "Bra",
+        "sv": "Bra",
+        "pl": "Dobry",
+        "ru": "Хороший",
+        "ko": "좋음"
+      }
+    }
+  ],
+  "getable": true,
+  "setable": false,
+  "insights": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/signal.svg"
 }

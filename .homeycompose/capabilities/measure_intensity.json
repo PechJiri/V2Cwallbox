@@ -1,15 +1,37 @@
 {
-    "type": "number",
-    "title": {
-        "en": "Intensity (A)"
-    },
-    "units": {
-        "en": "A"
-    },
-    "uiComponent": "sensor",
-    "getable": true,
-    "setable": false,
-    "decimals": 1,
-    "insights": true,
-    "icon": "/assets/intensity.svg"
+  "type": "number",
+  "title": {
+    "en": "Intensity (A)",
+    "nl": "Intensiteit (A)",
+    "da": "Intensitet (A)",
+    "de": "Intensität (A)",
+    "es": "Intensidad (A)",
+    "fr": "Intensité (A)",
+    "it": "Intensità (A)",
+    "no": "Intensitet (A)",
+    "sv": "Intensitet (A)",
+    "pl": "Intensywność (A)",
+    "ru": "Интенсивность (A)",
+    "ko": "강도 (A)"
+  },
+  "units": {
+    "en": "A",
+    "nl": "A",
+    "da": "A",
+    "de": "A",
+    "es": "A",
+    "fr": "A",
+    "it": "A",
+    "no": "A",
+    "sv": "A",
+    "pl": "A",
+    "ru": "A",
+    "ko": "A"
+  },
+  "uiComponent": "sensor",
+  "getable": true,
+  "setable": false,
+  "decimals": 1,
+  "insights": true,
+  "icon": "/assets/intensity.svg"
 }

@@ -1,11 +1,22 @@
 {
-    "type": "string",
-    "title": {
-        "en": "Firmware Version"
-    },
-    "getable": true,
-    "setable": false,
-    "insights": false,
-    "uiComponent": "sensor",
-    "icon": "/assets/firmware.svg"
+  "type": "string",
+  "title": {
+    "en": "Firmware Version",
+    "nl": "Firmwareversie",
+    "da": "Firmwareversion",
+    "de": "Firmware-Version",
+    "es": "Versión de firmware",
+    "fr": "Version du firmware",
+    "it": "Versione firmware",
+    "no": "Firmwareversjon",
+    "sv": "Firmwareversion",
+    "pl": "Wersja oprogramowania",
+    "ru": "Версия прошивки",
+    "ko": "펌웨어 버전"
+  },
+  "getable": true,
+  "setable": false,
+  "insights": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/firmware.svg"
 }

@@ -1,17 +1,50 @@
 {
-    "id": "car_connected",
-    "type": "boolean",
-    "title": {
-      "en": "Car connected"
-    },
-    "getable": true,
-    "setable": false,
-    "uiComponent": null,
-    "insights": true,
-    "insightsTitleTrue": {
-        "en": "Car has been connected"
-      },
-    "insightsTitleFalse": {
-        "en": "Car has been disconnected"
-      }
+  "id": "car_connected",
+  "type": "boolean",
+  "title": {
+    "en": "Car connected",
+    "nl": "Auto verbonden",
+    "da": "Bil forbundet",
+    "de": "Auto verbunden",
+    "es": "Coche conectado",
+    "fr": "Voiture connectée",
+    "it": "Auto connessa",
+    "no": "Bil tilkoblet",
+    "sv": "Bil ansluten",
+    "pl": "Samochód połączony",
+    "ru": "Машина подключена",
+    "ko": "차량 연결됨"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": null,
+  "insights": true,
+  "insightsTitleTrue": {
+    "en": "Car has been connected",
+    "nl": "Auto is verbonden",
+    "da": "Bilen er forbundet",
+    "de": "Auto ist verbunden",
+    "es": "El coche ha sido conectado",
+    "fr": "La voiture a été connectée",
+    "it": "L'auto è stata connessa",
+    "no": "Bil er tilkoblet",
+    "sv": "Bilen har anslutits",
+    "pl": "Samochód został połączony",
+    "ru": "Машина была подключена",
+    "ko": "차량이 연결되었습니다"
+  },
+  "insightsTitleFalse": {
+    "en": "Car has been disconnected",
+    "nl": "Auto is losgekoppeld",
+    "da": "Bilen er afbrudt",
+    "de": "Auto ist getrennt",
+    "es": "El coche ha sido desconectado",
+    "fr": "La voiture a été déconnectée",
+    "it": "L'auto è stata disconnessa",
+    "no": "Bil er frakoblet",
+    "sv": "Bilen har kopplats från",
+    "pl": "Samochód został odłączony",
+    "ru": "Машина была отключена",
+    "ko": "차량 연결이 해제되었습니다"
+  }
 }

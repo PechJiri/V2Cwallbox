@@ -1,15 +1,37 @@
 {
-    "type": "number",
-    "title": {
-        "en": "Charged energy during this month (kWh)"
-    },
-    "units": {
-        "en": "kWh"
-    },
-    "uiComponent": "sensor",
-    "getable": true,
-    "setable": false,
-    "decimals": 1,
-    "insights": true,
-    "icon": "/assets/charge_energy.svg"
+  "type": "number",
+  "title": {
+    "en": "Charged energy during this month (kWh)",
+    "nl": "Opgeladen energie deze maand (kWh)",
+    "da": "Opladet energi i løbet af denne måned (kWh)",
+    "de": "Geladene Energie in diesem Monat (kWh)",
+    "es": "Energía cargada durante este mes (kWh)",
+    "fr": "Énergie chargée ce mois-ci (kWh)",
+    "it": "Energia caricata durante questo mese (kWh)",
+    "no": "Ladet energi i løpet av denne måneden (kWh)",
+    "sv": "Laddad energi under denna månad (kWh)",
+    "pl": "Naładowana energia w tym miesiącu (kWh)",
+    "ru": "Заряженная энергия за этот месяц (kWh)",
+    "ko": "이 달 동안 충전된 에너지 (kWh)"
+  },
+  "units": {
+    "en": "kWh",
+    "nl": "kWh",
+    "da": "kWh",
+    "de": "kWh",
+    "es": "kWh",
+    "fr": "kWh",
+    "it": "kWh",
+    "no": "kWh",
+    "sv": "kWh",
+    "pl": "kWh",
+    "ru": "кВтч",
+    "ko": "kWh"
+  },
+  "uiComponent": "sensor",
+  "getable": true,
+  "setable": false,
+  "decimals": 1,
+  "insights": true,
+  "icon": "/assets/charge_energy.svg"
 }

@@ -1,17 +1,39 @@
 {
-    "type": "number",
-    "title": {
-        "en": "Maximum Dynamic Intensity"
-    },
-    "units": {
-        "en": "A"
-    },
-    "min": 6,
-    "max": 32,
-    "getable": true,
-    "setable": true,
-    "decimals": 0,
-    "insights": false,
-    "uiComponent": "sensor",
-    "icon": "/assets/max_intensity.svg"
+  "type": "number",
+  "title": {
+    "en": "Maximum Dynamic Intensity",
+    "nl": "Maximale Dynamische Intensiteit",
+    "da": "Maksimal Dynamisk Intensitet",
+    "de": "Maximale Dynamische Intensität",
+    "es": "Intensidad Dinámica Máxima",
+    "fr": "Intensité Dynamique Maximale",
+    "it": "Intensità Dinamica Massima",
+    "no": "Maksimal Dynamisk Intensitet",
+    "sv": "Maximal Dynamisk Intensitet",
+    "pl": "Maksymalna Dynamiczna Intensywność",
+    "ru": "Максимальная Динамическая Интенсивность",
+    "ko": "최대 동적 강도"
+  },
+  "units": {
+    "en": "A",
+    "nl": "A",
+    "da": "A",
+    "de": "A",
+    "es": "A",
+    "fr": "A",
+    "it": "A",
+    "no": "A",
+    "sv": "A",
+    "pl": "A",
+    "ru": "A",
+    "ko": "A"
+  },
+  "min": 6,
+  "max": 32,
+  "getable": true,
+  "setable": true,
+  "decimals": 0,
+  "insights": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/max_intensity.svg"
 }

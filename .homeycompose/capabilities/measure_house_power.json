@@ -1,15 +1,37 @@
 {
-    "type": "number",
-    "title": {
-        "en": "House Power"
-    },
-    "units": {
-        "en": "W"
-    },
-    "uiComponent": "sensor",
-    "getable": true,
-    "setable": false,
-    "decimals": 0,
-    "insights": true,
-    "icon": "/assets/house_power.svg"
+  "type": "number",
+  "title": {
+    "en": "House Power",
+    "nl": "Huisvermogen",
+    "da": "Husets Kraft",
+    "de": "Hauskraft",
+    "es": "Potencia de la Casa",
+    "fr": "Puissance de la Maison",
+    "it": "Energia della Casa",
+    "no": "Husets Kraft",
+    "sv": "Husets Kraft",
+    "pl": "Moc Domu",
+    "ru": "Мощность дома",
+    "ko": "집 전력"
+  },
+  "units": {
+    "en": "W",
+    "nl": "W",
+    "da": "W",
+    "de": "W",
+    "es": "W",
+    "fr": "W",
+    "it": "W",
+    "no": "W",
+    "sv": "W",
+    "pl": "W",
+    "ru": "Вт",
+    "ko": "W"
+  },
+  "uiComponent": "sensor",
+  "getable": true,
+  "setable": false,
+  "decimals": 0,
+  "insights": true,
+  "icon": "/assets/house_power.svg"
 }

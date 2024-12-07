@@ -1,18 +1,51 @@
 {
-    "type": "boolean",
-    "title": {
-      "en": "Communication Error",
-      "cs": "Chyba komunikace"
-    },
-    "getable": true,
-    "setable": false,
-    "insights": true,
-    "insightsTitleTrue": {
-        "en": "API communication error has occured"
-      },
-    "insightsTitleFalse": {
-        "en": "API communication OK"
-      },
-    "uiComponent": "sensor",
-    "icon": "/assets/slave_error.svg"
-  }
+  "type": "boolean",
+  "title": {
+    "en": "Communication Error",
+    "cs": "Chyba komunikace",
+    "nl": "Communicatiefout",
+    "da": "Kommunikationsfejl",
+    "de": "Kommunikationsfehler",
+    "es": "Error de comunicación",
+    "fr": "Erreur de communication",
+    "it": "Errore di comunicazione",
+    "no": "Kommunikasjonsfeil",
+    "sv": "Kommunikationsfel",
+    "pl": "Błąd komunikacji",
+    "ru": "Ошибка связи",
+    "ko": "통신 오류"
+  },
+  "getable": true,
+  "setable": false,
+  "insights": true,
+  "insightsTitleTrue": {
+    "en": "API communication error has occured",
+    "nl": "Er is een fout opgetreden bij API-communicatie",
+    "da": "Der er opstået en API-kommunikationsfejl",
+    "de": "Ein API-Kommunikationsfehler ist aufgetreten",
+    "es": "Ha ocurrido un error de comunicación con la API",
+    "fr": "Une erreur de communication API s'est produite",
+    "it": "Si è verificato un errore di comunicazione API",
+    "no": "Det har oppstått en API-kommunikasjonsfeil",
+    "sv": "Ett API-kommunikationsfel har inträffat",
+    "pl": "Wystąpił błąd komunikacji API",
+    "ru": "Произошла ошибка связи с API",
+    "ko": "API 통신 오류가 발생했습니다"
+  },
+  "insightsTitleFalse": {
+    "en": "API communication OK",
+    "nl": "API-communicatie OK",
+    "da": "API-kommunikation OK",
+    "de": "API-Kommunikation OK",
+    "es": "Comunicación API correcta",
+    "fr": "Communication API OK",
+    "it": "Comunicazione API OK",
+    "no": "API-kommunikasjon OK",
+    "sv": "API-kommunikation OK",
+    "pl": "Komunikacja API OK",
+    "ru": "Связь с API в порядке",
+    "ko": "API 통신이 정상입니다"
+  },
+  "uiComponent": "sensor",
+  "icon": "/assets/slave_error.svg"
+}

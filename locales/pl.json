@@ -1,0 +1,14 @@
+{
+  "pair": {
+    "v2cwallbox": {
+      "title": "Proszę podać adres IP swojej ładowarki V2C Wallbox:",
+      "check": "Sprawdź połączenie",
+      "ip": "Adres IP",
+      "connection_ok": "Połączenie udane",
+      "connection_error": "Połączenie niemożliwe"
+    }
+  },
+  "settings": {
+    "title": "Ustawienia ładowarki V2C Wallbox"
+  }
+}

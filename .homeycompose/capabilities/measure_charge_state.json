@@ -1,30 +1,74 @@
 {
-    "type": "enum",
-    "title": {
-        "en": "Charger state"
+  "type": "enum",
+  "title": {
+    "en": "Charger state",
+    "nl": "Lader status",
+    "da": "Oplader tilstand",
+    "de": "Ladezustand",
+    "es": "Estado del cargador",
+    "fr": "État du chargeur",
+    "it": "Stato del caricatore",
+    "no": "Ladestatus",
+    "sv": "Laddarstatus",
+    "pl": "Stan ładowarki",
+    "ru": "Состояние зарядного устройства",
+    "ko": "충전기 상태"
+  },
+  "values": [
+    {
+      "id": "0",
+      "title": {
+        "en": "EV not connected",
+        "nl": "EV niet verbonden",
+        "da": "EV ikke tilsluttet",
+        "de": "EV nicht verbunden",
+        "es": "EV no conectado",
+        "fr": "EV non connecté",
+        "it": "EV non connesso",
+        "no": "EV ikke tilkoblet",
+        "sv": "EV inte ansluten",
+        "pl": "EV nie podłączony",
+        "ru": "EV не подключен",
+        "ko": "EV 연결되지 않음"
+      }
     },
-    "values": [
-        {
-            "id": "0",
-            "title": {
-                "en": "EV not connected"
-            }
-        },
-        {
-            "id": "1",
-            "title": {
-                "en": "EV connected"
-            }
-        },
-        {
-            "id": "2",
-            "title": {
-                "en": "Charging"
-            }
-        }
-    ],
-    "getable": true,
-    "setable": false,
-    "uiComponent": "sensor",
-    "icon": "/assets/charge_state.svg"
+    {
+      "id": "1",
+      "title": {
+        "en": "EV connected",
+        "nl": "EV verbonden",
+        "da": "EV tilsluttet",
+        "de": "EV verbunden",
+        "es": "EV conectado",
+        "fr": "EV connecté",
+        "it": "EV connesso",
+        "no": "EV tilkoblet",
+        "sv": "EV ansluten",
+        "pl": "EV podłączony",
+        "ru": "EV подключен",
+        "ko": "EV 연결됨"
+      }
+    },
+    {
+      "id": "2",
+      "title": {
+        "en": "Charging",
+        "nl": "Opladen",
+        "da": "Oplader",
+        "de": "Laden",
+        "es": "Cargando",
+        "fr": "En charge",
+        "it": "In carica",
+        "no": "Lader",
+        "sv": "Laddar",
+        "pl": "Ładowanie",
+        "ru": "Зарядка",
+        "ko": "충전 중"
+      }
+    }
+  ],
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/charge_state.svg"
 }

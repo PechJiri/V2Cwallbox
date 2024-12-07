@@ -1,6 +1,17 @@
 {
   "name": {
-    "en": "V2C Wallbox Status"
+    "en": "V2C Wallbox Status",
+    "nl": "V2C Wallbox-status",
+    "da": "V2C Wallbox-status",
+    "de": "V2C Wallbox-Status",
+    "es": "Estado de V2C Wallbox",
+    "fr": "Statut V2C Wallbox",
+    "it": "Stato V2C Wallbox",
+    "no": "V2C Wallbox-status",
+    "sv": "V2C Wallbox-status",
+    "pl": "Status V2C Wallbox",
+    "ru": "Статус V2C Wallbox",
+    "ko": "V2C Wallbox 상태"
   },
   "settings": [],
   "height": "50",

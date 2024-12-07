@@ -3,69 +3,212 @@
     {
       "id": "car-connected",
       "title": {
-        "en": "Car is connected"
+        "en": "Car is connected",
+        "nl": "Auto is verbonden",
+        "da": "Bil er tilsluttet",
+        "de": "Auto ist verbunden",
+        "es": "El coche está conectado",
+        "fr": "La voiture est connectée",
+        "it": "L'auto è collegata",
+        "no": "Bil er koblet til",
+        "sv": "Bil är ansluten",
+        "pl": "Samochód jest podłączony",
+        "ru": "Автомобиль подключен",
+        "ko": "차량이 연결되었습니다"
       },
       "description": {
-        "en": "This flow triggers when the car is connected to the Wallbox."
+        "en": "This flow triggers when the car is connected to the Wallbox.",
+        "nl": "Deze flow wordt geactiveerd wanneer de auto is verbonden met de Wallbox.",
+        "da": "Dette flow aktiveres, når bilen er tilsluttet Wallbox.",
+        "de": "Dieser Ablauf wird ausgelöst, wenn das Auto mit der Wallbox verbunden ist.",
+        "es": "Este flujo se activa cuando el coche está conectado a la Wallbox.",
+        "fr": "Ce flux se déclenche lorsque la voiture est connectée à la Wallbox.",
+        "it": "Questo flusso si attiva quando l'auto è collegata alla Wallbox.",
+        "no": "Denne flyt aktiveres når bilen er koblet til Wallbox.",
+        "sv": "Detta flöde utlöses när bilen är ansluten till Wallbox.",
+        "pl": "Ten przepływ uruchamia się, gdy samochód jest podłączony do Wallbox.",
+        "ru": "Этот поток активируется, когда автомобиль подключен к Wallbox.",
+        "ko": "차량이 Wallbox에 연결되면 이 흐름이 시작됩니다."
       }
     },
     {
       "id": "car-disconnected",
       "title": {
-        "en": "Car is disconnected"
+        "en": "Car is disconnected",
+        "nl": "Auto is losgekoppeld",
+        "da": "Bil er afbrudt",
+        "de": "Auto ist getrennt",
+        "es": "El coche está desconectado",
+        "fr": "La voiture est déconnectée",
+        "it": "L'auto è scollegata",
+        "no": "Bil er frakoblet",
+        "sv": "Bil är bortkopplad",
+        "pl": "Samochód jest odłączony",
+        "ru": "Автомобиль отключен",
+        "ko": "차량이 연결 해제되었습니다"
       },
       "description": {
-        "en": "This flow triggers when the car is disconnected from the Wallbox."
+        "en": "This flow triggers when the car is disconnected from the Wallbox.",
+        "nl": "Deze flow wordt geactiveerd wanneer de auto is losgekoppeld van de Wallbox.",
+        "da": "Dette flow aktiveres, når bilen afbrydes fra Wallbox.",
+        "de": "Dieser Ablauf wird ausgelöst, wenn das Auto von der Wallbox getrennt wird.",
+        "es": "Este flujo se activa cuando el coche está desconectado de la Wallbox.",
+        "fr": "Ce flux se déclenche lorsque la voiture est déconnectée de la Wallbox.",
+        "it": "Questo flusso si attiva quando l'auto è scollegata dalla Wallbox.",
+        "no": "Denne flyt aktiveres når bilen er frakoblet Wallbox.",
+        "sv": "Detta flöde utlöses när bilen är bortkopplad från Wallbox.",
+        "pl": "Ten przepływ uruchamia się, gdy samochód jest odłączony od Wallbox.",
+        "ru": "Этот поток активируется, когда автомобиль отключается от Wallbox.",
+        "ko": "차량이 Wallbox에서 연결 해제되면 이 흐름이 시작됩니다."
       }
     },
     {
       "id": "car-start-charging",
       "title": {
-        "en": "Car starts charging"
+        "en": "Car starts charging",
+        "nl": "Auto begint met opladen",
+        "da": "Bil begynder at oplade",
+        "de": "Auto beginnt zu laden",
+        "es": "El coche comienza a cargarse",
+        "fr": "La voiture commence à se charger",
+        "it": "L'auto inizia a caricarsi",
+        "no": "Bil begynner å lade",
+        "sv": "Bil börjar laddas",
+        "pl": "Samochód zaczyna ładowanie",
+        "ru": "Автомобиль начинает зарядку",
+        "ko": "차량이 충전을 시작합니다"
       },
       "description": {
-        "en": "This flow triggers when the car starts charging at the Wallbox."
+        "en": "This flow triggers when the car starts charging at the Wallbox.",
+        "nl": "Deze flow wordt geactiveerd wanneer de auto begint met opladen bij de Wallbox.",
+        "da": "Dette flow aktiveres, når bilen begynder at oplade ved Wallbox.",
+        "de": "Dieser Ablauf wird ausgelöst, wenn das Auto an der Wallbox zu laden beginnt.",
+        "es": "Este flujo se activa cuando el coche comienza a cargarse en la Wallbox.",
+        "fr": "Ce flux se déclenche lorsque la voiture commence à se charger à la Wallbox.",
+        "it": "Questo flusso si attiva quando l'auto inizia a caricarsi presso la Wallbox.",
+        "no": "Denne flyt aktiveres når bilen begynner å lade ved Wallbox.",
+        "sv": "Detta flöde utlöses när bilen börjar laddas vid Wallbox.",
+        "pl": "Ten przepływ uruchamia się, gdy samochód zaczyna ładować przy użyciu Wallbox.",
+        "ru": "Этот поток активируется, когда автомобиль начинает зарядку на Wallbox.",
+        "ko": "차량이 Wallbox에서 충전을 시작하면 이 흐름이 시작됩니다."
       }
     },
     {
       "id": "slave_error_changed",
       "title": {
-        "en": "Slave Error Changed"
+        "en": "Slave Error Changed",
+        "nl": "Slavefout gewijzigd",
+        "da": "Slavefejl ændret",
+        "de": "Slave-Fehler geändert",
+        "es": "Error de esclavo cambiado",
+        "fr": "Erreur de l'esclave modifiée",
+        "it": "Errore slave cambiato",
+        "no": "Slavefeil endret",
+        "sv": "Slavefel ändrat",
+        "pl": "Błąd podrzędny zmieniony",
+        "ru": "Изменение ошибки ведомого устройства",
+        "ko": "슬레이브 오류 변경됨"
       },
       "description": {
-        "en": "This flow triggers when the Slave Error changes."
+        "en": "This flow triggers when the Slave Error changes.",
+        "nl": "Deze flow wordt geactiveerd wanneer de slavefout verandert.",
+        "da": "Dette flow aktiveres, når slavefejlen ændres.",
+        "de": "Dieser Ablauf wird ausgelöst, wenn sich der Slave-Fehler ändert.",
+        "es": "Este flujo se activa cuando cambia el error de esclavo.",
+        "fr": "Ce flux se déclenche lorsque l'erreur de l'esclave change.",
+        "it": "Questo flusso si attiva quando l'errore slave cambia.",
+        "no": "Denne flyt aktiveres når slavefeil endres.",
+        "sv": "Detta flöde utlöses när slavefel ändras.",
+        "pl": "Ten przepływ uruchamia się, gdy zmienia się błąd podrzędny.",
+        "ru": "Этот поток активируется при изменении ошибки ведомого устройства.",
+        "ko": "슬레이브 오류가 변경되면 이 흐름이 시작됩니다."
       }
     },
     {
       "id": "connection_state_changed",
       "title": {
-        "en": "API connection state changed"
+        "en": "API connection state changed",
+        "nl": "API-verbindingstoestand gewijzigd",
+        "da": "API-tilslutningstilstand ændret",
+        "de": "API-Verbindungsstatus geändert",
+        "es": "El estado de conexión de la API cambió",
+        "fr": "État de connexion API modifié",
+        "it": "Stato di connessione dell'API cambiato",
+        "no": "API-tilkoblingstilstand endret",
+        "sv": "API-anslutningstillståndet har ändrats",
+        "pl": "Zmieniono stan połączenia API",
+        "ru": "Состояние подключения API изменено",
+        "ko": "API 연결 상태 변경됨"
       },
       "args": [
         {
           "name": "connection_state",
           "type": "dropdown",
           "title": {
-            "en": "State changed to"
+            "en": "State changed to",
+            "nl": "Toestand gewijzigd naar",
+            "da": "Tilstand ændret til",
+            "de": "Status geändert in",
+            "es": "Estado cambiado a",
+            "fr": "État changé en",
+            "it": "Stato cambiato in",
+            "no": "Tilstanden endret til",
+            "sv": "Tillstånd ändrat till",
+            "pl": "Zmieniono stan na",
+            "ru": "Статус изменился на",
+            "ko": "상태가 다음으로 변경되었습니다"
           },
           "values": [
             {
               "id": "error",
               "title": {
-                "en": "Error"
+                "en": "Error",
+                "nl": "Fout",
+                "da": "Fejl",
+                "de": "Fehler",
+                "es": "Error",
+                "fr": "Erreur",
+                "it": "Errore",
+                "no": "Feil",
+                "sv": "Fel",
+                "pl": "Błąd",
+                "ru": "Ошибка",
+                "ko": "오류"
               }
             },
             {
               "id": "ok",
               "title": {
-                "en": "(re-)Connected"
+                "en": "(re-)Connected",
+                "nl": "(opnieuw) Verbonden",
+                "da": "(gen) Tilsluttet",
+                "de": "(wieder-) Verbunden",
+                "es": "(re-)Conectado",
+                "fr": "(re-)Connecté",
+                "it": "(ri)Collegato",
+                "no": "(re)Tilkoblet",
+                "sv": "(åter)Ansluten",
+                "pl": "(ponownie) Połączono",
+                "ru": "(повторно) Подключено",
+                "ko": "(재)연결됨"
               }
             }
           ]
         }
       ],
       "titleFormatted": {
-        "en": "Connection state changed to [[connection_state]]"
+        "en": "Connection state changed to [[connection_state]]",
+        "nl": "Verbindingstoestand gewijzigd naar [[connection_state]]",
+        "da": "Tilslutningstilstand ændret til [[connection_state]]",
+        "de": "Verbindungsstatus geändert zu [[connection_state]]",
+        "es": "Estado de conexión cambiado a [[connection_state]]",
+        "fr": "État de connexion changé en [[connection_state]]",
+        "it": "Stato di connessione cambiato in [[connection_state]]",
+        "no": "Tilkoblingstilstand endret til [[connection_state]]",
+        "sv": "Anslutningstillståndet ändrat till [[connection_state]]",
+        "pl": "Stan połączenia zmieniono na [[connection_state]]",
+        "ru": "Состояние подключения изменено на [[connection_state]]",
+        "ko": "연결 상태가 [[connection_state]]로 변경되었습니다"
       }
     }
   ],
@@ -73,19 +216,63 @@
     {
       "id": "car-connected-condition",
       "title": {
-        "en": "Car is connected"
+        "en": "Car is connected",
+        "nl": "Auto is verbonden",
+        "da": "Bil er tilsluttet",
+        "de": "Auto ist verbunden",
+        "es": "El coche está conectado",
+        "fr": "La voiture est connectée",
+        "it": "L'auto è collegata",
+        "no": "Bil er koblet til",
+        "sv": "Bil är ansluten",
+        "pl": "Samochód jest podłączony",
+        "ru": "Автомобиль подключен",
+        "ko": "차량이 연결되었습니다"
       },
       "description": {
-        "en": "This condition is true when the car is connected to the Wallbox."
+        "en": "This condition is true when the car is connected to the Wallbox.",
+        "nl": "Deze voorwaarde is waar wanneer de auto is verbonden met de Wallbox.",
+        "da": "Denne betingelse er sand, når bilen er tilsluttet Wallbox.",
+        "de": "Diese Bedingung ist erfüllt, wenn das Auto mit der Wallbox verbunden ist.",
+        "es": "Esta condición es verdadera cuando el coche está conectado a la Wallbox.",
+        "fr": "Cette condition est vraie lorsque la voiture est connectée à la Wallbox.",
+        "it": "Questa condizione è vera quando l'auto è collegata alla Wallbox.",
+        "no": "Denne betingelsen er sann når bilen er koblet til Wallbox.",
+        "sv": "Detta villkor är sant när bilen är ansluten till Wallbox.",
+        "pl": "Warunek ten jest spełniony, gdy samochód jest podłączony do Wallbox.",
+        "ru": "Это условие истинно, когда автомобиль подключен к Wallbox.",
+        "ko": "차량이 Wallbox에 연결되어 있을 때 이 조건이 충족됩니다."
       }
     },
     {
       "id": "car-is-charging",
       "title": {
-        "en": "Car is charging"
+        "en": "Car is charging",
+        "nl": "Auto wordt opgeladen",
+        "da": "Bil oplader",
+        "de": "Auto lädt",
+        "es": "El coche se está cargando",
+        "fr": "La voiture est en charge",
+        "it": "L'auto è in carica",
+        "no": "Bil lader",
+        "sv": "Bil laddar",
+        "pl": "Samochód ładuje się",
+        "ru": "Автомобиль заряжается",
+        "ko": "차량이 충전 중입니다"
       },
       "description": {
-        "en": "This condition is true when the car is currently charging at the Wallbox."
+        "en": "This condition is true when the car is currently charging at the Wallbox.",
+        "nl": "Deze voorwaarde is waar wanneer de auto momenteel wordt opgeladen bij de Wallbox.",
+        "da": "Denne betingelse er sand, når bilen oplader ved Wallbox.",
+        "de": "Diese Bedingung ist erfüllt, wenn das Auto derzeit an der Wallbox lädt.",
+        "es": "Esta condición es verdadera cuando el coche se está cargando en la Wallbox.",
+        "fr": "Cette condition est vraie lorsque la voiture charge actuellement à la Wallbox.",
+        "it": "Questa condizione è vera quando l'auto è attualmente in carica presso la Wallbox.",
+        "no": "Denne betingelsen er sann når bilen lader ved Wallbox.",
+        "sv": "Detta villkor är sant när bilen för närvarande laddas vid Wallbox.",
+        "pl": "Warunek ten jest spełniony, gdy samochód jest obecnie ładowany przy Wallbox.",
+        "ru": "Это условие истинно, когда автомобиль в данный момент заряжается на Wallbox.",
+        "ko": "차량이 현재 Wallbox에서 충전 중일 때 이 조건이 충족됩니다."
       }
     },
     {
@@ -95,19 +282,63 @@
           "name": "power",
           "type": "number",
           "title": {
-            "en": "Power (W)"
+            "en": "Power (W)",
+            "nl": "Vermogen (W)",
+            "da": "Effekt (W)",
+            "de": "Leistung (W)",
+            "es": "Potencia (W)",
+            "fr": "Puissance (W)",
+            "it": "Potenza (W)",
+            "no": "Effekt (W)",
+            "sv": "Effekt (W)",
+            "pl": "Moc (W)",
+            "ru": "Мощность (Вт)",
+            "ko": "전력 (W)"
           },
           "min": 0
         }
       ],
       "title": {
-        "en": "Power is greater than"
+        "en": "Power is greater than",
+        "nl": "Vermogen is groter dan",
+        "da": "Effekt er større end",
+        "de": "Leistung ist größer als",
+        "es": "La potencia es mayor que",
+        "fr": "La puissance est supérieure à",
+        "it": "La potenza è maggiore di",
+        "no": "Effekten er større enn",
+        "sv": "Effekten är större än",
+        "pl": "Moc jest większa niż",
+        "ru": "Мощность превышает",
+        "ko": "전력이 다음보다 큽니다"
       },
       "titleFormatted": {
-        "en": "Power is greater than [[power]] W"
+        "en": "Power is greater than [[power]] W",
+        "nl": "Vermogen is groter dan [[power]] W",
+        "da": "Effekt er større end [[power]] W",
+        "de": "Leistung ist größer als [[power]] W",
+        "es": "La potencia es mayor que [[power]] W",
+        "fr": "La puissance est supérieure à [[power]] W",
+        "it": "La potenza è maggiore di [[power]] W",
+        "no": "Effekten er større enn [[power]] W",
+        "sv": "Effekten är större än [[power]] W",
+        "pl": "Moc jest większa niż [[power]] W",
+        "ru": "Мощность превышает [[power]] Вт",
+        "ko": "전력이 [[power]] W보다 큽니다"
       },
       "description": {
-        "en": "This condition is true when the power exceeds the specified threshold."
+        "en": "This condition is true when the power exceeds the specified threshold.",
+        "nl": "Deze voorwaarde is waar wanneer het vermogen de opgegeven drempel overschrijdt.",
+        "da": "Denne betingelse er sand, når effekten overstiger den angivne tærskel.",
+        "de": "Diese Bedingung ist erfüllt, wenn die Leistung den angegebenen Grenzwert überschreitet.",
+        "es": "Esta condición es verdadera cuando la potencia supera el umbral especificado.",
+        "fr": "Cette condition est vraie lorsque la puissance dépasse le seuil spécifié.",
+        "it": "Questa condizione è vera quando la potenza supera la soglia specificata.",
+        "no": "Denne betingelsen er sann når effekten overskrider den angitte terskelen.",
+        "sv": "Detta villkor är sant när effekten överstiger den angivna tröskeln.",
+        "pl": "Warunek ten jest spełniony, gdy moc przekracza określony próg.",
+        "ru": "Это условие истинно, когда мощность превышает заданный порог.",
+        "ko": "전력이 지정된 임계값을 초과할 때 이 조건이 충족됩니다."
       }
     },
     {
@@ -117,45 +348,144 @@
           "name": "power",
           "type": "number",
           "title": {
-            "en": "Power (W)"
+            "en": "Power (W)",
+            "nl": "Vermogen (W)",
+            "da": "Effekt (W)",
+            "de": "Leistung (W)",
+            "es": "Potencia (W)",
+            "fr": "Puissance (W)",
+            "it": "Potenza (W)",
+            "no": "Effekt (W)",
+            "sv": "Effekt (W)",
+            "pl": "Moc (W)",
+            "ru": "Мощность (Вт)",
+            "ko": "전력 (W)"
           },
           "min": 0
         }
       ],
       "title": {
-        "en": "Power is less than"
+        "en": "Power is less than",
+        "nl": "Vermogen is minder dan",
+        "da": "Effekt er mindre end",
+        "de": "Leistung ist weniger als",
+        "es": "La potencia es menor que",
+        "fr": "La puissance est inférieure à",
+        "it": "La potenza è minore di",
+        "no": "Effekten er mindre enn",
+        "sv": "Effekten är mindre än",
+        "pl": "Moc jest mniejsza niż",
+        "ru": "Мощность ниже",
+        "ko": "전력이 다음보다 적습니다"
       },
       "titleFormatted": {
-        "en": "Power is less than [[power]] W"
+        "en": "Power is less than [[power]] W",
+        "nl": "Vermogen is minder dan [[power]] W",
+        "da": "Effekt er mindre end [[power]] W",
+        "de": "Leistung ist weniger als [[power]] W",
+        "es": "La potencia es menor que [[power]] W",
+        "fr": "La puissance est inférieure à [[power]] W",
+        "it": "La potenza è minore di [[power]] W",
+        "no": "Effekten er mindre enn [[power]] W",
+        "sv": "Effekten är mindre än [[power]] W",
+        "pl": "Moc jest mniejsza niż [[power]] W",
+        "ru": "Мощность ниже [[power]] Вт",
+        "ko": "전력이 [[power]] W보다 적습니다"
       },
       "description": {
-        "en": "This condition is true when the power is below the specified threshold."
+        "en": "This condition is true when the power is below the specified threshold.",
+        "nl": "Deze voorwaarde is waar wanneer het vermogen onder de opgegeven drempel ligt.",
+        "da": "Denne betingelse er sand, når effekten er under den angivne tærskel.",
+        "de": "Diese Bedingung ist erfüllt, wenn die Leistung unter dem angegebenen Grenzwert liegt.",
+        "es": "Esta condición es verdadera cuando la potencia está por debajo del umbral especificado.",
+        "fr": "Cette condition est vraie lorsque la puissance est inférieure au seuil spécifié.",
+        "it": "Questa condizione è vera quando la potenza è inferiore alla soglia specificata.",
+        "no": "Denne betingelsen er sann når effekten er under den angitte terskelen.",
+        "sv": "Detta villkor är sant när effekten är under det angivna tröskelvärdet.",
+        "pl": "Warunek ten jest spełniony, gdy moc jest niższa niż określony próg.",
+        "ru": "Это условие истинно, когда мощность ниже заданного порога.",
+        "ko": "전력이 지정된 임계값 미만일 때 이 조건이 충족됩니다."
       }
     },
     {
       "id": "charging-is-paused",
       "title": {
-        "en": "Charging is paused"
+        "en": "Charging is paused",
+        "nl": "Opladen is gepauzeerd",
+        "da": "Opladning er sat på pause",
+        "de": "Ladung ist pausiert",
+        "es": "La carga está en pausa",
+        "fr": "La charge est en pause",
+        "it": "La ricarica è in pausa",
+        "no": "Lading er satt på pause",
+        "sv": "Laddning är pausad",
+        "pl": "Ładowanie jest wstrzymane",
+        "ru": "Зарядка приостановлена",
+        "ko": "충전이 일시 중지됨"
       },
       "description": {
-        "en": "This condition is true when the charging is paused."
+        "en": "This condition is true when the charging is paused.",
+        "nl": "Deze voorwaarde is waar wanneer het opladen gepauzeerd is.",
+        "da": "Denne betingelse er sand, når opladningen er sat på pause.",
+        "de": "Diese Bedingung ist erfüllt, wenn die Ladung pausiert ist.",
+        "es": "Esta condición es verdadera cuando la carga está en pausa.",
+        "fr": "Cette condition est vraie lorsque la charge est en pause.",
+        "it": "Questa condizione è vera quando la ricarica è in pausa.",
+        "no": "Denne betingelsen er sann når ladingen er satt på pause.",
+        "sv": "Detta villkor är sant när laddningen är pausad.",
+        "pl": "Warunek ten jest spełniony, gdy ładowanie jest wstrzymane.",
+        "ru": "Это условие истинно, когда зарядка приостановлена.",
+        "ko": "충전이 일시 중지될 때 이 조건이 충족됩니다."
       },
       "args": []
     },
     {
       "id": "charging-is-not-paused",
       "title": {
-        "en": "Charging is not paused"
+        "en": "Charging is not paused",
+        "nl": "Opladen is niet gepauzeerd",
+        "da": "Opladning er ikke sat på pause",
+        "de": "Ladung ist nicht pausiert",
+        "es": "La carga no está en pausa",
+        "fr": "La charge n'est pas en pause",
+        "it": "La ricarica non è in pausa",
+        "no": "Ladingen er ikke satt på pause",
+        "sv": "Laddning är inte pausad",
+        "pl": "Ładowanie nie jest wstrzymane",
+        "ru": "Зарядка не приостановлена",
+        "ko": "충전이 일시 중지되지 않았습니다"
       },
       "description": {
-        "en": "This condition is true when the charging is not paused."
+        "en": "This condition is true when the charging is not paused.",
+        "nl": "Deze voorwaarde is waar wanneer het opladen niet gepauzeerd is.",
+        "da": "Denne betingelse er sand, når opladningen ikke er sat på pause.",
+        "de": "Diese Bedingung ist erfüllt, wenn die Ladung nicht pausiert ist.",
+        "es": "Esta condición es verdadera cuando la carga no está en pausa.",
+        "fr": "Cette condition est vraie lorsque la charge n'est pas en pause.",
+        "it": "Questa condizione è vera quando la ricarica non è in pausa.",
+        "no": "Denne betingelsen er sann når ladingen ikke er satt på pause.",
+        "sv": "Detta villkor är sant när laddningen inte är pausad.",
+        "pl": "Warunek ten jest spełniony, gdy ładowanie nie jest wstrzymane.",
+        "ru": "Это условие истинно, когда зарядка не приостановлена.",
+        "ko": "충전이 일시 중지되지 않을 때 이 조건이 충족됩니다."
       },
       "args": []
     },
     {
       "id": "is_connection_error",
       "title": {
-        "en": "API connection has error"
+        "en": "API connection has error",
+        "nl": "API-verbinding heeft een fout",
+        "da": "API-tilslutning har fejl",
+        "de": "API-Verbindung hat einen Fehler",
+        "es": "La conexión API tiene un error",
+        "fr": "La connexion API a une erreur",
+        "it": "La connessione API ha un errore",
+        "no": "API-tilkoblingen har feil",
+        "sv": "API-anslutningen har fel",
+        "pl": "Połączenie API ma błąd",
+        "ru": "Ошибка в подключении API",
+        "ko": "API 연결에 오류가 있습니다"
       }
     }
   ],
@@ -167,29 +497,84 @@
           "name": "paused",
           "type": "dropdown",
           "title": {
-            "en": "Pause"
+            "en": "Pause",
+            "nl": "Pauze",
+            "da": "Pause",
+            "de": "Pause",
+            "es": "Pausa",
+            "fr": "Pause",
+            "it": "Pausa",
+            "no": "Pause",
+            "sv": "Paus",
+            "pl": "Pauza",
+            "ru": "Пауза",
+            "ko": "일시 중지"
           },
           "values": [
             {
               "id": "1",
               "label": {
-                "en": "Pause"
+                "en": "Pause",
+                "nl": "Pauze",
+                "da": "Pause",
+                "de": "Pause",
+                "es": "Pausa",
+                "fr": "Pause",
+                "it": "Pausa",
+                "no": "Pause",
+                "sv": "Paus",
+                "pl": "Pauza",
+                "ru": "Пауза",
+                "ko": "일시 중지"
               }
             },
             {
               "id": "0",
               "label": {
-                "en": "Resume"
+                "en": "Resume",
+                "nl": "Hervat",
+                "da": "Genoptag",
+                "de": "Fortsetzen",
+                "es": "Reanudar",
+                "fr": "Reprendre",
+                "it": "Riprendi",
+                "no": "Gjenoppta",
+                "sv": "Återuppta",
+                "pl": "Wznów",
+                "ru": "Возобновить",
+                "ko": "다시 시작"
               }
             }
           ]
         }
       ],
       "title": {
-        "en": "Set Charger State"
+        "en": "Set Charger State",
+        "nl": "Stel opladerstatus in",
+        "da": "Indstil opladningstilstand",
+        "de": "Ladestatus einstellen",
+        "es": "Establecer estado del cargador",
+        "fr": "Définir l'état du chargeur",
+        "it": "Imposta stato caricatore",
+        "no": "Sett laderstatus",
+        "sv": "Ställ in laddarstatus",
+        "pl": "Ustaw stan ładowarki",
+        "ru": "Установить состояние зарядного устройства",
+        "ko": "충전기 상태 설정"
       },
       "titleFormatted": {
-        "en": "Set Charger State to [[paused]]"
+        "en": "Set Charger State to [[paused]]",
+        "nl": "Stel opladerstatus in op [[paused]]",
+        "da": "Indstil opladningstilstand til [[paused]]",
+        "de": "Ladestatus einstellen auf [[paused]]",
+        "es": "Establecer estado del cargador en [[paused]]",
+        "fr": "Définir l'état du chargeur sur [[paused]]",
+        "it": "Imposta stato caricatore su [[paused]]",
+        "no": "Sett laderstatus til [[paused]]",
+        "sv": "Ställ in laddarstatus till [[paused]]",
+        "pl": "Ustaw stan ładowarki na [[paused]]",
+        "ru": "Установить состояние зарядного устройства на [[paused]]",
+        "ko": "충전기 상태를 [[paused]]로 설정"
       }
     },
     {
@@ -199,29 +584,84 @@
           "name": "locked",
           "type": "dropdown",
           "title": {
-            "en": "Lock"
+            "en": "Lock",
+            "nl": "Vergrendelen",
+            "da": "Lås",
+            "de": "Verriegeln",
+            "es": "Bloquear",
+            "fr": "Verrouiller",
+            "it": "Blocca",
+            "no": "Lås",
+            "sv": "Lås",
+            "pl": "Zablokuj",
+            "ru": "Заблокировать",
+            "ko": "잠금"
           },
           "values": [
             {
               "id": "1",
               "label": {
-                "en": "Lock"
+                "en": "Lock",
+                "nl": "Vergrendelen",
+                "da": "Lås",
+                "de": "Verriegeln",
+                "es": "Bloquear",
+                "fr": "Verrouiller",
+                "it": "Blocca",
+                "no": "Lås",
+                "sv": "Lås",
+                "pl": "Zablokuj",
+                "ru": "Заблокировать",
+                "ko": "잠금"
               }
             },
             {
               "id": "0",
               "label": {
-                "en": "Unlock"
+                "en": "Unlock",
+                "nl": "Ontgrendelen",
+                "da": "Lås op",
+                "de": "Entriegeln",
+                "es": "Desbloquear",
+                "fr": "Déverrouiller",
+                "it": "Sblocca",
+                "no": "Lås opp",
+                "sv": "Lås upp",
+                "pl": "Odblokuj",
+                "ru": "Разблокировать",
+                "ko": "잠금 해제"
               }
             }
           ]
         }
       ],
       "title": {
-        "en": "Set Lock State"
+        "en": "Set Lock State",
+        "nl": "Stel vergrendelingsstatus in",
+        "da": "Indstil låsetilstand",
+        "de": "Sperrstatus einstellen",
+        "es": "Establecer estado de bloqueo",
+        "fr": "Définir l'état de verrouillage",
+        "it": "Imposta stato blocco",
+        "no": "Sett låsestatus",
+        "sv": "Ställ in låsstatus",
+        "pl": "Ustaw stan blokady",
+        "ru": "Установить состояние блокировки",
+        "ko": "잠금 상태 설정"
       },
       "titleFormatted": {
-        "en": "Set Lock State to [[locked]]"
+        "en": "Set Lock State to [[locked]]",
+        "nl": "Stel vergrendelingsstatus in op [[locked]]",
+        "da": "Indstil låsetilstand til [[locked]]",
+        "de": "Sperrstatus einstellen auf [[locked]]",
+        "es": "Establecer estado de bloqueo en [[locked]]",
+        "fr": "Définir l'état de verrouillage sur [[locked]]",
+        "it": "Imposta stato blocco su [[locked]]",
+        "no": "Sett låsestatus til [[locked]]",
+        "sv": "Ställ in låsstatus till [[locked]]",
+        "pl": "Ustaw stan blokady na [[locked]]",
+        "ru": "Установить состояние блокировки на [[locked]]",
+        "ko": "잠금 상태를 [[locked]]로 설정"
       }
     },
     {
@@ -231,17 +671,50 @@
           "name": "intensity",
           "type": "number",
           "title": {
-            "en": "Intensity"
+            "en": "Intensity",
+            "nl": "Intensiteit",
+            "da": "Intensitet",
+            "de": "Intensität",
+            "es": "Intensidad",
+            "fr": "Intensité",
+            "it": "Intensità",
+            "no": "Intensitet",
+            "sv": "Intensitet",
+            "pl": "Intensywność",
+            "ru": "Интенсивность",
+            "ko": "강도"
           },
           "min": 6,
           "max": 32
         }
       ],
       "title": {
-        "en": "Set Charger Intensity"
+        "en": "Set Charger Intensity",
+        "nl": "Stel opladerintensiteit in",
+        "da": "Indstil opladerintensitet",
+        "de": "Ladeintensität einstellen",
+        "es": "Establecer intensidad del cargador",
+        "fr": "Définir l'intensité du chargeur",
+        "it": "Imposta intensità del caricatore",
+        "no": "Sett laderintensitet",
+        "sv": "Ställ in laddarintensitet",
+        "pl": "Ustaw natężenie ładowarki",
+        "ru": "Установить интенсивность зарядки",
+        "ko": "충전기 강도 설정"
       },
       "titleFormatted": {
-        "en": "Set Charger Intensity to [[intensity]] Amps"
+        "en": "Set Charger Intensity to [[intensity]] Amps",
+        "nl": "Stel opladerintensiteit in op [[intensity]] Ampère",
+        "da": "Indstil opladerintensitet til [[intensity]] ampere",
+        "de": "Ladeintensität einstellen auf [[intensity]] Ampere",
+        "es": "Establecer intensidad del cargador en [[intensity]] amperios",
+        "fr": "Définir l'intensité du chargeur sur [[intensity]] ampères",
+        "it": "Imposta intensità del caricatore a [[intensity]] ampere",
+        "no": "Sett laderintensitet til [[intensity]] ampere",
+        "sv": "Ställ in laddarintensitet till [[intensity]] ampere",
+        "pl": "Ustaw natężenie ładowarki na [[intensity]] amperów",
+        "ru": "Установить интенсивность зарядки на [[intensity]] ампер",
+        "ko": "충전기 강도를 [[intensity]] 암페어로 설정"
       }
     },
     {
@@ -251,70 +724,202 @@
           "name": "power",
           "type": "number",
           "title": {
-            "en": "Power"
+            "en": "Power",
+            "nl": "Vermogen",
+            "da": "Effekt",
+            "de": "Leistung",
+            "es": "Potencia",
+            "fr": "Puissance",
+            "it": "Potenza",
+            "no": "Effekt",
+            "sv": "Effekt",
+            "pl": "Moc",
+            "ru": "Мощность",
+            "ko": "전력"
           },
           "placeholder": {
-            "en": "5000"
+            "en": "5000",
+            "nl": "5000",
+            "da": "5000",
+            "de": "5000",
+            "es": "5000",
+            "fr": "5000",
+            "it": "5000",
+            "no": "5000",
+            "sv": "5000",
+            "pl": "5000",
+            "ru": "5000",
+            "ko": "5000"
           },
           "min": -22000,
           "max": 22000,
           "units": {
-            "en": "W"
+            "en": "W",
+            "nl": "W",
+            "da": "W",
+            "de": "W",
+            "es": "W",
+            "fr": "W",
+            "it": "W",
+            "no": "W",
+            "sv": "W",
+            "pl": "W",
+            "ru": "Вт",
+            "ko": "W"
           }
         },
         {
           "name": "phase_mode",
           "type": "dropdown",
           "title": {
-            "en": "Phase Mode"  
+            "en": "Phase Mode",
+            "nl": "Fasemodus",
+            "da": "Fasetilstand",
+            "de": "Phasenmodus",
+            "es": "Modo de fase",
+            "fr": "Mode de phase",
+            "it": "Modalità di fase",
+            "no": "Fasemodus",
+            "sv": "Fasläge",
+            "pl": "Tryb fazy",
+            "ru": "Режим фазы",
+            "ko": "단계 모드"
           },
           "values": [
             {
               "id": "1",
               "title": {
-                "en": "Single Phase"
+                "en": "Single Phase",
+                "nl": "Enkele fase",
+                "da": "Enkeltfase",
+                "de": "Einphasig",
+                "es": "Monofásico",
+                "fr": "Monophasé",
+                "it": "Monofase",
+                "no": "Enkeltfase",
+                "sv": "Enfas",
+                "pl": "Jednofazowy",
+                "ru": "Однофазный",
+                "ko": "단상"
               }
             },
             {
-              "id": "3", 
+              "id": "3",
               "title": {
-                "en": "Three Phase"
+                "en": "Three Phase",
+                "nl": "Drie fasen",
+                "da": "Trefaset",
+                "de": "Dreiphasig",
+                "es": "Trifásico",
+                "fr": "Triphasé",
+                "it": "Trifase",
+                "no": "Trefase",
+                "sv": "Trefas",
+                "pl": "Trójfazowy",
+                "ru": "Трёхфазный",
+                "ko": "삼상"
               }
             }
           ]
         },
         {
           "name": "voltage",
-          "type": "number", 
+          "type": "number",
           "title": {
-            "en": "Voltage"
+            "en": "Voltage",
+            "nl": "Spanning",
+            "da": "Spænding",
+            "de": "Spannung",
+            "es": "Voltaje",
+            "fr": "Tension",
+            "it": "Tensione",
+            "no": "Spenning",
+            "sv": "Spänning",
+            "pl": "Napięcie",
+            "ru": "Напряжение",
+            "ko": "전압"
           },
           "min": 110,
           "max": 400,
           "units": {
-            "en": "V"
+            "en": "V",
+            "nl": "V",
+            "da": "V",
+            "de": "V",
+            "es": "V",
+            "fr": "V",
+            "it": "V",
+            "no": "V",
+            "sv": "V",
+            "pl": "V",
+            "ru": "В",
+            "ko": "V"
           },
           "placeholder": {
-            "en": "230"
+            "en": "230",
+            "nl": "230",
+            "da": "230",
+            "de": "230",
+            "es": "230",
+            "fr": "230",
+            "it": "230",
+            "no": "230",
+            "sv": "230",
+            "pl": "230",
+            "ru": "230",
+            "ko": "230"
           }
         },
         {
           "name": "voltage_type",
           "type": "dropdown",
           "title": {
-            "en": "Voltage Type"
+            "en": "Voltage Type",
+            "nl": "Spanningstype",
+            "da": "Spændingstype",
+            "de": "Spannungstyp",
+            "es": "Tipo de voltaje",
+            "fr": "Type de tension",
+            "it": "Tipo di tensione",
+            "no": "Spenningstype",
+            "sv": "Spänningstyp",
+            "pl": "Typ napięcia",
+            "ru": "Тип напряжения",
+            "ko": "전압 유형"
           },
           "values": [
             {
               "id": "line_to_line",
               "title": {
-                "en": "Line-to-Line"
+                "en": "Line-to-Line",
+                "nl": "Lijn-naar-lijn",
+                "da": "Linje-til-linje",
+                "de": "Leitung-zu-Leitung",
+                "es": "Línea a línea",
+                "fr": "Ligne-à-ligne",
+                "it": "Linea-a-linea",
+                "no": "Linje-til-linje",
+                "sv": "Linje-till-linje",
+                "pl": "Linia-do-linii",
+                "ru": "Фаза-к-фазе",
+                "ko": "선간 전압"
               }
             },
             {
               "id": "line_to_neutral",
               "title": {
-                "en": "Line-to-Neutral" 
+                "en": "Line-to-Neutral",
+                "nl": "Lijn-naar-neutraal",
+                "da": "Linje-til-neutral",
+                "de": "Leitung-zu-Neutral",
+                "es": "Línea a neutro",
+                "fr": "Ligne-à-neutre",
+                "it": "Linea-a-neutro",
+                "no": "Linje-til-nøytral",
+                "sv": "Linje-till-neutral",
+                "pl": "Linia-do-neutralu",
+                "ru": "Фаза-к-нулю",
+                "ko": "선간-중성 전압"
               }
             }
           ]
@@ -323,38 +928,115 @@
           "name": "maxAmps",
           "type": "number",
           "title": {
-            "en": "Maximum Amps"
+            "en": "Maximum Amps",
+            "nl": "Maximaal aantal ampère",
+            "da": "Maksimal ampere",
+            "de": "Maximale Ampere",
+            "es": "Amperios máximos",
+            "fr": "Intensité maximale",
+            "it": "Massimo amperaggio",
+            "no": "Maksimale ampere",
+            "sv": "Maximalt antal ampere",
+            "pl": "Maksymalne ampery",
+            "ru": "Максимальные амперы",
+            "ko": "최대 암페어"
           },
           "min": 6,
           "max": 32,
           "placeholder": {
-            "en": "32"
+            "en": "32",
+            "nl": "32",
+            "da": "32",
+            "de": "32",
+            "es": "32",
+            "fr": "32",
+            "it": "32",
+            "no": "32",
+            "sv": "32",
+            "pl": "32",
+            "ru": "32",
+            "ko": "32"
           },
           "units": {
-            "en": "A"
+            "en": "A",
+            "nl": "A",
+            "da": "A",
+            "de": "A",
+            "es": "A",
+            "fr": "A",
+            "it": "A",
+            "no": "A",
+            "sv": "A",
+            "pl": "A",
+            "ru": "А",
+            "ko": "A"
           }
         }
       ],
       "title": {
-        "en": "Set Charging Power"
+        "en": "Set Charging Power",
+        "nl": "Stel laadvermogen in",
+        "da": "Indstil ladekapacitet",
+        "de": "Ladeleistung einstellen",
+        "es": "Establecer potencia de carga",
+        "fr": "Définir la puissance de charge",
+        "it": "Imposta potenza di carica",
+        "no": "Sett ladeeffekt",
+        "sv": "Ställ in laddningseffekt",
+        "pl": "Ustaw moc ładowania",
+        "ru": "Установить мощность зарядки",
+        "ko": "충전 전력 설정"
       },
       "hint": {
-        "en": "Enter power in Watts. Both positive and negative values are accepted and will be converted to positive for calculation. The resulting Ampere values are rounded mathematically and limited to a minimum of 6 Amps and a maximum defined by the specified value. If the wallbox has a neutral cable connected, select the Line-to-Neutral wiring type. For single-phase charging, either wiring type can be selected. However, make sure to also set the single-phase output directly in the wallbox menu."
+        "en": "Enter power in Watts. Both positive and negative values are accepted and will be converted to positive for calculation. The resulting Ampere values are rounded mathematically and limited to a minimum of 6 Amps and a maximum defined by the specified value. If the wallbox has a neutral cable connected, select the Line-to-Neutral wiring type. For single-phase charging, either wiring type can be selected. However, make sure to also set the single-phase output directly in the wallbox menu.",
+        "nl": "Vul het vermogen in Watts in. Zowel positieve als negatieve waarden worden geaccepteerd en worden omgezet in positieve waarden voor berekeningen. De resulterende ampèrewaarden worden wiskundig afgerond en beperkt tot een minimum van 6 ampère en een maximum gedefinieerd door de opgegeven waarde. Als de Wallbox een aangesloten neutrale kabel heeft, selecteer dan de Lijn-naar-neutraal bekabelingstype. Voor eenfase opladen kan elk bekabelingstype worden geselecteerd. Zorg er echter voor dat je ook de eenfase-uitgang direct instelt in het Wallbox-menu.",
+        "da": "Indtast effekt i watt. Både positive og negative værdier accepteres og konverteres til positive for beregning. De resulterende amperværdier rundes matematisk og begrænses til et minimum på 6 ampere og et maksimum defineret af den angivne værdi. Hvis wallbox'en har et tilsluttet neutral kabel, skal du vælge linje-til-neutral ledningstype. Ved enkeltfasede opladninger kan begge ledningstyper vælges. Sørg dog for også at indstille enkeltfaseudgangen direkte i wallbox-menuen.",
+        "de": "Geben Sie die Leistung in Watt ein. Sowohl positive als auch negative Werte werden akzeptiert und für die Berechnung in positive Werte umgewandelt. Die resultierenden Ampere-Werte werden mathematisch gerundet und auf ein Minimum von 6 Ampere und ein Maximum, das durch den angegebenen Wert definiert ist, begrenzt. Wenn die Wallbox ein angeschlossenes Neutralleiterkabel hat, wählen Sie die Verdrahtungsart Leitung-zu-Neutral. Für das einphasige Laden kann jeder Verdrahtungstyp gewählt werden. Stellen Sie jedoch sicher, dass Sie den einphasigen Ausgang auch direkt im Wallbox-Menü einstellen.",
+        "es": "Ingresa la potencia en vatios. Se aceptan valores tanto positivos como negativos y se convertirán en positivos para el cálculo. Los valores de amperios resultantes se redondean matemáticamente y se limitan a un mínimo de 6 amperios y un máximo definido por el valor especificado. Si la wallbox tiene un cable neutro conectado, seleccione el tipo de cableado Línea a Neutro. Para carga monofásica, se puede seleccionar cualquier tipo de cableado. Sin embargo, asegúrate de configurar también la salida monofásica directamente en el menú de la wallbox.",
+        "fr": "Entrez la puissance en watts. Les valeurs positives et négatives sont acceptées et seront converties en positives pour le calcul. Les valeurs d'ampères résultantes sont arrondies mathématiquement et limitées à un minimum de 6 ampères et un maximum défini par la valeur spécifiée. Si la wallbox a un câble neutre connecté, sélectionnez le type de câblage Ligne-à-Neutre. Pour la charge monophasée, vous pouvez sélectionner l'un ou l'autre type de câblage. Assurez-vous cependant de régler également la sortie monophasée directement dans le menu de la wallbox.",
+        "it": "Inserisci la potenza in watt. Sono accettati valori sia positivi che negativi e verranno convertiti in positivi per il calcolo. I valori risultanti degli ampere sono arrotondati matematicamente e limitati a un minimo di 6 ampere e a un massimo definito dal valore specificato. Se la wallbox ha un cavo neutro collegato, selezionare il tipo di cablaggio Linea-a-Neutro. Per la ricarica monofase è possibile selezionare entrambi i tipi di cablaggio. Tuttavia, assicurati di impostare anche l'uscita monofase direttamente nel menu della wallbox.",
+        "no": "Skriv inn effekten i watt. Både positive og negative verdier aksepteres og vil bli konvertert til positive for beregning. De resulterende ampere-verdiene avrundes matematisk og begrenses til minimum 6 ampere og maksimum definert av den angitte verdien. Hvis wallboxen har en nøytralkabel tilkoblet, velg ledningstypen Linje-til-nøytral. For enfaset lading kan begge ledningstyper velges. Sørg imidlertid for å også angi enfaseutgangen direkte i wallbox-menyen.",
+        "sv": "Ange effekten i watt. Både positiva och negativa värden accepteras och omvandlas till positiva vid beräkningen. De resulterande ampere-värdena avrundas matematiskt och begränsas till ett minimum av 6 ampere och ett maximum definierat av det angivna värdet. Om wallboxen har en ansluten neutral kabel väljer du ledningstypen Linje-till-neutral. För enfasig laddning kan valfri ledningstyp väljas. Se dock till att också ställa in enfassens utgång direkt i wallbox-menyn.",
+        "pl": "Wprowadź moc w watach. Akceptowane są zarówno wartości dodatnie, jak i ujemne, które zostaną przekonwertowane na dodatnie do obliczeń. Uzyskane wartości amperów są zaokrąglane matematycznie i ograniczane do minimalnie 6 amperów i maksymalnie zdefiniowanej przez podaną wartość. Jeśli wallbox ma podłączony kabel neutralny, wybierz typ okablowania Linia-do-neutralu. W przypadku ładowania jednofazowego można wybrać dowolny typ okablowania. Upewnij się jednak, że ustawiłeś również wyjście jednofazowe bezpośrednio w menu wallbox.",
+        "ru": "Введите мощность в ваттах. Принимаются как положительные, так и отрицательные значения, которые будут преобразованы в положительные для расчетов. Полученные значения ампер округляются математически и ограничиваются минимумом 6 ампер и максимумом, определенным указанным значением. Если у Wallbox подключен нейтральный кабель, выберите тип проводки \"фаза-к-нулю\". Для однофазной зарядки можно выбрать любой тип проводки. Однако убедитесь, что вы также установили однофазный выход прямо в меню Wallbox.",
+        "ko": "전력을 와트 단위로 입력하세요. 양수 및 음수 값 모두 허용되며, 계산을 위해 양수로 변환됩니다. 결과 암페어 값은 수학적으로 반올림되며 지정된 값에 따라 최소 6암페어, 최대 설정으로 제한됩니다. Wallbox에 중성선이 연결된 경우 선-중성선 타입을 선택하세요. 단상 충전의 경우, 어떤 와이어링 타입도 선택할 수 있습니다. 하지만 Wallbox 메뉴에서 단상 출력을 직접 설정하는 것도 잊지 마세요."
       },
       "titleFormatted": {
-        "en": "Set charging power to [[power]] W ([[phase_mode]] phase, [[voltage]] V, [[voltage_type]] and max intensity [[maxAmps]] Amps)"
+        "en": "Set charging power to [[power]] W ([[phase_mode]] phase, [[voltage]] V, [[voltage_type]] and max intensity [[maxAmps]] Amps)",
+        "nl": "Stel laadvermogen in op [[power]] W ([[phase_mode]] fase, [[voltage]] V, [[voltage_type]] en maximale intensiteit [[maxAmps]] ampère)",
+        "da": "Indstil ladekapacitet til [[power]] W ([[phase_mode]] fase, [[voltage]] V, [[voltage_type]] og maksimal intensitet [[maxAmps]] ampere)",
+        "de": "Ladeleistung einstellen auf [[power]] W ([[phase_mode]] Phasen, [[voltage]] V, [[voltage_type]] und max. Intensität [[maxAmps]] Ampere)",
+        "es": "Establecer potencia de carga a [[power]] W ([[phase_mode]] fase, [[voltage]] V, [[voltage_type]] y máxima intensidad [[maxAmps]] amperios)",
+        "fr": "Définir la puissance de charge à [[power]] W ([[phase_mode]] phase, [[voltage]] V, [[voltage_type]] et intensité maximale [[maxAmps]] ampères)",
+        "it": "Imposta potenza di carica a [[power]] W ([[phase_mode]] fase, [[voltage]] V, [[voltage_type]] e intensità massima [[maxAmps]] ampere)",
+        "no": "Sett ladeeffekt til [[power]] W ([[phase_mode]] fase, [[voltage]] V, [[voltage_type]] og maks intensitet [[maxAmps]] ampere)",
+        "sv": "Ställ in laddningseffekt till [[power]] W ([[phase_mode]] fas, [[voltage]] V, [[voltage_type]] och maximal intensitet [[maxAmps]] ampere)",
+        "pl": "Ustaw moc ładowania na [[power]] W ([[phase_mode]] faza, [[voltage]] V, [[voltage_type]] i maksymalna intensywność [[maxAmps]] amperów)",
+        "ru": "Установить мощность зарядки на [[power]] Вт ([[phase_mode]] фаза, [[voltage]] В, [[voltage_type]] и макс. интенсивность [[maxAmps]] ампер)",
+        "ko": "충전 전력을 [[power]] W([[phase_mode]] 단계, [[voltage]] V, [[voltage_type]] 및 최대 강도 [[maxAmps]] 암페어)로 설정"
       },
       "tokens": [
         {
           "name": "calculated_current",
           "type": "number",
           "title": {
-            "en": "Calculated Current Amps"
+            "en": "Calculated Current Amps",
+            "nl": "Berekende stroomsterkte in ampère",
+            "da": "Beregnet strøm i ampere",
+            "de": "Berechneter Strom in Ampere",
+            "es": "Amperios de corriente calculada",
+            "fr": "Intensité du courant calculée en ampères",
+            "it": "Amper del corrente calcolato",
+            "no": "Beregnet strøm i ampere",
+            "sv": "Beräknad ström i ampere",
+            "pl": "Obliczone natężenie prądu w amperach",
+            "ru": "Рассчитанный ток в амперах",
+            "ko": "계산된 전류 암페어"
           },
           "example": 16
         }
       ]
-    },    
+    },
     {
       "id": "set_dynamic",
       "args": [
@@ -362,29 +1044,84 @@
           "name": "dynamic",
           "type": "dropdown",
           "title": {
-            "en": "Dynamic Mode"
+            "en": "Dynamic Mode",
+            "nl": "Dynamische modus",
+            "da": "Dynamisk tilstand",
+            "de": "Dynamischer Modus",
+            "es": "Modo dinámico",
+            "fr": "Mode dynamique",
+            "it": "Modalità dinamica",
+            "no": "Dynamisk modus",
+            "sv": "Dynamiskt läge",
+            "pl": "Tryb dynamiczny",
+            "ru": "Динамический режим",
+            "ko": "동적 모드"
           },
           "values": [
             {
               "id": "1",
               "label": {
-                "en": "Enable"
+                "en": "Enable",
+                "nl": "Inschakelen",
+                "da": "Aktiver",
+                "de": "Aktivieren",
+                "es": "Habilitar",
+                "fr": "Activer",
+                "it": "Abilita",
+                "no": "Aktiver",
+                "sv": "Aktivera",
+                "pl": "Włącz",
+                "ru": "Включить",
+                "ko": "활성화"
               }
             },
             {
               "id": "0",
               "label": {
-                "en": "Disable"
+                "en": "Disable",
+                "nl": "Uitschakelen",
+                "da": "Deaktiver",
+                "de": "Deaktivieren",
+                "es": "Deshabilitar",
+                "fr": "Désactiver",
+                "it": "Disabilita",
+                "no": "Deaktiver",
+                "sv": "Inaktivera",
+                "pl": "Wyłącz",
+                "ru": "Отключить",
+                "ko": "비활성화"
               }
             }
           ]
         }
       ],
       "title": {
-        "en": "Set Dynamic Mode"
+        "en": "Set Dynamic Mode",
+        "nl": "Stel dynamische modus in",
+        "da": "Indstil dynamisk tilstand",
+        "de": "Dynamischen Modus einstellen",
+        "es": "Establecer modo dinámico",
+        "fr": "Définir le mode dynamique",
+        "it": "Imposta modalità dinamica",
+        "no": "Sett dynamisk modus",
+        "sv": "Ställ in dynamiskt läge",
+        "pl": "Ustaw tryb dynamiczny",
+        "ru": "Установить динамический режим",
+        "ko": "동적 모드 설정"
       },
       "titleFormatted": {
-        "en": "Set Dynamic Mode to [[dynamic]]"
+        "en": "Set Dynamic Mode to [[dynamic]]",
+        "nl": "Stel dynamische modus in op [[dynamic]]",
+        "da": "Indstil dynamisk tilstand til [[dynamic]]",
+        "de": "Dynamischen Modus auf [[dynamic]] einstellen",
+        "es": "Establecer modo dinámico en [[dynamic]]",
+        "fr": "Définir le mode dynamique sur [[dynamic]]",
+        "it": "Imposta modalità dinamica su [[dynamic]]",
+        "no": "Sett dynamisk modus til [[dynamic]]",
+        "sv": "Ställ in dynamiskt läge till [[dynamic]]",
+        "pl": "Ustaw tryb dynamiczny na [[dynamic]]",
+        "ru": "Установить динамический режим на [[dynamic]]",
+        "ko": "동적 모드를 [[dynamic]]로 설정"
       }
     },
     {
@@ -394,17 +1131,50 @@
           "name": "MinIntensity",
           "type": "number",
           "title": {
-            "en": "Minimum Intensity"
+            "en": "Minimum Intensity",
+            "nl": "Minimale intensiteit",
+            "da": "Minimul intensitet",
+            "de": "Minimale Intensität",
+            "es": "Intensidad mínima",
+            "fr": "Intensité minimale",
+            "it": "Intensità minima",
+            "no": "Minimum intensitet",
+            "sv": "Minsta intensitet",
+            "pl": "Minimalna intensywność",
+            "ru": "Минимальная интенсивность",
+            "ko": "최소 강도"
           },
           "min": 6,
           "max": 32
         }
       ],
       "title": {
-        "en": "Set Minimum Intensity in Dynamic Mode"
+        "en": "Set Minimum Intensity in Dynamic Mode",
+        "nl": "Stel minimale intensiteit in dynamische modus in",
+        "da": "Indstil minimum intensitet i dynamisk tilstand",
+        "de": "Minimale Intensität im dynamischen Modus einstellen",
+        "es": "Establecer intensidad mínima en modo dinámico",
+        "fr": "Définir l'intensité minimale en mode dynamique",
+        "it": "Imposta l'intensità minima in modalità dinamica",
+        "no": "Sett minimum intensitet i dynamisk modus",
+        "sv": "Ställ in minsta intensitet i dynamiskt läge",
+        "pl": "Ustaw minimalną intensywność w trybie dynamicznym",
+        "ru": "Установите минимальную интенсивность в динамическом режиме",
+        "ko": "동적 모드에서 최소 강도 설정"
       },
       "titleFormatted": {
-        "en": "Set Minimum Intensity in Dynamic Mode to [[MinIntensity]] Amps"
+        "en": "Set Minimum Intensity in Dynamic Mode to [[MinIntensity]] Amps",
+        "nl": "Stel minimale intensiteit in dynamische modus in op [[MinIntensity]] ampère",
+        "da": "Indstil minimumintensitet i dynamisk tilstand til [[MinIntensity]] ampere",
+        "de": "Minimale Intensität im dynamischen Modus auf [[MinIntensity]] Ampere einstellen",
+        "es": "Establecer intensidad mínima en modo dinámico a [[MinIntensity]] amperios",
+        "fr": "Définir l'intensité minimale en mode dynamique sur [[MinIntensity]] ampères",
+        "it": "Imposta l'intensità minima in modalità dinamica su [[MinIntensity]] ampere",
+        "no": "Sett minimum intensitet i dynamisk modus til [[MinIntensity]] ampere",
+        "sv": "Ställ in minsta intensitet i dynamiskt läge till [[MinIntensity]] ampere",
+        "pl": "Ustaw minimalną intensywność w trybie dynamicznym na [[MinIntensity]] amperów",
+        "ru": "Установите минимальную интенсивность в динамическом режиме на [[MinIntensity]] ампер",
+        "ko": "동적 모드에서 최소 강도를 [[MinIntensity]] 암페어로 설정"
       }
     },
     {
@@ -414,17 +1184,50 @@
           "name": "MaxIntensity",
           "type": "number",
           "title": {
-            "en": "Maximum Intensity"
+            "en": "Maximum Intensity",
+            "nl": "Maximale intensiteit",
+            "da": "Maksimul intensitet",
+            "de": "Maximale Intensität",
+            "es": "Intensidad máxima",
+            "fr": "Intensité maximale",
+            "it": "Intensità massima",
+            "no": "Maksimal intensitet",
+            "sv": "Maximal intensitet",
+            "pl": "Maksymalna intensywność",
+            "ru": "Максимальная интенсивность",
+            "ko": "최대 강도"
           },
           "min": 6,
           "max": 32
         }
       ],
       "title": {
-        "en": "Set Maximum Intensity in Dynamic Mode"
+        "en": "Set Maximum Intensity in Dynamic Mode",
+        "nl": "Stel maximale intensiteit in dynamische modus in",
+        "da": "Indstil maksimal intensitet i dynamisk tilstand",
+        "de": "Maximale Intensität im dynamischen Modus einstellen",
+        "es": "Establecer intensidad máxima en modo dinámico",
+        "fr": "Définir l'intensité maximale en mode dynamique",
+        "it": "Imposta l'intensità massima in modalità dinamica",
+        "no": "Sett maksimal intensitet i dynamisk modus",
+        "sv": "Ställ in maximal intensitet i dynamiskt läge",
+        "pl": "Ustaw maksymalną intensywność w trybie dynamicznym",
+        "ru": "Установите максимальную интенсивность в динамическом режиме",
+        "ko": "동적 모드에서 최대 강도 설정"
       },
       "titleFormatted": {
-        "en": "Set Maximum Intensity in Dynamic Mode to [[MaxIntensity]] Amps"
+        "en": "Set Maximum Intensity in Dynamic Mode to [[MaxIntensity]] Amps",
+        "nl": "Stel maximale intensiteit in dynamische modus in op [[MaxIntensity]] ampère",
+        "da": "Indstil maksimal intensitet i dynamisk tilstand til [[MaxIntensity]] ampere",
+        "de": "Maximale Intensität im dynamischen Modus auf [[MaxIntensity]] Ampere einstellen",
+        "es": "Establecer intensidad máxima en modo dinámico a [[MaxIntensity]] amperios",
+        "fr": "Définir l'intensité maximale en mode dynamique sur [[MaxIntensity]] ampères",
+        "it": "Imposta l'intensità massima in modalità dinamica su [[MaxIntensity]] ampere",
+        "no": "Sett maksimal intensitet i dynamisk modus til [[MaxIntensity]] ampere",
+        "sv": "Ställ in maximal intensitet i dynamiskt läge till [[MaxIntensity]] ampere",
+        "pl": "Ustaw maksymalną intensywność w trybie dynamicznym na [[MaxIntensity]] amperów",
+        "ru": "Установите максимальную интенсивность в динамическом режиме на [[MaxIntensity]] ампер",
+        "ko": "동적 모드에서 최대 강도를 [[MaxIntensity]] 암페어로 설정"
       }
     },
     {
@@ -434,23 +1237,152 @@
           "name": "DynamicPowerMode",
           "type": "dropdown",
           "title": {
-            "en": "Dynamic Power Mode"
+            "en": "Dynamic Power Mode",
+            "nl": "Dynamische stroommodus",
+            "da": "Dynamisk strømmode",
+            "de": "Dynamischer Leistungsmodus",
+            "es": "Modo de potencia dinámica",
+            "fr": "Mode de puissance dynamique",
+            "it": "Modalità di alimentazione dinamica",
+            "no": "Dynamisk strømmodus",
+            "sv": "Dynamiskt effektläge",
+            "pl": "Dynamiczny tryb mocy",
+            "ru": "Динамический режим мощности",
+            "ko": "동적 전력 모드"
           },
           "values": [
-            { "id": "0", "label": { "en": "Timed Power Enabled" } },
-            { "id": "1", "label": { "en": "Timed Power Disabled" } },
-            { "id": "2", "label": { "en": "FV Exclusive mode" } },
-            { "id": "3", "label": { "en": "FV+Min Power mode" } },
-            { "id": "4", "label": { "en": "Grid+FV mode" } },
-            { "id": "5", "label": { "en": "Without Charge mode" } }
+            {
+              "id": "0",
+              "label": {
+                "en": "Timed Power Enabled",
+                "nl": "Getimede stroom ingeschakeld",
+                "da": "Tidstaget strøm aktiveret",
+                "de": "Zeitgesteuerte Leistung aktiviert",
+                "es": "Potencia programada habilitada",
+                "fr": "Puissance minutée activée",
+                "it": "Potenza temporizzata abilitata",
+                "no": "Tidtaktsstyrt strøm aktivert",
+                "sv": "Tidnivånsläge aktiverat",
+                "pl": "Włączona moc czasowa",
+                "ru": "Временная мощность включена",
+                "ko": "시한 전원 활성화"
+              }
+            },
+            {
+              "id": "1",
+              "label": {
+                "en": "Timed Power Disabled",
+                "nl": "Getimede stroom uitgeschakeld",
+                "da": "Tidstaget strøm deaktiveret",
+                "de": "Zeitgesteuerte Leistung deaktiviert",
+                "es": "Potencia programada deshabilitada",
+                "fr": "Puissance minutée désactivée",
+                "it": "Potenza temporizzata disabilitata",
+                "no": "Tidtaktsstyrt strøm deaktivert",
+                "sv": "Tidnivånsläge inaktiverat",
+                "pl": "Wyłączona moc czasowa",
+                "ru": "Временная мощность отключена",
+                "ko": "시한 전원 비활성화"
+              }
+            },
+            {
+              "id": "2",
+              "label": {
+                "en": "FV Exclusive mode",
+                "nl": "FV Exclusieve modus",
+                "da": "FV-eksklusiv tilstand",
+                "de": "FV-Exklusiver Modus",
+                "es": "Modo exclusivo FV",
+                "fr": "Mode exclusif FV",
+                "it": "Modalità esclusiva FV",
+                "no": "FV-eksklusiv modus",
+                "sv": "FV-exklusivt läge",
+                "pl": "Tryb wyłączny FV",
+                "ru": "Эксклюзивный режим FV",
+                "ko": "FV 전용 모드"
+              }
+            },
+            {
+              "id": "3",
+              "label": {
+                "en": "FV+Min Power mode",
+                "nl": "FV+Minimale stroom modus",
+                "da": "FV+Min strømtilstand",
+                "de": "FV+Minimaler Leistungsmodus",
+                "es": "Modo de potencia mínima FV+",
+                "fr": "Mode puissance minimale FV+",
+                "it": "Modalità di potenza minima FV+",
+                "no": "FV+Min strømmodus",
+                "sv": "FV+Min effektläge",
+                "pl": "Tryb FV+Minimalna moc",
+                "ru": "Режим минимальной мощности FV+",
+                "ko": "FV+최소 전력 모드"
+              }
+            },
+            {
+              "id": "4",
+              "label": {
+                "en": "Grid+FV mode",
+                "nl": "Netz+FV modus",
+                "da": "Nettet+FV tilstand",
+                "de": "Netz+FV-Modus",
+                "es": "Modo red+FV",
+                "fr": "Mode réseau+FV",
+                "it": "Modalità rete+FV",
+                "no": "Nett+FV-modus",
+                "sv": "Nät+FV-läge",
+                "pl": "Tryb sieć+FV",
+                "ru": "Режим сеть+FV",
+                "ko": "그리드+FV 모드"
+              }
+            },
+            {
+              "id": "5",
+              "label": {
+                "en": "Without Charge mode",
+                "nl": "Zonder laadmodus",
+                "da": "Uden opladetilstand",
+                "de": "Ohne Lademodus",
+                "es": "Modo sin carga",
+                "fr": "Mode sans charge",
+                "it": "Modalità senza carica",
+                "no": "Uten laddemode",
+                "sv": "Utan laddningsläge",
+                "pl": "Tryb bez ładowania",
+                "ru": "Режим без зарядки",
+                "ko": "충전 없이 모드"
+              }
+            }
           ]
         }
       ],
       "title": {
-        "en": "Set Dynamic Power Mode"
+        "en": "Set Dynamic Power Mode",
+        "nl": "Stel dynamische stroommodus in",
+        "da": "Indstil dynamisk strømmode",
+        "de": "Dynamischen Leistungsmodus einstellen",
+        "es": "Establecer modo de potencia dinámica",
+        "fr": "Définir le mode de puissance dynamique",
+        "it": "Imposta modalità di alimentazione dinamica",
+        "no": "Sett dynamisk strømmodus",
+        "sv": "Ställ in dynamiskt effektläge",
+        "pl": "Ustaw dynamiczny tryb mocy",
+        "ru": "Установить динамический режим мощности",
+        "ko": "동적 전력 모드 설정"
       },
       "titleFormatted": {
-        "en": "Set Dynamic Power Mode to [[DynamicPowerMode]]"
+        "en": "Set Dynamic Power Mode to [[DynamicPowerMode]]",
+        "nl": "Stel dynamische stroommodus in op [[DynamicPowerMode]]",
+        "da": "Indstil dynamisk strømmode til [[DynamicPowerMode]]",
+        "de": "Dynamischen Leistungsmodus auf [[DynamicPowerMode]] einstellen",
+        "es": "Establecer modo de potencia dinámica en [[DynamicPowerMode]]",
+        "fr": "Définir le mode de puissance dynamique sur [[DynamicPowerMode]]",
+        "it": "Imposta modalità di alimentazione dinamica su [[DynamicPowerMode]]",
+        "no": "Sett dynamisk strømmodus til [[DynamicPowerMode]]",
+        "sv": "Ställ in dynamiskt effektläge till [[DynamicPowerMode]]",
+        "pl": "Ustaw tryb dynamiczny mocy na [[DynamicPowerMode]]",
+        "ru": "Установить динамический режим мощности на [[DynamicPowerMode]]",
+        "ko": "동적 전력 모드를 [[DynamicPowerMode]]로 설정"
       }
     }
   ]
