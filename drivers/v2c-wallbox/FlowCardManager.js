@@ -88,7 +88,29 @@ class FlowCardManager {
                 id: 'is_connection_error',
                 capability: 'measure_connection_error',
                 comparison: (state) => state === true
-            }
+            },
+            {
+                id: 'compare_calculated_current',
+                comparison: (args) => {
+                  const inputCurrent = parseInt(args.current_input);
+                  const targetCurrent = parseInt(args.current);
+                  
+                  switch(args.operator) {
+                    case 'greater':
+                      return inputCurrent > targetCurrent;
+                    case 'less':
+                      return inputCurrent < targetCurrent;
+                    case 'equals':
+                      return inputCurrent === targetCurrent;
+                    case 'greater_equals':
+                      return inputCurrent >= targetCurrent;
+                    case 'less_equals':
+                      return inputCurrent <= targetCurrent;
+                    default:
+                      return false;
+                  }
+                }
+              }
         ];
     }
 
@@ -158,23 +180,29 @@ class FlowCardManager {
 
     async _initializeConditions() {
         try {
-            // Registrace základních podmínek
             for (const condition of this._basicConditions) {
                 const card = this.homey.flow.getConditionCard(condition.id);
                 
-                // Odregistrujeme starý listener pokud existuje
                 if (card.listenerCount('run') > 0) {
                     card.removeAllListeners('run');
                 }
-
-                card.registerRunListener(async (args, state) => {
-                    const currentValue = await this.device.getCapabilityValue(condition.capability);
-                    if (args.value !== undefined) {
-                        return condition.comparison(currentValue, args.value);
-                    }
-                    return condition.comparison(currentValue);
-                });
-
+     
+                // Speciální handler pro compare_calculated_current
+                if (condition.id === 'compare_calculated_current') {
+                    card.registerRunListener(async (args) => {
+                        return condition.comparison(args);
+                    });
+                } else {
+                    // Původní handler pro ostatní podmínky
+                    card.registerRunListener(async (args, state) => {
+                        const currentValue = await this.device.getCapabilityValue(condition.capability);
+                        if (args.value !== undefined) {
+                            return condition.comparison(currentValue, args.value);
+                        }
+                        return condition.comparison(currentValue); 
+                    });
+                }
+     
                 this._flowCards.conditions.set(condition.id, card);
                 
                 if (this.logger) {
@@ -187,7 +215,7 @@ class FlowCardManager {
             }
             throw error;
         }
-    }
+     }
 
     async _initializeActions() {
         try {
@@ -284,21 +312,67 @@ class FlowCardManager {
                 {
                     id: 'set_power',
                     handler: async (args) => {
-                        const { power, phase_mode, voltage, voltage_type, maxAmps } = args;
+                        const { power, phase_mode, voltage, voltage_type, maxAmps, rounding = 'math' } = args;
                         const calculatedCurrent = PowerCalculator.calculateCurrent(
-                            power, phase_mode, voltage, voltage_type, maxAmps
+                            power, phase_mode, voltage, voltage_type, maxAmps, rounding
                         );
                         
                         await this.device.v2cApi.setParameter('Intensity', calculatedCurrent);
                         
                         if (this.logger) {
                             this.logger.debug('Výpočet proudu a nastavení Intensity', {
-                                power, phase_mode, voltage, voltage_type, maxAmps,
+                                power, phase_mode, voltage, voltage_type, maxAmps, rounding,
                                 calculated_current: calculatedCurrent
                             });
                         }
                         
                         return { calculated_current: calculatedCurrent };
+                    }
+                },
+                {
+                    id: 'calculate_power_with_buffer',
+                    handler: async (args) => {
+                        const { power, buffer_power, phase_mode, voltage, voltage_type, maxAmps, rounding = 'math' } = args;
+                        
+                        let current = PowerCalculator.calculateCurrentWithoutMINrounding(
+                            power,
+                            phase_mode,
+                            voltage,
+                            voltage_type,
+                            maxAmps,
+                            rounding
+                        );
+                
+                        if (current < 6 && buffer_power > 0) {
+                            const totalPower = Math.abs(power) + buffer_power;
+                            current = PowerCalculator.calculateCurrentWithoutMINrounding(
+                                totalPower,
+                                phase_mode,
+                                voltage,
+                                voltage_type,
+                                maxAmps,
+                                rounding
+                            );
+                        }
+                
+                        current = Math.min(maxAmps, current);
+                        
+                        if (this.logger) {
+                            this.logger.debug('Výpočet proudu s bufferem', {
+                                power,
+                                buffer_power,
+                                phase_mode,
+                                voltage,
+                                voltage_type,
+                                maxAmps,
+                                rounding,
+                                vypočtenýProud: current
+                            });
+                        }
+                
+                        return {
+                            calculated_current: current
+                        };
                     }
                 }
             ];
