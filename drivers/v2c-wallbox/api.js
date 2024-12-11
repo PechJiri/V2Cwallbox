@@ -10,6 +10,8 @@ class v2cAPI {
         this.logger = new Logger(homey, 'V2C-API');
         this.logger.setEnabled(false);
         this.validator = new DataValidator(this.logger);
+        this._apiErrorCount = 0;
+        this._maxConsecutiveErrors = 20;
     }
 
     setLoggingEnabled(enabled) {
@@ -39,34 +41,69 @@ class v2cAPI {
     }
 
     async getData() {
-        const maxRetries = 3;
-        const retryDelay = 5000;
-        let lastError = null;
-        
-        for (let attempt = 1; attempt <= maxRetries; attempt++) {
-            try {
-                const url = `http://${this.ip}/RealTimeData`;
-                this.logger.debug('Načítání dat', { url, attempt });
+        try {
+            const url = `http://${this.ip}/RealTimeData`;
+            this.logger.debug('Načítání dat', { 
+                url, 
+                errorCount: this._apiErrorCount,
+                maxErrors: this._maxConsecutiveErrors
+            });
     
-                const response = await fetch(url, { 
-                    timeout: 5000 
+            const response = await fetch(url, { 
+                timeout: 5000 
+            });
+            
+            const data = await response.json();
+            
+            // Reset počítadla chyb při úspěšném volání
+            if (this._apiErrorCount > 0) {
+                this.logger.debug(`Reset počítadla chyb z ${this._apiErrorCount} na 0`);
+                this._apiErrorCount = 0;
+            }
+            
+            // Logování kompletní raw odpovědi z API
+            this.logger.debug('Raw API Response:', data);
+            return data;
+            
+        } catch (error) {
+            // Zvýšení počítadla chyb
+            this._apiErrorCount++;
+            
+            this.logger.debug(`API chyba #${this._apiErrorCount} z ${this._maxConsecutiveErrors}`, {
+                error: error.message,
+                stack: error.stack
+            });
+    
+            // Pokud jsme přesáhli limit chyb
+            if (this._apiErrorCount >= this._maxConsecutiveErrors) {
+                this.logger.error('Překročen limit po sobě jdoucích chyb API', error, {
+                    errorCount: this._apiErrorCount,
+                    maxErrors: this._maxConsecutiveErrors
                 });
                 
-                const data = await response.json();
-                this.logger.debug('Raw API Response:', data);
-                return data;
-                
-            } catch (error) {
-                lastError = error;
-                if (attempt === maxRetries) {
-                    this.logger.error('Selhalo načtení dat po všech pokusech', error);
-                    throw new Error(`Všechny pokusy selhaly: ${error.message}`);
-                }
-                
-                this.logger.debug(`Pokus ${attempt} selhal, čekám před dalším pokusem`);
-                await new Promise(resolve => setTimeout(resolve, retryDelay));
+                throw new Error('API_MAX_ERRORS_EXCEEDED');
             }
+    
+            // Původní chybová hláška
+            this.logger.error('Selhalo načtení dat', error);
+            throw new Error(`Načtení dat selhalo: ${error.message}`);
         }
+    }
+
+    getErrorCount() {
+        return this._apiErrorCount;
+    }
+    
+    resetErrorCount() {
+        const oldCount = this._apiErrorCount;
+        this._apiErrorCount = 0;
+        if (oldCount > 0) {
+            this.logger.debug(`Manuální reset počítadla chyb z ${oldCount} na 0`);
+        }
+    }
+    
+    isInErrorState() {
+        return this._apiErrorCount >= this._maxConsecutiveErrors;
     }
 
     processData(data) {

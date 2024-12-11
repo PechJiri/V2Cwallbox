@@ -245,22 +245,36 @@ class MyDevice extends Device {
                     await this.setAvailable();
                 }
             } catch (error) {
-                // Přidáme kontrolu, zda error neobsahuje informaci o vyčerpání všech pokusů
-                if (error.message.includes('Všechny pokusy selhaly')) {
+                // Kontrola zda jde o překročení maximálního počtu chyb
+                if (error.message === 'API_MAX_ERRORS_EXCEEDED') {
                     const hadError = await this.getCapabilityValue('measure_connection_error');
                     if (!hadError) {
+                        this.logger.error('API není dostupné po více pokusech', {
+                            errorCount: this.v2cApi.getErrorCount(),
+                            maxErrors: this.v2cApi._maxConsecutiveErrors
+                        });
+                        
                         await this.setCapabilityValue('measure_connection_error', true);
                         await this.flowCardManager.triggerConnectionStateChanged('error');
                     }
-    
-                    // Kontrola délky výpadku
+
+                    // Kontrola délky výpadku pro nastavení unavailable
                     const errorDuration = now - (this._lastSuccessfulUpdate || 0);
                     if (errorDuration > 5 * 60 * 1000) { // 5 minut
-                        this.setUnavailable(`Chyba při získávání dat: ${error.message}`);
+                        this.setUnavailable('API není dostupné po více pokusech');
                     }
                 } else {
-                    // Pokud nejde o vyčerpání všech pokusů, pouze zalogujeme
-                    this.logger.debug('Dočasná chyba při získávání dat', error);
+                    // Běžná chyba API - logujeme pro debug
+                    this.logger.debug('Dočasná chyba API', {
+                        error: error.message,
+                        errorCount: this.v2cApi.getErrorCount(),
+                        isInErrorState: this.v2cApi.isInErrorState()
+                    });
+
+                    // Zachováváme původní data
+                    if (this.lastResponse) {
+                        this.logger.debug('Použita poslední známá data kvůli chybě API');
+                    }
                 }
             }
         } catch (error) {
@@ -550,18 +564,68 @@ class MyDevice extends Device {
     }
 
     async onDeleted() {
-        this.logger.log('Zařízení bylo smazáno');
-        
-        if (this.dataFetchInterval) {
-            this.homey.clearInterval(this.dataFetchInterval);
+        try {
+            this.logger.log('Zařízení je odstraňováno - začátek cleanup procesu');
+    
+            // 1. Zrušení všech intervalů
+            if (this.dataFetchInterval) {
+                this.homey.clearInterval(this.dataFetchInterval);
+                this.dataFetchInterval = null;
+            }
+    
+            // 2. Odstranění event listenerů
+            this.removeAllListeners();
+            
+            // 3. Cleanup Flow manažeru
+            if (this.flowCardManager) {
+                await this.flowCardManager.destroy();
+                this.flowCardManager = null;
+            }
+    
+            // 4. Cleanup API instance
+            if (this.v2cApi) {
+                this.v2cApi = null;
+            }
+    
+            // 5. Vyčištění cache a dočasných dat
+            if (this.lastResponse) {
+                this.lastResponse = null;
+            }
+            if (this.lastResponseTime) {
+                this.lastResponseTime = null;
+            }
+    
+            // 6. Cleanup validátoru
+            if (this.dataValidator) {
+                this.dataValidator = null;
+            }
+    
+            // 7. Vyčištění store hodnot
+            await this.unsetStoreValue('previousChargeState');
+            await this.unsetStoreValue('previousSlaveError');
+            await this.unsetStoreValue('baseChargeEnergy');
+            await this.unsetStoreValue('chargingStartEnergy');
+            await this.unsetStoreValue('monthlyEnergyData');
+            await this.unsetStoreValue('yearlyEnergyData');
+    
+            // 8. Cleanup loggeru - musí být poslední, abychom mohli logovat chyby výše
+            if (this.logger) {
+                this.logger.log('Zařízení bylo úspěšně odstraněno');
+                await this.logger.clearHistory();
+                this.logger = null;
+            }
+    
+        } catch (error) {
+            // Pokud ještě máme logger, zalogujeme chybu
+            if (this.logger) {
+                this.logger.error('Chyba při odstraňování zařízení', error);
+            }
+            // V každém případě zrušíme referenci na logger
+            this.logger = null;
+            
+            // Přepošleme chybu dál
+            throw error;
         }
-        
-        if (this.flowCardManager) {
-            this.flowCardManager.destroy();
-        }
-
-        // Vyčištění historie logů
-        this.logger.clearHistory();
     }
 }
 
