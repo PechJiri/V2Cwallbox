@@ -79,5 +79,8 @@
   },
   "1.4.2": {
     "en": "Added new AND and THEN cards for better handling of your solar surpluses, change to Set power to W (added possibility to change rounding of result AMPs)"
+  },
+  "1.4.3": {
+    "en": "Better logic on API fail trigger, code optimalisation"
   }
 }

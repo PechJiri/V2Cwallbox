@@ -1,6 +1,6 @@
 {
   "id": "com.v2c.wallbox",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "compatibility": ">=12.1.0",
   "sdk": 3,
   "brandColor": "#00275b",
