@@ -424,12 +424,11 @@ class MyDevice extends Device {
 
     async updateCapabilities(deviceData, currentState, chargeEnergy) {
         try {
-
-            const timerState = typeof deviceData.timer_state === 'boolean' 
-            ? deviceData.timer_state 
-            : Boolean(deviceData.timer_state);
-
-            // Aktualizace všech capabilities
+            const timerState = typeof deviceData.timer_state === 'boolean'
+                ? deviceData.timer_state
+                : Boolean(deviceData.timer_state);
+    
+            // Aktualizace původních capabilities
             await Promise.all([
                 this.setCapabilityValue('measure_charge_state', deviceData.chargeState),
                 this.setCapabilityValue('measure_charge_power', deviceData.chargePower),
@@ -452,15 +451,28 @@ class MyDevice extends Device {
                 this.setCapabilityValue('timer_state', deviceData.timer_state || false)
             ]);
     
+            // Kopírování hodnot z původních capability do nových
+            const measurePower = await this.getCapabilityValue('measure_charge_power') || 0; // Hodnota z measure_charge_power
+            const meterPower = await this.getCapabilityValue('measure_charge_energy') || 0; // Hodnota z measure_charge_energy
+    
+            // Aktualizace nových capabilities
+            await Promise.all([
+                this.setCapabilityValue('measure_power', measurePower),
+                this.setCapabilityValue('meter_power', meterPower)
+            ]);
+    
             this.logger.debug('Capabilities byly úspěšně aktualizovány', { 
                 deviceData, 
-                chargeEnergy 
+                chargeEnergy, 
+                measurePower, 
+                meterPower 
             });
         } catch (error) {
             this.logger.error('Chyba při aktualizaci capabilities', error);
             throw error;
         }
     }
+    
     
 
     async handleStateChanges(currentState, previousState, deviceData) {

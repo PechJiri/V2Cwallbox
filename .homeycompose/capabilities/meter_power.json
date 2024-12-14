@@ -1,0 +1,36 @@
+{
+    "type": "number",
+    "title": {
+      "en": "Charged energy (kWh)",
+      "da": "Opladet energi (kWh)",
+      "de": "Geladene Energie (kWh)",
+      "es": "Energía cargada (kWh)",
+      "fr": "Énergie chargée (kWh)",
+      "it": "Energia caricata (kWh)",
+      "no": "Ladet energi (kWh)",
+      "sv": "Laddad energi (kWh)",
+      "pl": "Naładowana energia (kWh)",
+      "ru": "Заряженная энергия (кВтч)",
+      "ko": "충전된 에너지 (kWh)"
+    },
+    "units": {
+      "en": "kWh",
+      "da": "kWh",
+      "de": "kWh",
+      "es": "kWh",
+      "fr": "kWh",
+      "it": "kWh",
+      "no": "kWh",
+      "sv": "kWh",
+      "pl": "kWh",
+      "ru": "кВтч",
+      "ko": "kWh"
+    },
+    "uiComponent": null,
+    "getable": true,
+    "setable": false,
+    "decimals": 1,
+    "insights": false,
+    "icon": "/assets/charge_energy.svg"
+  }
+  
