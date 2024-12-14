@@ -7,8 +7,5 @@
       "connection_ok": "Connexion réussie",
       "connection_error": "Connexion impossible"
     }
-  },
-  "settings": {
-    "title": "Paramètres de la borne V2C"
   }
 }

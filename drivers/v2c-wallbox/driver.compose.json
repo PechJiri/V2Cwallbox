@@ -31,7 +31,9 @@
     "signal_status",
     "measure_voltage_installation",
     "measure_paused",
-    "measure_connection_error"
+    "measure_connection_error",
+    "measure_power",
+    "meter_power"
   ],
   "images": {
     "small": "{{driverAssetsPath}}/images/small.png",

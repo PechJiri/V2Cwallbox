@@ -7,8 +7,5 @@
       "connection_ok": "Verbinding geslaagd",
       "connection_error": "Verbinding niet mogelijk"
     }
-  },
-  "settings": {
-    "title": "V2C Wallbox Instellingen"
   }
 }

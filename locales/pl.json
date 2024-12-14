@@ -7,8 +7,5 @@
       "connection_ok": "Połączenie udane",
       "connection_error": "Połączenie niemożliwe"
     }
-  },
-  "settings": {
-    "title": "Ustawienia ładowarki V2C Wallbox"
   }
 }
