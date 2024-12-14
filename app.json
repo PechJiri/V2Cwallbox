@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.v2c.wallbox",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "compatibility": ">=12.1.0",
   "sdk": 3,
   "brandColor": "#00275b",
@@ -2400,7 +2400,9 @@
         "signal_status",
         "measure_voltage_installation",
         "measure_paused",
-        "measure_connection_error"
+        "measure_connection_error",
+        "measure_power",
+        "meter_power"
       ],
       "images": {
         "small": "/drivers/v2c-wallbox/assets/images/small.png",

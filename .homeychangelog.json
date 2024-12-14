@@ -85,5 +85,8 @@
   },
   "1.4.4": {
     "en": "Added Homey system energy capabilities"
+  },
+  "1.4.5": {
+    "en": "Deleted app settings page, small bugfix"
   }
 }
