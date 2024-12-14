@@ -82,5 +82,8 @@
   },
   "1.4.3": {
     "en": "Better logic on API fail trigger, code optimalisation"
+  },
+  "1.4.4": {
+    "en": "Added Homey system energy capabilities"
   }
 }

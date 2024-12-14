@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.v2c.wallbox",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "compatibility": ">=12.1.0",
   "sdk": 3,
   "brandColor": "#00275b",
@@ -3469,6 +3469,43 @@
       "uiComponent": "toggle",
       "icon": "/assets/paused.svg"
     },
+    "measure_power": {
+      "type": "number",
+      "title": {
+        "en": "Current charging power (W)",
+        "nl": "Huidig laadvermogen (W)",
+        "da": "Aktuel opladningseffekt (W)",
+        "de": "Aktuelle Ladeleistung (W)",
+        "es": "Potencia de carga actual (W)",
+        "fr": "Puissance de charge actuelle (W)",
+        "it": "Potenza di carica attuale (W)",
+        "no": "Nåværende ladekraft (W)",
+        "sv": "Nuvarande laddningseffekt (W)",
+        "pl": "Bieżąca moc ładowania (W)",
+        "ru": "Текущая мощность зарядки (Вт)",
+        "ko": "현재 충전 전력 (W)"
+      },
+      "units": {
+        "en": "W",
+        "nl": "W",
+        "da": "W",
+        "de": "W",
+        "es": "W",
+        "fr": "W",
+        "it": "W",
+        "no": "W",
+        "sv": "W",
+        "pl": "W",
+        "ru": "Вт",
+        "ko": "W"
+      },
+      "uiComponent": null,
+      "getable": true,
+      "setable": false,
+      "decimals": 0,
+      "insights": false,
+      "icon": "/assets/charge_power.svg"
+    },
     "measure_slave_error": {
       "type": "enum",
       "title": {
@@ -3751,6 +3788,41 @@
       "setable": false,
       "decimals": 1,
       "insights": true,
+      "icon": "/assets/charge_energy.svg"
+    },
+    "meter_power": {
+      "type": "number",
+      "title": {
+        "en": "Charged energy (kWh)",
+        "da": "Opladet energi (kWh)",
+        "de": "Geladene Energie (kWh)",
+        "es": "Energía cargada (kWh)",
+        "fr": "Énergie chargée (kWh)",
+        "it": "Energia caricata (kWh)",
+        "no": "Ladet energi (kWh)",
+        "sv": "Laddad energi (kWh)",
+        "pl": "Naładowana energia (kWh)",
+        "ru": "Заряженная энергия (кВтч)",
+        "ko": "충전된 에너지 (kWh)"
+      },
+      "units": {
+        "en": "kWh",
+        "da": "kWh",
+        "de": "kWh",
+        "es": "kWh",
+        "fr": "kWh",
+        "it": "kWh",
+        "no": "kWh",
+        "sv": "kWh",
+        "pl": "kWh",
+        "ru": "кВтч",
+        "ko": "kWh"
+      },
+      "uiComponent": null,
+      "getable": true,
+      "setable": false,
+      "decimals": 1,
+      "insights": false,
       "icon": "/assets/charge_energy.svg"
     },
     "min_intensity": {
