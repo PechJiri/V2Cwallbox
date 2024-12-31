@@ -88,5 +88,8 @@
   },
   "1.4.5": {
     "en": "Deleted app settings page, small bugfix"
+  },
+  "1.4.6": {
+    "en": "Bugfix, added flowcards for monthly and yearly statistics"
   }
 }
