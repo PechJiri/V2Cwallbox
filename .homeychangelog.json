@@ -97,5 +97,8 @@
   },
   "1.4.8": {
     "en": "Added Ko-Fi as way to support development"
+  },
+  "1.4.9": {
+    "en": "Removed Ko-Fi donations and added GitHub sponsors to support app"
   }
 }
