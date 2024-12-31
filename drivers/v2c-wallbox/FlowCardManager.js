@@ -252,8 +252,6 @@ class FlowCardManager {
                         return true;
                     }
                 },
-    
-                // Aktualizované akce pro dynamický režim
                 {
                     id: 'set_dynamic',
                     handler: async (args) => {
@@ -289,8 +287,6 @@ class FlowCardManager {
                         return true;
                     }
                 },
-    
-                // Aktualizované akce pro min/max intensity
                 {
                     id: 'set_min_intensity',
                     handler: async (args) => {
@@ -373,6 +369,30 @@ class FlowCardManager {
                         return {
                             calculated_current: current
                         };
+                    }
+                },
+                {
+                    id: 'reset_monthly_energy',
+                    handler: async (args) => {
+                        return await args.device.resetMonthlyEnergy();
+                    }
+                },
+                {
+                    id: 'reset_yearly_energy',
+                    handler: async (args) => {
+                        return await args.device.resetYearlyEnergy();
+                    }
+                },
+                {
+                    id: 'set_monthly_energy',
+                    handler: async (args) => {
+                        return await args.device.setMonthlyEnergy(args.energy);
+                    }
+                },
+                {
+                    id: 'set_yearly_energy',
+                    handler: async (args) => {
+                        return await args.device.setYearlyEnergy(args.energy);
                     }
                 }
             ];

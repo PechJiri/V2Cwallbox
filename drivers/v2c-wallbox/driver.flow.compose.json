@@ -2011,6 +2011,218 @@
         "ru": "Установить динамический режим мощности на [[DynamicPowerMode]]",
         "ko": "동적 전력 모드를 [[DynamicPowerMode]]로 설정"
       }
+    },
+    {
+      "id": "reset_monthly_energy",
+      "args": [],
+      "title": {
+        "en": "Reset Monthly Energy Counter",
+        "nl": "Reset maandelijkse energieteller",
+        "da": "Nulstil månedlig energitæller",
+        "de": "Monatlichen Energiezähler zurücksetzen",
+        "es": "Restablecer contador de energía mensual",
+        "fr": "Réinitialiser le compteur d'énergie mensuel",
+        "it": "Azzera contatore energia mensile",
+        "no": "Nullstill månedlig energimåler",
+        "sv": "Återställ månadsvis energiräknare",
+        "pl": "Zresetuj licznik energii miesięcznej",
+        "ru": "Сбросить месячный счетчик энергии",
+        "ko": "월간 에너지 카운터 재설정"
+      },
+      "titleFormatted": {
+        "en": "Reset Monthly Energy Counter",
+        "nl": "Reset maandelijkse energieteller",
+        "da": "Nulstil månedlig energitæller",
+        "de": "Monatlichen Energiezähler zurücksetzen",
+        "es": "Restablecer contador de energía mensual",
+        "fr": "Réinitialiser le compteur d'énergie mensuel",
+        "it": "Azzera contatore energia mensile",
+        "no": "Nullstill månedlig energimåler",
+        "sv": "Återställ månadsvis energiräknare",
+        "pl": "Zresetuj licznik energii miesięcznej",
+        "ru": "Сбросить месячный счетчик энергии",
+        "ko": "월간 에너지 카운터 재설정"
+      },
+      "hint": {
+        "en": "Resets the monthly energy counter to zero",
+        "nl": "Zet de maandelijkse energieteller op nul",
+        "da": "Nulstiller den månedlige energitæller",
+        "de": "Setzt den monatlichen Energiezähler auf Null",
+        "es": "Restablece el contador de energía mensual a cero",
+        "fr": "Remet à zéro le compteur d'énergie mensuel",
+        "it": "Azzera il contatore dell'energia mensile",
+        "no": "Nullstiller den månedlige energimåleren",
+        "sv": "Återställer den månatliga energiräknaren till noll",
+        "pl": "Zeruje licznik energii miesięcznej",
+        "ru": "Обнуляет месячный счетчик энергии",
+        "ko": "월간 에너지 카운터를 0으로 재설정"
+      }
+    },
+    {
+      "id": "reset_yearly_energy",
+      "args": [],
+      "title": {
+        "en": "Reset Yearly Energy Counter",
+        "nl": "Reset jaarlijkse energieteller",
+        "da": "Nulstil årlig energitæller",
+        "de": "Jährlichen Energiezähler zurücksetzen",
+        "es": "Restablecer contador de energía anual",
+        "fr": "Réinitialiser le compteur d'énergie annuel",
+        "it": "Azzera contatore energia annuale",
+        "no": "Nullstill årlig energimåler",
+        "sv": "Återställ årlig energiräknare",
+        "pl": "Zresetuj licznik energii rocznej",
+        "ru": "Сбросить годовой счетчик энергии",
+        "ko": "연간 에너지 카운터 재설정"
+      },
+      "titleFormatted": {
+        "en": "Reset Yearly Energy Counter",
+        "nl": "Reset jaarlijkse energieteller",
+        "da": "Nulstil årlig energitæller",
+        "de": "Jährlichen Energiezähler zurücksetzen",
+        "es": "Restablecer contador de energía anual",
+        "fr": "Réinitialiser le compteur d'énergie annuel",
+        "it": "Azzera contatore energia annuale",
+        "no": "Nullstill årlig energimåler",
+        "sv": "Återställ årlig energiräknare",
+        "pl": "Zresetuj licznik energii rocznej",
+        "ru": "Сбросить годовой счетчик энергии",
+        "ko": "연간 에너지 카운터 재설정"
+      },
+      "hint": {
+        "en": "Resets the yearly energy counter to zero",
+        "nl": "Zet de jaarlijkse energieteller op nul",
+        "da": "Nulstiller den årlige energitæller",
+        "de": "Setzt den jährlichen Energiezähler auf Null",
+        "es": "Restablece el contador de energía anual a cero",
+        "fr": "Remet à zéro le compteur d'énergie annuel",
+        "it": "Azzera il contatore dell'energia annuale",
+        "no": "Nullstiller den årlige energimåleren",
+        "sv": "Återställer den årliga energiräknaren till noll",
+        "pl": "Zeruje licznik energii rocznej",
+        "ru": "Обнуляет годовой счетчик энергии",
+        "ko": "연간 에너지 카운터를 0으로 재설정"
+      }
+    },
+    {
+      "id": "set_monthly_energy",
+      "args": [
+        {
+          "name": "energy",
+          "type": "number",
+          "title": {
+            "en": "Energy Value (kWh)",
+            "nl": "Energiewaarde (kWh)",
+            "da": "Energiværdi (kWh)",
+            "de": "Energiewert (kWh)",
+            "es": "Valor de energía (kWh)",
+            "fr": "Valeur d'énergie (kWh)",
+            "it": "Valore energia (kWh)",
+            "no": "Energiverdi (kWh)",
+            "sv": "Energivärde (kWh)",
+            "pl": "Wartość energii (kWh)",
+            "ru": "Значение энергии (кВтч)",
+            "ko": "에너지 값 (kWh)"
+          },
+          "min": 0,
+          "max": 999999,
+          "step": 0.1,
+          "placeholder": {
+            "en": "1000"
+          },
+          "units": {
+            "en": "kWh"
+          }
+        }
+      ],
+      "title": {
+        "en": "Set Monthly Energy Counter",
+        "nl": "Stel maandelijkse energieteller in",
+        "da": "Indstil månedlig energitæller",
+        "de": "Monatlichen Energiezähler einstellen",
+        "es": "Establecer contador de energía mensual",
+        "fr": "Définir le compteur d'énergie mensuel",
+        "it": "Imposta contatore energia mensile",
+        "no": "Still inn månedlig energimåler",
+        "sv": "Ställ in månadsvis energiräknare",
+        "pl": "Ustaw licznik energii miesięcznej",
+        "ru": "Установить месячный счетчик энергии",
+        "ko": "월간 에너지 카운터 설정"
+      },
+      "titleFormatted": {
+        "en": "Set Monthly Energy Counter to [[energy]] kWh",
+        "nl": "Stel maandelijkse energieteller in op [[energy]] kWh",
+        "da": "Indstil månedlig energitæller til [[energy]] kWh",
+        "de": "Monatlichen Energiezähler auf [[energy]] kWh einstellen",
+        "es": "Establecer contador de energía mensual en [[energy]] kWh",
+        "fr": "Définir le compteur d'énergie mensuel à [[energy]] kWh",
+        "it": "Imposta contatore energia mensile a [[energy]] kWh",
+        "no": "Still inn månedlig energimåler til [[energy]] kWh",
+        "sv": "Ställ in månadsvis energiräknare till [[energy]] kWh",
+        "pl": "Ustaw licznik energii miesięcznej na [[energy]] kWh",
+        "ru": "Установить месячный счетчик энергии на [[energy]] кВтч",
+        "ko": "월간 에너지 카운터를 [[energy]] kWh로 설정"
+      }
+    },
+    {
+      "id": "set_yearly_energy",
+      "args": [
+        {
+          "name": "energy",
+          "type": "number",
+          "title": {
+            "en": "Energy Value (kWh)",
+            "nl": "Energiewaarde (kWh)",
+            "da": "Energiværdi (kWh)",
+            "de": "Energiewert (kWh)",
+            "es": "Valor de energía (kWh)",
+            "fr": "Valeur d'énergie (kWh)",
+            "it": "Valore energia (kWh)",
+            "no": "Energiverdi (kWh)",
+            "sv": "Energivärde (kWh)",
+            "pl": "Wartość energii (kWh)",
+            "ru": "Значение энергии (кВтч)",
+            "ko": "에너지 값 (kWh)"
+          },
+          "min": 0,
+          "max": 999999,
+          "step": 0.1,
+          "placeholder": {
+            "en": "1000"
+          },
+          "units": {
+            "en": "kWh"
+          }
+        }
+      ],
+      "title": {
+        "en": "Set Yearly Energy Counter",
+        "nl": "Stel jaarlijkse energieteller in",
+        "da": "Indstil årlig energitæller",
+        "de": "Jährlichen Energiezähler einstellen",
+        "es": "Establecer contador de energía anual",
+        "fr": "Définir le compteur d'énergie annuel",
+        "it": "Imposta contatore energia annuale",
+        "no": "Still inn årlig energimåler",
+        "sv": "Ställ in årlig energiräknare",
+        "pl": "Ustaw licznik energii rocznej",
+        "ru": "Установить годовой счетчик энергии",
+        "ko": "연간 에너지 카운터 설정"
+      },
+      "titleFormatted": {
+        "en": "Set Yearly Energy Counter to [[energy]] kWh",
+        "nl": "Stel jaarlijkse energieteller in op [[energy]] kWh",
+        "da": "Indstil årlig energitæller til [[energy]] kWh",
+        "de": "Jährlichen Energiezähler auf [[energy]] kWh einstellen",
+        "es": "Establecer contador de energía anual en [[energy]] kWh",
+        "fr": "Définir le compteur d'énergie annuel à [[energy]] kWh",
+        "it": "Imposta contatore energia annuale a [[energy]] kWh",
+        "no": "Still inn årlig energimåler til [[energy]] kWh",
+        "sv": "Ställ in årlig energiräknare till [[energy]] kWh",
+        "pl": "Ustaw licznik energii rocznej na [[energy]] kWh",
+        "ru": "Установить годовой счетчик энергии на [[energy]] кВтч",
+        "ko": "연간 에너지 카운터를 [[energy]] kWh로 설정"
+      }
     }
   ]
 }
