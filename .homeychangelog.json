@@ -91,5 +91,8 @@
   },
   "1.4.6": {
     "en": "Bugfix, added flowcards for monthly and yearly statistics"
+  },
+  "1.4.7": {
+    "en": "Added energy manager for better handling of energy statistics"
   }
 }
