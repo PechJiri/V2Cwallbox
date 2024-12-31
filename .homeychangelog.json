@@ -94,5 +94,8 @@
   },
   "1.4.7": {
     "en": "Added energy manager for better handling of energy statistics"
+  },
+  "1.4.8": {
+    "en": "Added Ko-Fi as way to support development"
   }
 }
