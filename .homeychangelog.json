@@ -100,5 +100,8 @@
   },
   "1.4.9": {
     "en": "Removed Ko-Fi donations and added GitHub sponsors to support app"
+  },
+  "1.4.10": {
+    "en": "Code style and optimalisation"
   }
 }
