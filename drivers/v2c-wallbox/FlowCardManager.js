@@ -165,7 +165,7 @@ class FlowCardManager {
     
                 // Pokud má trigger argumenty, registrujeme runListener
                 if (trigger.hasArgs) {
-                    card.registerRunListener(async (args, state) => {
+                    card.registerRunListener(async (args) => {
                         const currentValue = await this.device.getCapabilityValue(trigger.capability);
                         return trigger.comparison(currentValue, args);
                     });
@@ -201,7 +201,7 @@ class FlowCardManager {
                     });
                 } else {
                     // Původní handler pro ostatní podmínky
-                    card.registerRunListener(async (args, state) => {
+                    card.registerRunListener(async (args) => {
                         const currentValue = await this.device.getCapabilityValue(condition.capability);
                         if (args.value !== undefined) {
                             return condition.comparison(currentValue, args.value);

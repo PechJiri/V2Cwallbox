@@ -3,6 +3,7 @@
 const { Driver } = require('homey');
 const Logger = require('../../lib/Logger');
 const { v2cAPI } = require('./api');
+const CONSTANTS = require('../../lib/constants');
 
 class V2CWallboxDriver extends Driver {
     /**
@@ -44,56 +45,34 @@ class V2CWallboxDriver extends Driver {
      */
     async onPairListDevices() {
         this.logger.debug("Spuštěno hledání zařízení");
-
+    
         try {
             const v2cApi = new v2cAPI(this.homey, this.settingsData.ip);
             const baseSession = await v2cApi.getData();
             this.logger.debug("Data přijata z API", { baseSession });
-
+    
             const deviceData = await v2cApi.processData(baseSession);
             this.logger.debug("Zpracovaná data zařízení", { deviceData });
-
+    
             const deviceName = baseSession.ID;
             const deviceMac = baseSession.IP;
-
+    
             if (deviceName && deviceMac) {
                 this.logger.log('Nalezeno zařízení', { 
                     name: deviceName, 
                     mac: deviceMac 
                 });
-
+    
                 return [{
                     name: deviceName,
                     data: { id: deviceMac },
-                    capabilities: [
-                        'measure_charge_state',
-                        'measure_charge_power',
-                        'measure_voltage_installation',
-                        'measure_charge_energy',
-                        'measure_slave_error',
-                        'measure_charge_time',
-                        'measure_paused',
-                        'measure_locked',
-                        'measure_intensity',
-                        'measure_dynamic',
-                        'measure_monthly_energy',
-                        'measure_yearly_energy',
-                        'car_connected',
-                        'measure_house_power',
-                        'measure_fv_power',
-                        'measure_battery_power',
-                        'min_intensity',
-                        'max_intensity',
-                        'firmware_version',
-                        'signal_status',
-                        'timer_state'
-                    ],
+                    capabilities: CONSTANTS.DEVICE_CAPABILITIES,
                     settings: {
                         v2c_ip: this.settingsData.ip,
-                        update_interval: 5,
+                        update_interval: CONSTANTS.DEVICE.MIN_UPDATE_INTERVAL,
                         enable_logging: true,
-                        min_intensity: 6,
-                        max_intensity: 32
+                        min_intensity: CONSTANTS.DEVICE.INTENSITY.MIN,
+                        max_intensity: CONSTANTS.DEVICE.INTENSITY.MAX
                     }
                 }];
             } else {

@@ -88,38 +88,21 @@ class MyDevice extends Device {
     }
 
     async initializeCapabilities() {
-        const capabilities = [
-            'measure_charge_state',
-            'measure_charge_power',
-            'measure_voltage_installation', 
-            'measure_charge_energy',
-            'measure_slave_error',
-            'measure_charge_time',
-            'measure_paused',
-            'measure_locked',
-            'measure_intensity',
-            'measure_dynamic',
-            'car_connected',
-            'measure_yearly_energy',
-            'measure_monthly_energy',
-            'measure_house_power',
-            'measure_fv_power',
-            'measure_battery_power',
-            'min_intensity',
-            'max_intensity',
-            'firmware_version',
-            'signal_status',
-            'timer_state',
-            'measure_power',
-            'meter_power'
-        ];
-    
-        // Přidání chybějících capabilities
-        for (const capability of capabilities) {
-            if (!this.hasCapability(capability)) {
-                this.logger.debug(`Přidávání capability: ${capability}`);
-                await this.addCapability(capability);
+        try {
+            // Použití capabilities z konstant
+            for (const capability of CONSTANTS.DEVICE_CAPABILITIES) {
+                if (!this.hasCapability(capability)) {
+                    this.logger.debug(`Přidávání capability: ${capability}`);
+                    await this.addCapability(capability);
+                }
             }
+            
+            this.logger.debug('Inicializace capabilities dokončena', {
+                totalCapabilities: CONSTANTS.DEVICE_CAPABILITIES.length
+            });
+        } catch (error) {
+            this.logger.error('Chyba při inicializaci capabilities', error);
+            throw error;
         }
     }
 
