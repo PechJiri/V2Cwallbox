@@ -2,6 +2,7 @@
 
 const Homey = require('homey');
 const PowerCalculator = require('../../lib/power_calculator');
+const CONSTANTS = require('../../lib/constants');
 
 class FlowCardManager {
     constructor(homey, device) {
@@ -9,7 +10,6 @@ class FlowCardManager {
         this.device = device;
         this.logger = null;
         
-        // Reference na flow karty
         this._flowCards = {
             triggers: new Map(),
             conditions: new Map(),
@@ -20,22 +20,22 @@ class FlowCardManager {
             PowerCalculator.setLogger(this.logger);
         }
 
-        // Definice základních triggerů
+        // Definice základních triggerů s použitím konstant
         this._basicTriggers = [
             {
                 id: 'car-connected',
                 capability: 'measure_charge_state',
-                comparison: (state) => state === "1"
+                comparison: (state) => state === CONSTANTS.CHARGE_STATES.CONNECTED
             },
             {
                 id: 'car-disconnected',
                 capability: 'measure_charge_state',
-                comparison: (state) => state === "0"
+                comparison: (state) => state === CONSTANTS.CHARGE_STATES.DISCONNECTED
             },
             {
                 id: 'car-start-charging',
                 capability: 'measure_charge_state',
-                comparison: (state) => state === "2"
+                comparison: (state) => state === CONSTANTS.CHARGE_STATES.CHARGING
             },
             {
                 id: 'slave_error_changed',
@@ -44,7 +44,7 @@ class FlowCardManager {
             {
                 id: 'connection_state_changed',
                 capability: 'measure_connection_error',
-                hasArgs: true,  // přidáme příznak že má argumenty
+                hasArgs: true,
                 comparison: (state, args) => {
                     const hasError = args.connection_state === 'error';
                     return state === hasError;
@@ -52,17 +52,17 @@ class FlowCardManager {
             }
         ];
 
-        // Definice základních podmínek
+        // Definice základních podmínek s použitím konstant
         this._basicConditions = [
             {
                 id: 'car-connected-condition',
                 capability: 'measure_charge_state',
-                comparison: (state) => state === "1"
+                comparison: (state) => state === CONSTANTS.CHARGE_STATES.CONNECTED
             },
             {
                 id: 'car-is-charging',
                 capability: 'measure_charge_state',
-                comparison: (state) => state === "2"
+                comparison: (state) => state === CONSTANTS.CHARGE_STATES.CHARGING
             },
             {
                 id: 'charging-is-paused',
@@ -92,25 +92,32 @@ class FlowCardManager {
             {
                 id: 'compare_calculated_current',
                 comparison: (args) => {
-                  const inputCurrent = parseInt(args.current_input);
-                  const targetCurrent = parseInt(args.current);
-                  
-                  switch(args.operator) {
-                    case 'greater':
-                      return inputCurrent > targetCurrent;
-                    case 'less':
-                      return inputCurrent < targetCurrent;
-                    case 'equals':
-                      return inputCurrent === targetCurrent;
-                    case 'greater_equals':
-                      return inputCurrent >= targetCurrent;
-                    case 'less_equals':
-                      return inputCurrent <= targetCurrent;
-                    default:
-                      return false;
-                  }
+                    const inputCurrent = parseInt(args.current_input);
+                    const targetCurrent = parseInt(args.current);
+                    
+                    if (inputCurrent < CONSTANTS.DEVICE.INTENSITY.MIN || 
+                        inputCurrent > CONSTANTS.DEVICE.INTENSITY.MAX || 
+                        targetCurrent < CONSTANTS.DEVICE.INTENSITY.MIN || 
+                        targetCurrent > CONSTANTS.DEVICE.INTENSITY.MAX) {
+                        return false;
+                    }
+                    
+                    switch(args.operator) {
+                        case 'greater':
+                            return inputCurrent > targetCurrent;
+                        case 'less':
+                            return inputCurrent < targetCurrent;
+                        case 'equals':
+                            return inputCurrent === targetCurrent;
+                        case 'greater_equals':
+                            return inputCurrent >= targetCurrent;
+                        case 'less_equals':
+                            return inputCurrent <= targetCurrent;
+                        default:
+                            return false;
+                    }
                 }
-              }
+            }
         ];
     }
 
@@ -217,15 +224,13 @@ class FlowCardManager {
         }
      }
 
-    async _initializeActions() {
+     async _initializeActions() {
         try {
             if (this.logger) {
                 this.logger.debug('Inicializace actions...');
             }
-    
-            // Definice základních akcí
+
             const basicActions = [
-                // Původní akce
                 {
                     id: 'set_paused',
                     handler: async (args) => {
@@ -248,6 +253,10 @@ class FlowCardManager {
                 {
                     id: 'set_intensity',
                     handler: async (args) => {
+                        if (args.intensity < CONSTANTS.DEVICE.INTENSITY.MIN || 
+                            args.intensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
+                            throw new Error(`Intensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
+                        }
                         await this.device.v2cApi.setIntensity(args.intensity);
                         return true;
                     }
@@ -259,14 +268,12 @@ class FlowCardManager {
                         const currentSettings = this.device.getSettings();
     
                         if (dynamic === '0') {
-                            // Vypnutí dynamického režimu
                             await this.device.setSettings({
-                                dynamic_power_mode: 'disabled'
+                                dynamic_power_mode: CONSTANTS.DYNAMIC_POWER_MODES.DISABLED
                             });
                         } else {
-                            // Zapnutí dynamického režimu
-                            const mode = currentSettings.dynamic_power_mode === 'disabled' 
-                                ? '0'  // Výchozí režim při zapnutí
+                            const mode = currentSettings.dynamic_power_mode === CONSTANTS.DYNAMIC_POWER_MODES.DISABLED 
+                                ? CONSTANTS.DYNAMIC_POWER_MODES.TIMED_ENABLED
                                 : currentSettings.dynamic_power_mode;
                             
                             await this.device.setSettings({
@@ -372,27 +379,25 @@ class FlowCardManager {
                     }
                 },
                 {
-                    id: 'reset_monthly_energy',
+                    id: 'set_energy_counter',
                     handler: async (args) => {
-                        return await args.device.resetMonthlyEnergy();
-                    }
-                },
-                {
-                    id: 'reset_yearly_energy',
-                    handler: async (args) => {
-                        return await args.device.resetYearlyEnergy();
-                    }
-                },
-                {
-                    id: 'set_monthly_energy',
-                    handler: async (args) => {
-                        return await args.device.setMonthlyEnergy(args.energy);
-                    }
-                },
-                {
-                    id: 'set_yearly_energy',
-                    handler: async (args) => {
-                        return await args.device.setYearlyEnergy(args.energy);
+                        const energy = parseFloat(args.energy);
+                        if (isNaN(energy)) {
+                            throw new Error('Neplatná hodnota energie');
+                        }
+                        
+                        switch(args.counter_type) {
+                            case 'monthly':
+                                return await args.device.setMonthlyEnergy(energy);
+                            case 'yearly':
+                                return await args.device.setYearlyEnergy(energy);
+                            case 'both':
+                                await args.device.setMonthlyEnergy(energy);
+                                await args.device.setYearlyEnergy(energy);
+                                return true;
+                            default:
+                                throw new Error('Neplatný typ počítadla');
+                        }
                     }
                 }
             ];
@@ -401,7 +406,6 @@ class FlowCardManager {
             for (const action of basicActions) {
                 const card = this.homey.flow.getActionCard(action.id);
                 
-                // Odregistrace starého listeneru pokud existuje
                 if (card.listenerCount('run') > 0) {
                     card.removeAllListeners('run');
                 }
@@ -409,7 +413,9 @@ class FlowCardManager {
                 card.registerRunListener(async (args) => {
                     try {
                         if (this.logger) {
-                            this.logger.debug(`Spouštím akci ${action.id}`, { args });
+                            this.logger.debug(`Spouštím akci ${action.id}`, { 
+                                actionArgs: this._sanitizeActionArgs(args) 
+                            });
                         }
                         return await action.handler(args);
                     } catch (error) {
@@ -473,6 +479,26 @@ class FlowCardManager {
                 this.logger.error(`Error triggering ${cardId}:`, error);
             }
         }
+    }
+
+    _sanitizeActionArgs(args) {
+        if (!args) return null;
+        
+        // Vytvoříme nový objekt pouze s důležitými vlastnostmi
+        const sanitized = {};
+        
+        if (args.device && args.device.id) {
+            sanitized.deviceId = args.device.id;
+        }
+        
+        // Přidáme všechny ostatní parametry kromě device
+        Object.keys(args).forEach(key => {
+            if (key !== 'device') {
+                sanitized[key] = args[key];
+            }
+        });
+        
+        return sanitized;
     }
 
     destroy() {

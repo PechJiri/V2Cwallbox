@@ -3,6 +3,7 @@
 const fetch = require('node-fetch');
 const Logger = require('../../lib/Logger');
 const DataValidator = require('../../lib/DataValidator');
+const CONSTANTS = require('../../lib/constants');
 
 class v2cAPI {
     constructor(homey, ip) {
@@ -11,7 +12,7 @@ class v2cAPI {
         this.logger.setEnabled(false);
         this.validator = new DataValidator(this.logger);
         this._apiErrorCount = 0;
-        this._maxConsecutiveErrors = 20;
+        this._maxConsecutiveErrors = CONSTANTS.API.MAX_CONSECUTIVE_ERRORS;
     }
 
     setLoggingEnabled(enabled) {
@@ -21,10 +22,12 @@ class v2cAPI {
 
     async initializeSession() {
         try {
-            const url = `http://${this.ip}/RealTimeData`;
+            const url = `http://${this.ip}${CONSTANTS.API.ENDPOINTS.REALTIME}`;
             this.logger.debug('Inicializace session', { url });
 
-            const response = await fetch(url);
+            const response = await fetch(url, { 
+                timeout: CONSTANTS.API.TIMEOUT 
+            });
             const responseData = await response.json();
             this.logger.debug('Odpověď z inicializace session', { responseData });
 
@@ -42,7 +45,7 @@ class v2cAPI {
 
     async getData() {
         try {
-            const url = `http://${this.ip}/RealTimeData`;
+            const url = `http://${this.ip}${CONSTANTS.API.ENDPOINTS.REALTIME}`;
             this.logger.debug('Načítání dat', { 
                 url, 
                 errorCount: this._apiErrorCount,
@@ -50,23 +53,20 @@ class v2cAPI {
             });
     
             const response = await fetch(url, { 
-                timeout: 5000 
+                timeout: CONSTANTS.API.TIMEOUT 
             });
             
             const data = await response.json();
             
-            // Reset počítadla chyb při úspěšném volání
             if (this._apiErrorCount > 0) {
                 this.logger.debug(`Reset počítadla chyb z ${this._apiErrorCount} na 0`);
                 this._apiErrorCount = 0;
             }
             
-            // Logování kompletní raw odpovědi z API
             this.logger.debug('Raw API Response:', data);
             return data;
             
         } catch (error) {
-            // Zvýšení počítadla chyb
             this._apiErrorCount++;
             
             this.logger.debug(`API chyba #${this._apiErrorCount} z ${this._maxConsecutiveErrors}`, {
@@ -74,7 +74,6 @@ class v2cAPI {
                 stack: error.stack
             });
     
-            // Pokud jsme přesáhli limit chyb
             if (this._apiErrorCount >= this._maxConsecutiveErrors) {
                 this.logger.error('Překročen limit po sobě jdoucích chyb API', error, {
                     errorCount: this._apiErrorCount,
@@ -84,7 +83,6 @@ class v2cAPI {
                 throw new Error('API_MAX_ERRORS_EXCEEDED');
             }
     
-            // Původní chybová hláška
             this.logger.error('Selhalo načtení dat', error);
             throw new Error(`Načtení dat selhalo: ${error.message}`);
         }
@@ -106,7 +104,7 @@ class v2cAPI {
         return this._apiErrorCount >= this._maxConsecutiveErrors;
     }
 
-    processData(data) {
+    async processData(data) {
         try {
             this.logger.debug('Zpracování surových dat', { rawData: data });
             
@@ -128,7 +126,7 @@ class v2cAPI {
 
     async setParameter(parameter, value) {
         try {
-            const url = `http://${this.ip}/write/${parameter}=${value}`;
+            const url = `http://${this.ip}${CONSTANTS.API.ENDPOINTS.WRITE}/${parameter}=${value}`;
             this.logger.debug(`Nastavování parametru ${parameter}`, { 
                 url, 
                 hodnota: value 
@@ -171,8 +169,8 @@ class v2cAPI {
     }
 
     async setIntensity(intensity) {
-        if (intensity < 6 || intensity > 32) {
-            throw new Error('Intensity musí být mezi 6 a 32 A');
+        if (intensity < CONSTANTS.DEVICE.INTENSITY.MIN || intensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
+            throw new Error(`Intensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
         }
         return this.setParameter('Intensity', intensity);
     }
@@ -188,15 +186,15 @@ class v2cAPI {
 
     // Nové SET metody
     async setMinIntensity(minIntensity) {
-        if (minIntensity < 6 || minIntensity > 32) {
-            throw new Error('MinIntensity musí být mezi 6 a 32 A');
+        if (minIntensity < CONSTANTS.DEVICE.INTENSITY.MIN || minIntensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
+            throw new Error(`MinIntensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
         }
         return this.setParameter('MinIntensity', minIntensity);
     }
 
     async setMaxIntensity(maxIntensity) {
-        if (maxIntensity < 6 || maxIntensity > 32) {
-            throw new Error('MaxIntensity musí být mezi 6 a 32 A');
+        if (maxIntensity < CONSTANTS.DEVICE.INTENSITY.MIN || maxIntensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
+            throw new Error(`MaxIntensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
         }
         return this.setParameter('MaxIntensity', maxIntensity);
     }
@@ -223,12 +221,18 @@ class v2cAPI {
 
     async getMinIntensity() {
         const data = await this.getData();
-        return Math.max(6, Math.min(32, data.MinIntensity || 6));
+        return Math.max(
+            CONSTANTS.DEVICE.INTENSITY.MIN, 
+            Math.min(CONSTANTS.DEVICE.INTENSITY.MAX, data.MinIntensity || CONSTANTS.DEVICE.INTENSITY.MIN)
+        );
     }
 
     async getMaxIntensity() {
         const data = await this.getData();
-        return Math.max(6, Math.min(32, data.MaxIntensity || 32));
+        return Math.max(
+            CONSTANTS.DEVICE.INTENSITY.MIN, 
+            Math.min(CONSTANTS.DEVICE.INTENSITY.MAX, data.MaxIntensity || CONSTANTS.DEVICE.INTENSITY.MAX)
+        );
     }
 
     async getFirmwareVersion() {
@@ -238,7 +242,7 @@ class v2cAPI {
 
     async getSignalStatus() {
         const data = await this.getData();
-        return String(data.SignalStatus || '2');
+        return String(data.SignalStatus || CONSTANTS.SIGNAL_STATES.MEDIUM);
     }
 
     async getTimer() {

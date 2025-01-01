@@ -7,11 +7,9 @@ const PowerCalculator = require('../../lib/power_calculator');
 const DataValidator = require('../../lib/DataValidator');
 const Logger = require('../../lib/Logger');
 const EnergyManager = require('../../lib/EnergyManager');
+const CONSTANTS = require('../../lib/constants');
 
 class MyDevice extends Device {
-    /**
-     * onInit je volána při inicializaci zařízení
-     */
     async onInit() {
         try {
             // Inicializace loggeru pro zařízení
@@ -70,7 +68,7 @@ class MyDevice extends Device {
             this.registerPauseListener();
     
             // Spuštění intervalu pro aktualizaci dat
-            const updateInterval = this.getSetting('update_interval') || 5;
+            const updateInterval = this.getSetting('update_interval') || CONSTANTS.DEVICE.MIN_UPDATE_INTERVAL;
             this.startDataFetchInterval(updateInterval);
     
             // Inicializační načtení dat pro ověření připojení
@@ -154,7 +152,7 @@ class MyDevice extends Device {
     async getProductionData() {
         try {
             const now = Date.now();
-            if (this.lastResponse && this.lastResponseTime && (now - this.lastResponseTime < 1000)) {
+            if (this.lastResponse && this.lastResponseTime && (now - this.lastResponseTime < CONSTANTS.API.TIMEOUT)) {
                 this.logger.debug('Použita cache data');
                 return this.processDeviceData(this.lastResponse);
             }
@@ -171,7 +169,7 @@ class MyDevice extends Device {
                 this.lastResponse = baseSession;
                 this.lastResponseTime = now;
     
-                const previousState = await this.getStoreValue('previousChargeState') || "0";
+                const previousState = await this.getStoreValue('previousChargeState') || CONSTANTS.CHARGE_STATES.DISCONNECTED;
                 const currentState = deviceData.chargeState;
                 const chargeEnergy = await this.energyManager.processEnergyData(deviceData, previousState, currentState);
     
@@ -203,7 +201,7 @@ class MyDevice extends Device {
                     }
     
                     const errorDuration = now - (this._lastSuccessfulUpdate || 0);
-                    if (errorDuration > 5 * 60 * 1000) {
+                    if (errorDuration > CONSTANTS.API.TIMEOUT) {
                         this.setUnavailable('API není dostupné po více pokusech');
                     }
                 } else {
@@ -221,7 +219,7 @@ class MyDevice extends Device {
         } catch (error) {
             this.logger.error('Kritická chyba při zpracování dat', error);
         }
-    }    
+    }
 
     async updateCapabilities(deviceData, currentState, chargeEnergy) {
         try {
@@ -232,7 +230,7 @@ class MyDevice extends Device {
             await Promise.all([
                 this.setCapabilityValue('measure_charge_state', deviceData.chargeState),
                 this.setCapabilityValue('measure_charge_power', deviceData.chargePower),
-                this.setCapabilityValue('measure_power', deviceData.chargePower),         // přidáno zde
+                this.setCapabilityValue('measure_power', deviceData.chargePower),
                 this.setCapabilityValue('measure_voltage_installation', deviceData.voltageInstallation),
                 this.setCapabilityValue('measure_slave_error', deviceData.slaveError),
                 this.setCapabilityValue('measure_charge_time', Math.floor(deviceData.chargeTime / 60)),
@@ -240,9 +238,12 @@ class MyDevice extends Device {
                 this.setCapabilityValue('measure_locked', deviceData.measure_locked),
                 this.setCapabilityValue('measure_intensity', deviceData.intensity),
                 this.setCapabilityValue('measure_dynamic', deviceData.dynamic),
-                this.setCapabilityValue('car_connected', ["1", "2"].includes(currentState)),
+                this.setCapabilityValue('car_connected', [
+                    CONSTANTS.CHARGE_STATES.CONNECTED,
+                    CONSTANTS.CHARGE_STATES.CHARGING
+                ].includes(currentState)),
                 this.setCapabilityValue('measure_charge_energy', chargeEnergy),
-                this.setCapabilityValue('meter_power', chargeEnergy),                     // přidáno zde
+                this.setCapabilityValue('meter_power', chargeEnergy),
                 this.setCapabilityValue('measure_house_power', deviceData.housePower),
                 this.setCapabilityValue('measure_fv_power', deviceData.fvPower),
                 this.setCapabilityValue('measure_battery_power', deviceData.batteryPower),
@@ -282,31 +283,30 @@ class MyDevice extends Device {
     }
 
     async handleStateChanges(currentState, previousState, deviceData) {
-        // Uložení nového stavu
         await this.setStoreValue('previousChargeState', currentState);
     
-        // Trigger flow karet podle stavu
         if (currentState !== previousState) {
             await this._handleStateChangeTriggers(currentState, previousState);
         }
     
-        // Kontrola změny slave error
         const previousSlaveError = await this.getStoreValue('previousSlaveError');
         if (deviceData.slaveError !== previousSlaveError) {
-            // Použijeme flowCardManager místo neexistující metody
             await this.flowCardManager.triggerSlaveErrorChanged(deviceData.slaveError); 
             await this.setStoreValue('previousSlaveError', deviceData.slaveError);
         }
     }
     
-    // Přidáme metodu pro obsluhu state změn
     async _handleStateChangeTriggers(newState, oldState) {
         try {
-            if (newState === "1" && oldState === "0") {
+            if (newState === CONSTANTS.CHARGE_STATES.CONNECTED && 
+                oldState === CONSTANTS.CHARGE_STATES.DISCONNECTED) {
                 await this.flowCardManager.triggerCarConnected();
-            } else if (newState === "0" && oldState === "1") {
+            } else if (newState === CONSTANTS.CHARGE_STATES.DISCONNECTED && 
+                      oldState === CONSTANTS.CHARGE_STATES.CONNECTED) {
                 await this.flowCardManager.triggerCarDisconnected();  
-            } else if (newState === "2" && (oldState === "0" || oldState === "1")) {
+            } else if (newState === CONSTANTS.CHARGE_STATES.CHARGING && 
+                      (oldState === CONSTANTS.CHARGE_STATES.DISCONNECTED || 
+                       oldState === CONSTANTS.CHARGE_STATES.CONNECTED)) {
                 await this.flowCardManager.triggerCarStartCharging();
             }
         } catch (error) {
@@ -322,30 +322,33 @@ class MyDevice extends Device {
         });
     
         try {
-            // Pro každou změněnou hodnotu
             for (const key of changedKeys) {
                 switch (key) {
-                    // Nová nastavení
                     case 'min_intensity':
+                        if (newSettings.min_intensity < CONSTANTS.DEVICE.INTENSITY.MIN || 
+                            newSettings.min_intensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
+                            throw new Error(`Intensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
+                        }
                         await this.v2cApi.setMinIntensity(newSettings.min_intensity);
                         break;
                         
                     case 'max_intensity':
+                        if (newSettings.max_intensity < CONSTANTS.DEVICE.INTENSITY.MIN || 
+                            newSettings.max_intensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
+                            throw new Error(`Intensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
+                        }
                         await this.v2cApi.setMaxIntensity(newSettings.max_intensity);
                         break;
                         
                     case 'dynamic_power_mode':
-                        if (newSettings.dynamic_power_mode === 'disabled') {
-                            // Vypneme dynamický mód
+                        if (newSettings.dynamic_power_mode === CONSTANTS.DYNAMIC_POWER_MODES.DISABLED) {
                             await this.v2cApi.setDynamic('0');
                         } else {
-                            // Zapneme dynamický mód a nastavíme požadovaný režim
                             await this.v2cApi.setDynamic('1');
                             await this.v2cApi.setDynamicPowerMode(newSettings.dynamic_power_mode);
                         }
                         break;
     
-                    // Původní nastavení
                     case 'update_interval':
                         this.startDataFetchInterval(newSettings.update_interval);
                         break;
@@ -360,11 +363,9 @@ class MyDevice extends Device {
                         break;
                 }
     
-                // Aktualizace nastavení v Homey
                 this.homey.settings.set(key, newSettings[key]);
             }
     
-            // Aktualizace dat ze zařízení
             await this.getProductionData();
     
         } catch (error) {
@@ -385,22 +386,18 @@ class MyDevice extends Device {
         try {
             this.logger.log('Zařízení je odstraňováno - začátek cleanup procesu');
     
-            // 1. Zrušení všech intervalů
             if (this.dataFetchInterval) {
                 this.homey.clearInterval(this.dataFetchInterval);
                 this.dataFetchInterval = null;
             }
     
-            // 2. Odstranění event listenerů
             this.removeAllListeners();
             
-            // 3. Cleanup Flow manažeru
             if (this.flowCardManager) {
                 await this.flowCardManager.destroy();
                 this.flowCardManager = null;
             }
     
-            // 4. Cleanup API instance
             if (this.v2cApi) {
                 this.v2cApi = null;
             }
@@ -409,7 +406,6 @@ class MyDevice extends Device {
                 this.energyManager = null;
             }
     
-            // 5. Vyčištění cache a dočasných dat
             if (this.lastResponse) {
                 this.lastResponse = null;
             }
@@ -417,12 +413,10 @@ class MyDevice extends Device {
                 this.lastResponseTime = null;
             }
     
-            // 6. Cleanup validátoru
             if (this.dataValidator) {
                 this.dataValidator = null;
             }
     
-            // 7. Vyčištění store hodnot
             await this.unsetStoreValue('previousChargeState');
             await this.unsetStoreValue('previousSlaveError');
             await this.unsetStoreValue('baseChargeEnergy');
@@ -430,7 +424,6 @@ class MyDevice extends Device {
             await this.unsetStoreValue('monthlyEnergyData');
             await this.unsetStoreValue('yearlyEnergyData');
     
-            // 8. Cleanup loggeru - musí být poslední, abychom mohli logovat chyby výše
             if (this.logger) {
                 this.logger.log('Zařízení bylo úspěšně odstraněno');
                 await this.logger.clearHistory();
@@ -438,14 +431,11 @@ class MyDevice extends Device {
             }
     
         } catch (error) {
-            // Pokud ještě máme logger, zalogujeme chybu
             if (this.logger) {
                 this.logger.error('Chyba při odstraňování zařízení', error);
             }
-            // V každém případě zrušíme referenci na logger
             this.logger = null;
             
-            // Přepošleme chybu dál
             throw error;
         }
     }
