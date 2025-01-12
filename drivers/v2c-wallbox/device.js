@@ -182,11 +182,7 @@ class MyDevice extends Device {
                         await this.setCapabilityValue('measure_connection_error', true);
                         await this.flowCardManager.triggerConnectionStateChanged('error');
                     }
-    
-                    const errorDuration = now - (this._lastSuccessfulUpdate || 0);
-                    if (errorDuration > CONSTANTS.API.TIMEOUT) {
-                        this.setUnavailable('API není dostupné po více pokusech');
-                    }
+                    
                 } else {
                     this.logger.debug('Dočasná chyba API', {
                         error: error.message,
