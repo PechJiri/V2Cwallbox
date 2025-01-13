@@ -2605,40 +2605,6 @@
           }
         },
         {
-          "id": "update_interval",
-          "type": "number",
-          "label": {
-            "en": "Pooling interval in sec (default and minimum is 5s)",
-            "nl": "Pooling-interval in sec (standaard en minimum is 5s)",
-            "da": "Poolinginterval i sek (standard og minimum er 5s)",
-            "de": "Pooling-Intervall in Sek. (Standard und Minimum sind 5s)",
-            "es": "Intervalo de agrupamiento en seg. (El valor por defecto y mínimo es 5s)",
-            "fr": "Intervalle de regroupement en sec (défaut et minimum : 5s)",
-            "it": "Intervallo di pooling in sec (predefinito e minimo è 5s)",
-            "no": "Pooling-intervall i sek (standard og minimum er 5s)",
-            "sv": "Poolingintervall i sek (standard och minimum är 5s)",
-            "pl": "Interwał grupowania w sek. (domyślnie i minimalnie 5 s)",
-            "ru": "Интервал сбора в секундах (по умолчанию и минимум - 5 секунд)",
-            "ko": "풀링 간격 초 (기본값 및 최소값은 5초)"
-          },
-          "hint": {
-            "en": "Set the interval for data updates from the Wallbox.",
-            "nl": "Stel het interval in voor gegevensupdates van de Wallbox.",
-            "da": "Indstil intervallet for dataopdateringer fra Wallbox.",
-            "de": "Legen Sie das Intervall für Datenaktualisierungen von der Wallbox fest.",
-            "es": "Establecer el intervalo de actualizaciones de datos del Wallbox.",
-            "fr": "Définissez l'intervalle de mise à jour des données depuis le Wallbox.",
-            "it": "Imposta l'intervallo per gli aggiornamenti dei dati dal Wallbox.",
-            "no": "Sett intervallet for dataoppdateringer fra Wallboxen.",
-            "sv": "Ställ in intervallet för datauppdateringar från Wallboxen.",
-            "pl": "Ustaw interwał aktualizacji danych z Wallbox.",
-            "ru": "Установите интервал обновления данных от Wallbox.",
-            "ko": "Wallbox에서 데이터 업데이트 간격 설정."
-          },
-          "value": 5,
-          "min": 5
-        },
-        {
           "id": "enable_logging",
           "type": "checkbox",
           "label": {

@@ -12,6 +12,7 @@ const CONSTANTS = require('../../lib/constants');
 class MyDevice extends Device {
     _isProcessing = false;
     dataFetchInterval = null;
+    _currentInterval = CONSTANTS.INTERVALS.DISCONNECTED;
 
     async onInit() {
         try {
@@ -71,8 +72,7 @@ class MyDevice extends Device {
             this.registerPauseListener();
     
             // Spuštění intervalu pro aktualizaci dat
-            const updateInterval = this.getSetting('update_interval') || CONSTANTS.DEVICE.MIN_UPDATE_INTERVAL;
-            this.startDataFetchInterval(updateInterval);
+            this.startDataFetchInterval();
     
             // Inicializační načtení dat pro ověření připojení
             try {
@@ -123,28 +123,55 @@ class MyDevice extends Device {
         });
     }
 
-    startDataFetchInterval(interval) {
-        // Vyčistíme předchozí interval pokud existuje
+    startDataFetchInterval() {
         if (this.dataFetchInterval) {
             this.homey.clearInterval(this.dataFetchInterval);
         }
-    
-        // Zajistíme minimální interval 5 sekund
-        const safeInterval = Math.max(5000, interval * 1000);
-        
-        // Nastavíme nový interval s ochranou proti překrývání
+
         this.dataFetchInterval = this.homey.setInterval(async () => {
             // Pokud již probíhá zpracování, přeskočíme
             if (this._isProcessing) return;
             
+            // Zjistíme jaký interval by měl být
+            const requiredInterval = this._getRequiredInterval();
+            
+            // Pokud se liší od aktuálního, nastavíme nový pro příští běh
+            if (requiredInterval !== this._currentInterval) {
+                this.logger.debug('Interval změněn podle stavu nabíjení', {
+                    starýInterval: `${this._currentInterval / 1000}s`,
+                    novýInterval: `${requiredInterval / 1000}s`,
+                    stav: this.getCapabilityValue('measure_charge_state'),
+                    změna: `${this._currentInterval / 1000}s -> ${requiredInterval / 1000}s`
+                });
+                
+                this._currentInterval = requiredInterval;
+                // Restartujeme interval s novou hodnotou
+                this.startDataFetchInterval();
+                return; // Ukončíme současný běh
+            }
+            
+            // Běžné zpracování dat
             this._isProcessing = true;
             try {
                 await this.getProductionData();
             } finally {
-                // Vždy uvolníme zámek, i když nastane chyba
                 this._isProcessing = false;
             }
-        }, safeInterval);
+        }, this._currentInterval);
+    }
+
+    _getRequiredInterval() {
+        const chargeState = this.getCapabilityValue('measure_charge_state');
+        
+        switch(chargeState) {
+            case CONSTANTS.CHARGE_STATES.CHARGING: // '2'
+                return CONSTANTS.INTERVALS.CHARGING;
+            case CONSTANTS.CHARGE_STATES.CONNECTED: // '1'
+                return CONSTANTS.INTERVALS.CONNECTED;
+            case CONSTANTS.CHARGE_STATES.DISCONNECTED: // '0'
+            default:
+                return CONSTANTS.INTERVALS.DISCONNECTED;
+        }
     }
     
     async getProductionData() {
@@ -337,10 +364,6 @@ class MyDevice extends Device {
                             await this.v2cApi.setDynamic('1');
                             await this.v2cApi.setDynamicPowerMode(newSettings.dynamic_power_mode);
                         }
-                        break;
-    
-                    case 'update_interval':
-                        this.startDataFetchInterval(newSettings.update_interval);
                         break;
                         
                     case 'v2c_ip':
