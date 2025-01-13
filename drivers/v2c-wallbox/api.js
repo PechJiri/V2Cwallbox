@@ -52,21 +52,39 @@ class v2cAPI {
                 maxErrors: this._maxConsecutiveErrors
             });
     
+            // Použijeme AbortController pro lepší kontrolu timeoutu
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), CONSTANTS.API.TIMEOUT);
+    
             const response = await fetch(url, { 
-                timeout: CONSTANTS.API.TIMEOUT 
+                signal: controller.signal 
             });
+            
+            clearTimeout(timeoutId);
             
             const data = await response.json();
             
+            // Reset počítadla chyb při úspěšném požadavku
             if (this._apiErrorCount > 0) {
                 this.logger.debug(`Reset počítadla chyb z ${this._apiErrorCount} na 0`);
                 this._apiErrorCount = 0;
             }
             
-            this.logger.debug('Raw API Response:', data);
             return data;
             
         } catch (error) {
+            // Specifická zpráva pro timeout
+            if (error.name === 'AbortError') {
+                this._apiErrorCount++;
+                this.logger.debug(`API timeout #${this._apiErrorCount} z ${this._maxConsecutiveErrors}`);
+                
+                if (this._apiErrorCount >= this._maxConsecutiveErrors) {
+                    throw new Error('API_MAX_ERRORS_EXCEEDED');
+                }
+                
+                throw new Error('API timeout - zařízení neodpovědělo včas');
+            }
+
             this._apiErrorCount++;
             
             this.logger.debug(`API chyba #${this._apiErrorCount} z ${this._maxConsecutiveErrors}`, {
