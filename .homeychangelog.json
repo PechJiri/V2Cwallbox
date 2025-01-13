@@ -124,5 +124,8 @@
   },
   "1.4.17": {
     "en": "bugfix"
+  },
+  "1.4.18": {
+    "en": "Bugfix - CPU usage optimalisation"
   }
 }
