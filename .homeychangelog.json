@@ -130,5 +130,8 @@
   },
   "1.4.19": {
     "en": "Dynamic pooling intervals for better performace (30s when car is disconnected, 10s when car is connected, 5s when car is charging)"
+  },
+  "1.4.20": {
+    "en": "lowered homey npm package to save that 30MBs of space"
   }
 }
