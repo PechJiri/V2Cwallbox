@@ -10,6 +10,9 @@ const EnergyManager = require('../../lib/EnergyManager');
 const CONSTANTS = require('../../lib/constants');
 
 class MyDevice extends Device {
+    _isProcessing = false;
+    dataFetchInterval = null;
+
     async onInit() {
         try {
             // Inicializace loggeru pro zařízení
@@ -121,15 +124,27 @@ class MyDevice extends Device {
     }
 
     startDataFetchInterval(interval) {
-        this.logger.debug('Spouštění intervalu pro načítání dat', { interval });
-        
+        // Vyčistíme předchozí interval pokud existuje
         if (this.dataFetchInterval) {
             this.homey.clearInterval(this.dataFetchInterval);
         }
-
+    
+        // Zajistíme minimální interval 5 sekund
+        const safeInterval = Math.max(5000, interval * 1000);
+        
+        // Nastavíme nový interval s ochranou proti překrývání
         this.dataFetchInterval = this.homey.setInterval(async () => {
-            await this.getProductionData();
-        }, 1000 * interval);
+            // Pokud již probíhá zpracování, přeskočíme
+            if (this._isProcessing) return;
+            
+            this._isProcessing = true;
+            try {
+                await this.getProductionData();
+            } finally {
+                // Vždy uvolníme zámek, i když nastane chyba
+                this._isProcessing = false;
+            }
+        }, safeInterval);
     }
     
     async getProductionData() {
@@ -137,7 +152,7 @@ class MyDevice extends Device {
             const now = Date.now();
             if (this.lastResponse && this.lastResponseTime && (now - this.lastResponseTime < CONSTANTS.API.TIMEOUT)) {
                 this.logger.debug('Použita cache data');
-                return this.processDeviceData(this.lastResponse);
+                return this.dataValidator.validateAndProcessData(this.lastResponse);
             }
     
             await this.energyManager.resetMonthlyAndYearlyDataIfNeeded();
