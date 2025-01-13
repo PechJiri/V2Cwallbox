@@ -127,5 +127,8 @@
   },
   "1.4.18": {
     "en": "Bugfix - CPU usage optimalisation"
+  },
+  "1.4.19": {
+    "en": "Dynamic pooling intervals for better performace (30s when car is disconnected, 10s when car is connected, 5s when car is charging)"
   }
 }
