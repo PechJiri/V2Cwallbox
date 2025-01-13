@@ -1,6 +1,5 @@
 'use strict';
 
-const Homey = require('homey');
 const PowerCalculator = require('../../lib/power_calculator');
 const CONSTANTS = require('../../lib/constants');
 

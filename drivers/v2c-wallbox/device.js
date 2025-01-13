@@ -202,10 +202,6 @@ class MyDevice extends Device {
 
     async updateCapabilities(deviceData, currentState, chargeEnergy) {
         try {
-            const timerState = typeof deviceData.timer_state === 'boolean'
-                ? deviceData.timer_state
-                : Boolean(deviceData.timer_state);
-    
             await Promise.all([
                 this.setCapabilityValue('measure_charge_state', deviceData.chargeState),
                 this.setCapabilityValue('measure_charge_power', deviceData.chargePower),
