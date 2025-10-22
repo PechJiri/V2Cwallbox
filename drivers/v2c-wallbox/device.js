@@ -73,7 +73,7 @@ class MyDevice extends Device {
 
             // Registrace listeneru pro změnu A
             this.registerSetIntensityListener()
-            
+
             // Spuštění intervalu pro aktualizaci dat
             this.startDataFetchInterval();
     
@@ -287,7 +287,8 @@ class MyDevice extends Device {
                 this.setCapabilityValue('max_intensity', deviceData.maxIntensity),
                 this.setCapabilityValue('firmware_version', deviceData.firmwareVersion),
                 this.setCapabilityValue('signal_status', deviceData.signalStatus),
-                this.setCapabilityValue('timer_state', deviceData.timer_state || false)
+                this.setCapabilityValue('timer_state', deviceData.timer_state || false),
+                this.setCapabilityValue('set_intensity', deviceData.intensity.toString())
             ]);
     
             this.logger.debug('Capabilities byly úspěšně aktualizovány', { 
