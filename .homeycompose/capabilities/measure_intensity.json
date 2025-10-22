@@ -28,9 +28,9 @@
     "ru": "A",
     "ko": "A"
   },
-  "uiComponent": "slider",
+  "uiComponent": "sensor",
   "getable": true,
-  "setable": true,
+  "setable": false,
   "decimals": 0,
   "insights": true,
   "icon": "/assets/intensity.svg"

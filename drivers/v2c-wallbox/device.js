@@ -72,8 +72,8 @@ class MyDevice extends Device {
             this.registerPauseListener();
 
             // Registrace listeneru pro změnu A
-            this.registerIntensityListener()
-    
+            this.registerSetIntensityListener()
+            
             // Spuštění intervalu pro aktualizaci dat
             this.startDataFetchInterval();
     
@@ -126,37 +126,19 @@ class MyDevice extends Device {
         });
     }
 
-    registerIntensityListener() {
-        this.registerCapabilityListener('measure_intensity', async (value) => {
-            try {
-                // 1. Zaokrouhlení na celé číslo
-                const intensity = Math.round(value);
-                
-                // 2. Validace rozsahu
-                if (intensity < CONSTANTS.DEVICE.INTENSITY.MIN || 
-                    intensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
-                    throw new Error(`Intensity musí být mezi 6 a 32 A`);
-                }
-                
-                // 3. Logování
-                this.logger.debug('Změna intensity přes capability', { 
-                    původníHodnota: value, 
-                    zaokrouhlenáHodnota: intensity 
-                });
-                
-                // 4. API volání - stejná logika jako flow karta
-                await this.v2cApi.setParameter('Intensity', intensity);
-                
-                // 5. Aktualizace UI
-                await this.setCapabilityValue('measure_intensity', intensity);
-                
-                this.logger.debug('Intensity byla úspěšně nastavena', { intensity });
-                
-                return true;
-            } catch (error) {
-                this.logger.error('Selhalo nastavení intensity', error);
-                throw new Error('Selhalo nastavení intensity');
+    registerSetIntensityListener() {
+        this.registerCapabilityListener('set_intensity', async (value) => {
+            const intensity = parseInt(value, 10);
+            
+            // Validace
+            if (intensity < 6 || intensity > 32) {
+                throw new Error('Intensity musí být mezi 6 a 32 A');
             }
+            
+            // API volání
+            await this.v2cApi.setParameter('Intensity', intensity);
+            
+            return true;
         });
     }
 
