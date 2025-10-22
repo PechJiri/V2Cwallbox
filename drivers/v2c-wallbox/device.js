@@ -70,6 +70,9 @@ class MyDevice extends Device {
     
             // Registrace listeneru pro tlačítko pause
             this.registerPauseListener();
+
+            // Registrace listeneru pro změnu A
+            this.registerIntensityListener()
     
             // Spuštění intervalu pro aktualizaci dat
             this.startDataFetchInterval();
@@ -119,6 +122,40 @@ class MyDevice extends Device {
             } catch (error) {
                 this.logger.error('Selhalo nastavení stavu pause', error);
                 throw new Error('Selhalo nastavení stavu pause');
+            }
+        });
+    }
+
+    registerIntensityListener() {
+        this.registerCapabilityListener('measure_intensity', async (value) => {
+            try {
+                // 1. Zaokrouhlení na celé číslo
+                const intensity = Math.round(value);
+                
+                // 2. Validace rozsahu
+                if (intensity < CONSTANTS.DEVICE.INTENSITY.MIN || 
+                    intensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
+                    throw new Error(`Intensity musí být mezi 6 a 32 A`);
+                }
+                
+                // 3. Logování
+                this.logger.debug('Změna intensity přes capability', { 
+                    původníHodnota: value, 
+                    zaokrouhlenáHodnota: intensity 
+                });
+                
+                // 4. API volání - stejná logika jako flow karta
+                await this.v2cApi.setParameter('Intensity', intensity);
+                
+                // 5. Aktualizace UI
+                await this.setCapabilityValue('measure_intensity', intensity);
+                
+                this.logger.debug('Intensity byla úspěšně nastavena', { intensity });
+                
+                return true;
+            } catch (error) {
+                this.logger.error('Selhalo nastavení intensity', error);
+                throw new Error('Selhalo nastavení intensity');
             }
         });
     }

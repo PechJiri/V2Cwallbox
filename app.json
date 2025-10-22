@@ -3446,10 +3446,10 @@
         "ru": "A",
         "ko": "A"
       },
-      "uiComponent": "sensor",
+      "uiComponent": "slider",
       "getable": true,
-      "setable": false,
-      "decimals": 1,
+      "setable": true,
+      "decimals": 0,
       "insights": true,
       "icon": "/assets/intensity.svg"
     },
