@@ -1,7 +1,7 @@
 {
   "id": "com.v2c.wallbox",
-  "version": "1.4.20",
-  "compatibility": ">=12.1.0",
+  "version": "1.4.18",
+  "compatibility": ">=12.3.0",
   "sdk": 3,
   "brandColor": "#00275b",
   "platforms": [
@@ -165,7 +165,7 @@
   },
   "author": {
     "name": "Jiri Pech",
-    "email": "jiri.pech@centrum.cz"
+    "email": "jirka@pechovic.cz"
   },
   "contributing": {
     "donate": {
@@ -179,6 +179,6 @@
   },
   "source": "https://github.com/PechJiri/V2Cwallbox",
   "homepage": "https://v2charge.com/",
-  "support": "mailto:jiri.pech@centrum.cz",
+  "support": "mailto:jirka@pechovic.cz",
   "homeyCommunityTopicId": 114910
 }

@@ -70,7 +70,10 @@ class MyDevice extends Device {
     
             // Registrace listeneru pro tlačítko pause
             this.registerPauseListener();
-    
+
+            // Registrace listeneru pro změnu A
+            this.registerSetIntensityListener()
+
             // Spuštění intervalu pro aktualizaci dat
             this.startDataFetchInterval();
     
@@ -120,6 +123,22 @@ class MyDevice extends Device {
                 this.logger.error('Selhalo nastavení stavu pause', error);
                 throw new Error('Selhalo nastavení stavu pause');
             }
+        });
+    }
+
+    registerSetIntensityListener() {
+        this.registerCapabilityListener('set_intensity', async (value) => {
+            const intensity = parseInt(value, 10);
+            
+            // Validace
+            if (intensity < 6 || intensity > 32) {
+                throw new Error('Intensity musí být mezi 6 a 32 A');
+            }
+            
+            // API volání
+            await this.v2cApi.setParameter('Intensity', intensity);
+            
+            return true;
         });
     }
 
@@ -268,7 +287,8 @@ class MyDevice extends Device {
                 this.setCapabilityValue('max_intensity', deviceData.maxIntensity),
                 this.setCapabilityValue('firmware_version', deviceData.firmwareVersion),
                 this.setCapabilityValue('signal_status', deviceData.signalStatus),
-                this.setCapabilityValue('timer_state', deviceData.timer_state || false)
+                this.setCapabilityValue('timer_state', deviceData.timer_state || false),
+                this.setCapabilityValue('set_intensity', deviceData.intensity.toString())
             ]);
     
             this.logger.debug('Capabilities byly úspěšně aktualizovány', { 

@@ -33,7 +33,8 @@
     "measure_paused",
     "measure_connection_error",
     "measure_power",
-    "meter_power"
+    "meter_power",
+    "set_intensity"
   ],
   "images": {
     "small": "{{driverAssetsPath}}/images/small.png",

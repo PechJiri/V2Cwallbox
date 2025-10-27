@@ -10,8 +10,8 @@
     "eslint-config-athom": "^3.0.1"
   },
   "dependencies": {
-    "axios": "^1.7.9",
-    "homey": "^2.0.7",
-    "node-fetch": "^2.6.1"
+    "homey": "^3.9.5",
+    "sharp": "^0.34.4",
+    "ws": "^8.18.3"
   }
 }

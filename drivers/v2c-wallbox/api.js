@@ -1,6 +1,5 @@
 'use strict';
 
-const fetch = require('node-fetch');
 const Logger = require('../../lib/Logger');
 const DataValidator = require('../../lib/DataValidator');
 const CONSTANTS = require('../../lib/constants');
@@ -25,9 +24,15 @@ class v2cAPI {
             const url = `http://${this.ip}${CONSTANTS.API.ENDPOINTS.REALTIME}`;
             this.logger.debug('Inicializace session', { url });
 
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), CONSTANTS.API.TIMEOUT);
+
             const response = await fetch(url, { 
-                timeout: CONSTANTS.API.TIMEOUT 
+                signal: controller.signal 
             });
+            
+            clearTimeout(timeoutId);
+            
             const responseData = await response.json();
             this.logger.debug('Odpověď z inicializace session', { responseData });
 
@@ -150,7 +155,16 @@ class v2cAPI {
                 hodnota: value 
             });
 
-            const response = await fetch(url, { method: 'GET' });
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), CONSTANTS.API.TIMEOUT);
+
+            const response = await fetch(url, { 
+                method: 'GET',
+                signal: controller.signal 
+            });
+            
+            clearTimeout(timeoutId);
+            
             const responseData = await response.text();
             
             this.logger.debug(`Odpověď na nastavení ${parameter}`, { 
