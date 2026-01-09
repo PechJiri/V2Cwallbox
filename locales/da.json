@@ -1,0 +1,11 @@
+{
+  "pair": {
+    "v2cwallbox": {
+      "title": "Indtast venligst din V2C Wallbox IP-adresse:",
+      "check": "Tjek forbindelse",
+      "ip": "IP-adresse",
+      "connection_ok": "Forbindelse vellykket",
+      "connection_error": "Forbindelse ikke mulig"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "pair": {
+    "v2cwallbox": {
+      "title": "Veuillez entrer l'adresse IP de votre borne V2C :",
+      "check": "Vérifier la connexion",
+      "ip": "Adresse IP",
+      "connection_ok": "Connexion réussie",
+      "connection_error": "Connexion impossible"
+    }
+  }
+}

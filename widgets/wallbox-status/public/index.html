@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V2C Wallbox Status</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--homey-background-color);
+            color: var(--homey-text-color);
+            overflow: hidden;
+        }
+
+        #container {
+            display: flex;
+            width: 100%;
+            height: 200px;
+            background-color: var(--homey-background-color);
+            border-radius: var(--homey-border-radius-default);
+        }
+
+        #imageContainer {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            border-radius: var(--homey-border-radius-default) 0 0 var(--homey-border-radius-default);
+        }
+
+        #deviceImage {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+        }
+
+        #infoContainer {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: var(--homey-su-2);
+        }
+
+        .label {
+            font-size: var(--homey-font-size-small);
+            color: var(--homey-text-color-light);
+            margin-bottom: var(--homey-su-1);
+            text-align: center;
+            width: 100%;
+        }
+
+        .value {
+            font-size: var(--homey-font-size-large);
+            font-weight: var(--homey-font-weight-bold);
+            margin-bottom: var(--homey-su-2);
+            text-align: center;
+            width: 100%;
+        }
+
+        .control-button {
+            display: none;
+            background-color: var(--homey-color-blue);
+            color: white;
+            border: none;
+            border-radius: var(--homey-border-radius-small);
+            padding: var(--homey-su-2) var(--homey-su-4);
+            font-size: var(--homey-font-size-small);
+            font-weight: var(--homey-font-weight-bold);
+            cursor: pointer;
+            margin-top: var(--homey-su-2);
+            transition: opacity 0.3s ease;
+            width: 80%;
+        }
+
+        .control-button.visible {
+            display: block;
+        }
+
+        .control-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="imageContainer">
+            <img id="deviceImage" src="large.png" alt="V2C Wallbox">
+        </div>
+        <div id="infoContainer">
+            <div class="label">Charger state</div>
+            <div id="wallboxState" class="value">Loading...</div>
+            <div class="label">kW | kWh</div>
+            <div id="powerInfo" class="value">
+                <span id="powerKW">-.-</span>
+                <span>|</span>
+                <span id="powerKWh">-.-</span>
+            </div>
+            <button id="controlButton" class="control-button">Pause</button>
+        </div>
+    </div>
+    <script type="text/javascript">
+        let Homey;
+        let isUpdating = false;
+        let updateInterval = 5000;
+        let intervalId;
+
+        function onHomeyReady(_Homey) {
+            Homey = _Homey;
+            console.log('Homey is ready');
+            init();
+            Homey.ready();
+        }
+
+        function getChargeStateText(state) {
+            const stateMap = {
+                "0": "EV not connected",
+                "1": "EV connected",
+                "2": "Charging"
+            };
+            return stateMap[state] || "Unknown";
+        }
+
+        function updateControlButton(state, isPaused) {
+            const button = document.getElementById('controlButton');
+            
+            if (state === "0") {
+                button.classList.remove('visible');
+            } else {
+                button.classList.add('visible');
+            }
+
+            button.textContent = isPaused ? 'Resume' : 'Pause';
+        }
+
+        function setupControlButton() {
+        const button = document.getElementById('controlButton');
+        button.addEventListener('click', async () => {
+        try {
+            button.disabled = true;
+            
+            // Získání aktuálního stavu
+            const result = await Homey.api('GET', '/status');
+            const currentPausedState = result.paused;
+            
+            console.log('Current paused state:', currentPausedState);
+            console.log('Setting new paused state to:', !currentPausedState);
+            
+            // Změna stavu přes API
+            const setPausedResult = await Homey.api('POST', '/paused', { 
+                paused: !currentPausedState 
+            });
+            console.log('setPaused response:', setPausedResult);
+            
+            if (!setPausedResult.success) {
+                throw new Error('Failed to set paused state');
+            }
+            
+            // Počkáme chvíli pro jistotu
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Aktualizace UI
+            await updateData();
+            } catch (error) {
+            console.error('Error toggling pause state:', error);
+            // Případně můžeme zobrazit chybu uživateli
+            // alert('Failed to change charging state');
+            } finally {
+            button.disabled = false;
+            }
+            });
+        }       
+
+        function updateUI(status) {
+            console.log('Updating UI with status:', status);
+            
+            document.getElementById('wallboxState').textContent = getChargeStateText(status.chargeState);
+            document.getElementById('powerKW').textContent = (status.chargePower / 1000).toFixed(1);
+            document.getElementById('powerKWh').textContent = status.chargeEnergy.toFixed(1);
+
+            updateControlButton(status.chargeState, status.paused);
+        }
+
+        function updateData() {
+            if (isUpdating) return;
+            isUpdating = true;
+            console.log('Fetching data...');
+
+            Homey.api('GET', '/status')
+                .then(result => {
+                    console.log('Data received from API:', result);
+                    updateUI(result);
+                })
+                .catch(error => {
+                    console.error('Error fetching wallbox status:', error);
+                })
+                .finally(() => {
+                    isUpdating = false;
+                });
+        }
+
+        function loadUpdateInterval() {
+            const settings = Homey.getSettings();
+            if (settings && settings.update_interval) {
+                updateInterval = parseInt(settings.update_interval, 10) * 1000;
+                console.log('Update interval set to:', updateInterval, 'ms');
+            } else {
+                console.log('Using default update interval of 5000 ms');
+            }
+        }
+
+        function init() {
+            console.log('Initializing widget...');
+            setupControlButton();
+            loadUpdateInterval();
+            updateData();
+            intervalId = setInterval(updateData, updateInterval);
+        }
+
+        if (window.Homey) {
+            onHomeyReady(window.Homey);
+        } else {
+            document.addEventListener('homey_ready', function() {
+                onHomeyReady(window.Homey);
+            });
+        }
+    </script>
+</body>
+</html>

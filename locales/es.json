@@ -1,0 +1,11 @@
+{
+  "pair": {
+    "v2cwallbox": {
+      "title": "Por favor, introduce la dirección IP de tu V2C Wallbox:",
+      "check": "Comprobar conexión",
+      "ip": "Dirección IP",
+      "connection_ok": "Conexión exitosa",
+      "connection_error": "Conexión no posible"
+    }
+  }
+}
