@@ -1,0 +1,50 @@
+{
+  "type": "boolean",
+  "title": {
+    "en": "Dynamic Mode",
+    "nl": "Dynamische modus",
+    "da": "Dynamisk tilstand",
+    "de": "Dynamischer Modus",
+    "es": "Modo dinámico",
+    "fr": "Mode dynamique",
+    "it": "Modalità dinamica",
+    "no": "Dynamisk modus",
+    "sv": "Dynamiskt läge",
+    "pl": "Tryb dynamiczny",
+    "ru": "Динамический режим",
+    "ko": "동적 모드"
+  },
+  "getable": true,
+  "setable": true,
+  "insights": true,
+  "insightsTitleTrue": {
+    "en": "Dynamic mode turned On",
+    "nl": "Dynamische modus werd ingeschakeld",
+    "da": "Dynamisk tilstand er slået til",
+    "de": "Dynamischer Modus eingeschaltet",
+    "es": "Modo dinámico activado",
+    "fr": "Mode dynamique activé",
+    "it": "Modalità dinamica attivata",
+    "no": "Dynamisk modus er slått på",
+    "sv": "Dynamiskt läge på",
+    "pl": "Tryb dynamiczny włączony",
+    "ru": "Динамический режим включен",
+    "ko": "동적 모드가 켜짐"
+  },
+  "insightsTitleFalse": {
+    "en": "Dynamic mode turned Off",
+    "nl": "Dynamische modus werd uitgeschakeld",
+    "da": "Dynamisk tilstand er slået fra",
+    "de": "Dynamischer Modus ausgeschaltet",
+    "es": "Modo dinámico desactivado",
+    "fr": "Mode dynamique désactivé",
+    "it": "Modalità dinamica disattivata",
+    "no": "Dynamisk modus er slått av",
+    "sv": "Dynamiskt läge av",
+    "pl": "Tryb dynamiczny wyłączony",
+    "ru": "Динамический режим выключен",
+    "ko": "동적 모드가 꺼짐"
+  },
+  "uiComponent": "sensor",
+  "icon": "/assets/dynamic_mode.svg"
+}

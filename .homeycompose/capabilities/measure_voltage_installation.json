@@ -1,0 +1,37 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Installation voltage",
+    "nl": "Installatiespanning",
+    "da": "Installationsspænding",
+    "de": "Installationsspannung",
+    "es": "Voltaje de instalación",
+    "fr": "Tension d'installation",
+    "it": "Tensione di installazione",
+    "no": "Installasjonsspenning",
+    "sv": "Installationsspänning",
+    "pl": "Napięcie instalacyjne",
+    "ru": "Установочное напряжение",
+    "ko": "설치 전압"
+  },
+  "units": {
+    "en": "V",
+    "nl": "V",
+    "da": "V",
+    "de": "V",
+    "es": "V",
+    "fr": "V",
+    "it": "V",
+    "no": "V",
+    "sv": "V",
+    "pl": "V",
+    "ru": "В",
+    "ko": "V"
+  },
+  "uiComponent": "sensor",
+  "getable": true,
+  "setable": false,
+  "decimals": 0,
+  "insights": true,
+  "icon": "/assets/voltage_installation.svg"
+}

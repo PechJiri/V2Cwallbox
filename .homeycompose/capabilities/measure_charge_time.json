@@ -1,0 +1,37 @@
+{
+    "type": "number",
+    "title": {
+        "en": "Car connected (min)",
+        "nl": "Auto verbonden (min)",
+        "da": "Bil tilsluttet (min)",
+        "de": "Auto verbunden (Min)",
+        "es": "Coche conectado (min)",
+        "fr": "Voiture connectée (min)",
+        "it": "Auto connessa (min)",
+        "no": "Bil tilkoblet (min)",
+        "sv": "Bil ansluten (min)",
+        "pl": "Samochód podłączony (min)",
+        "ru": "Автомобиль подключен (мин)",
+        "ko": "자동차 연결됨 (분)"
+    },
+    "units": {
+        "en": "min",
+        "nl": "min",
+        "da": "min",
+        "de": "min",
+        "es": "min",
+        "fr": "min",
+        "it": "min",
+        "no": "min",
+        "sv": "min",
+        "pl": "min",
+        "ru": "мин",
+        "ko": "분"
+    },
+    "uiComponent": "sensor",
+    "getable": true,
+    "setable": false,
+    "decimals": 0,
+    "insights": true,
+    "icon": "/assets/charge_time.svg"
+}

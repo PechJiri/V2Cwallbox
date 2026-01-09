@@ -1,0 +1,50 @@
+{
+  "type": "boolean",
+  "title": {
+    "en": "Locked",
+    "nl": "Vergrendeld",
+    "da": "Låst",
+    "de": "Gesperrt",
+    "es": "Bloqueado",
+    "fr": "Verrouillé",
+    "it": "Bloccato",
+    "no": "Låst",
+    "sv": "Låst",
+    "pl": "Zablokowany",
+    "ru": "Заблокировано",
+    "ko": "잠김"
+  },
+  "getable": true,
+  "setable": false,
+  "insights": true,
+  "insightsTitleTrue": {
+    "en": "Charger has been locked",
+    "nl": "Oplader is vergrendeld",
+    "da": "Opladeren er blevet låst",
+    "de": "Ladegerät ist gesperrt",
+    "es": "El cargador ha sido bloqueado",
+    "fr": "Le chargeur a été verrouillé",
+    "it": "Il caricatore è stato bloccato",
+    "no": "Laderen har blitt låst",
+    "sv": "Laddaren har låsts",
+    "pl": "Ładowarka została zablokowana",
+    "ru": "Зарядное устройство заблокировано",
+    "ko": "충전기가 잠겼습니다"
+  },
+  "insightsTitleFalse": {
+    "en": "Charger has been unlocked",
+    "nl": "Oplader is ontgrendeld",
+    "da": "Opladeren er blevet låst op",
+    "de": "Ladegerät ist entsperrt",
+    "es": "El cargador ha sido desbloqueado",
+    "fr": "Le chargeur a été déverrouillé",
+    "it": "Il caricatore è stato sbloccato",
+    "no": "Laderen har blitt låst opp",
+    "sv": "Laddaren har låsts upp",
+    "pl": "Ładowarka została odblokowana",
+    "ru": "Зарядное устройство разблокировано",
+    "ko": "충전기가 잠금 해제되었습니다"
+  },
+  "uiComponent": "sensor",
+  "icon": "/assets/locked.svg"
+}

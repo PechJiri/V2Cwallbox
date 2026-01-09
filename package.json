@@ -2,16 +2,12 @@
   "name": "com.v2c.wallbox",
   "version": "1.0.0",
   "main": "app.js",
-  "scripts": {
-    "lint": "eslint --ext .js,.ts --ignore-path .gitignore ."
-  },
+  "scripts": {},
   "devDependencies": {
-    "eslint": "^7.32.0",
-    "eslint-config-athom": "^3.0.1"
+    "@types/homey": "npm:homey-apps-sdk-v3-types@^0.3.12"
   },
   "dependencies": {
-    "homey": "^3.9.5",
-    "sharp": "^0.34.4",
-    "ws": "^8.18.3"
+    "node-fetch": "^2.7.0",
+    "sharp": "0.32.6"
   }
 }

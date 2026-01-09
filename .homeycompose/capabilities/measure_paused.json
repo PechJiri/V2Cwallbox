@@ -1,0 +1,50 @@
+{
+  "type": "boolean",
+  "title": {
+    "en": "Paused",
+    "nl": "Gepauzeerd",
+    "da": "Afbrudt",
+    "de": "Pausiert",
+    "es": "Pausado",
+    "fr": "En pause",
+    "it": "In pausa",
+    "no": "Pauset",
+    "sv": "Pausad",
+    "pl": "Wstrzymany",
+    "ru": "На паузе",
+    "ko": "일시 중지됨"
+  },
+  "getable": true,
+  "setable": true,
+  "insights": true,
+  "insightsTitleTrue": {
+    "en": "Charger has been paused",
+    "nl": "Lader is gepauzeerd",
+    "da": "Laderen er blevet pauset",
+    "de": "Ladegerät wurde pausiert",
+    "es": "El cargador ha sido pausado",
+    "fr": "Le chargeur a été mis en pause",
+    "it": "Il caricatore è stato messo in pausa",
+    "no": "Laderen er blitt pauset",
+    "sv": "Laddaren har pausats",
+    "pl": "Ładowarka została wstrzymana",
+    "ru": "Зарядное устройство на паузе",
+    "ko": "충전기가 일시 중지되었습니다"
+  },
+  "insightsTitleFalse": {
+    "en": "Charger has been resumed",
+    "nl": "Lader is hervat",
+    "da": "Laderen er genoptaget",
+    "de": "Ladegerät wurde fortgesetzt",
+    "es": "El cargador se ha reanudado",
+    "fr": "Le chargeur a repris",
+    "it": "Il caricatore è stato ripreso",
+    "no": "Laderen har fortsatt",
+    "sv": "Laddaren har återupptagits",
+    "pl": "Ładowarka została wznowiona",
+    "ru": "Зарядка возобновлена",
+    "ko": "충전기가 재개되었습니다"
+  },
+  "uiComponent": "toggle",
+  "icon": "/assets/paused.svg"
+}

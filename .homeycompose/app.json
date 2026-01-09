@@ -1,0 +1,184 @@
+{
+    "id": "com.v2c.wallbox",
+    "version": "1.5.2",
+    "compatibility": ">=12.3.0",
+    "sdk": 3,
+    "brandColor": "#00275b",
+    "platforms": [
+        "local"
+    ],
+    "name": {
+        "en": "V2C Wallbox",
+        "nl": "V2C-laadstation",
+        "da": "V2C Ladestation",
+        "de": "V2C-Ladestation",
+        "es": "V2C Cargador",
+        "fr": "Borne de recharge V2C",
+        "it": "Stazione di ricarica V2C",
+        "no": "V2C Ladeboks",
+        "sv": "V2C Laddbox",
+        "pl": "Stacja ładowania V2C",
+        "ru": "V2C зарядная станция",
+        "ko": "V2C 월박스"
+    },
+    "description": {
+        "en": "Intelligence, innovation and maximum control at your fingertips",
+        "nl": "Intelligentie, innovatie en maximale controle binnen handbereik",
+        "da": "Intelligens, innovation og maksimal kontrol lige ved hånden",
+        "de": "Intelligenz, Innovation und maximale Kontrolle griffbereit",
+        "es": "Inteligencia, innovación y control máximo al alcance de su mano",
+        "fr": "Intelligence, innovation et contrôle maximal à portée de main",
+        "it": "Intelligenza, innovazione e controllo massimo a portata di mano",
+        "no": "Intelligens, innovasjon og maksimal kontroll rett ved hånden din",
+        "sv": "Intelligens, innovation och maximal kontroll inom räckhåll",
+        "pl": "Inteligencja, innowacyjność i maksymalna kontrola w zasięgu ręki",
+        "ru": "Интеллект, инновации и максимальный контроль у вас под рукой",
+        "ko": "지능, 혁신 및 최대 통제가 손끝에 있습니다"
+    },
+    "category": [
+        "energy"
+    ],
+    "tags": {
+        "en": [
+            "v2c",
+            "wallbox",
+            "charger",
+            "electric vehicle",
+            "ev",
+            "energy"
+        ],
+        "nl": [
+            "v2c",
+            "laadstation",
+            "lader",
+            "elektrisch voertuig",
+            "ev",
+            "energie"
+        ],
+        "da": [
+            "v2c",
+            "ladestation",
+            "oplader",
+            "elbil",
+            "el",
+            "energi"
+        ],
+        "de": [
+            "v2c",
+            "ladestation",
+            "ladegerät",
+            "elektrofahrzeug",
+            "ev",
+            "energie"
+        ],
+        "es": [
+            "v2c",
+            "cargador",
+            "cargador de vehículo eléctrico",
+            "vehículo eléctrico",
+            "ev",
+            "energía"
+        ],
+        "fr": [
+            "v2c",
+            "borne de recharge",
+            "chargeur",
+            "véhicule électrique",
+            "ve",
+            "énergie"
+        ],
+        "it": [
+            "v2c",
+            "stazione di ricarica",
+            "caricatore",
+            "veicolo elettrico",
+            "ve",
+            "energia"
+        ],
+        "no": [
+            "v2c",
+            "ladeboks",
+            "lader",
+            "elbil",
+            "ev",
+            "energi"
+        ],
+        "sv": [
+            "v2c",
+            "laddbox",
+            "laddare",
+            "elbil",
+            "ev",
+            "energi"
+        ],
+        "pl": [
+            "v2c",
+            "stacja ładowania",
+            "ładowarka",
+            "pojazd elektryczny",
+            "ev",
+            "energia"
+        ],
+        "ru": [
+            "v2c",
+            "зарядная станция",
+            "зарядное устройство",
+            "электромобиль",
+            "ev",
+            "энергия"
+        ],
+        "ko": [
+            "v2c",
+            "월박스",
+            "충전기",
+            "전기차",
+            "ev",
+            "에너지"
+        ]
+    },
+    "drivers": [
+        {
+            "id": "v2c-wallbox",
+            "name": {
+                "en": "V2C Wallbox",
+                "nl": "V2C-laadstation",
+                "da": "V2C Ladestation",
+                "de": "V2C-Ladestation",
+                "es": "V2C Cargador",
+                "fr": "Borne de recharge V2C",
+                "it": "Stazione di ricarica V2C",
+                "no": "V2C Ladeboks",
+                "sv": "V2C Laddbox",
+                "pl": "Stacja ładowania V2C",
+                "ru": "V2C зарядная станция",
+                "ko": "V2C 월박스"
+            },
+            "class": "evcharger"
+        }
+    ],
+    "permissions": [],
+    "icon": "/assets/icon.svg",
+    "images": {
+        "small": "/assets/images/small.png",
+        "large": "/assets/images/large.png",
+        "xlarge": "/assets/images/xlarge.png"
+    },
+    "author": {
+        "name": "Jiri Pech",
+        "email": "jirka@pechovic.cz"
+    },
+    "contributing": {
+        "donate": {
+            "paypal": {
+                "username": "pechjiri"
+            },
+            "githubSponsors": {
+                "username": "PechJiri"
+            }
+        }
+    },
+    "source": "https://github.com/PechJiri/V2Cwallbox",
+    "homepage": "https://v2charge.com/",
+    "support": "mailto:jirka@pechovic.cz",
+    "homeyCommunityTopicId": 114910
+}

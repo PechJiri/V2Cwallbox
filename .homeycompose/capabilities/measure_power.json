@@ -1,0 +1,38 @@
+{
+    "type": "number",
+    "title": {
+      "en": "Current charging power (W)",
+      "nl": "Huidig laadvermogen (W)",
+      "da": "Aktuel opladningseffekt (W)",
+      "de": "Aktuelle Ladeleistung (W)",
+      "es": "Potencia de carga actual (W)",
+      "fr": "Puissance de charge actuelle (W)",
+      "it": "Potenza di carica attuale (W)",
+      "no": "Nåværende ladekraft (W)",
+      "sv": "Nuvarande laddningseffekt (W)",
+      "pl": "Bieżąca moc ładowania (W)",
+      "ru": "Текущая мощность зарядки (Вт)",
+      "ko": "현재 충전 전력 (W)"
+    },
+    "units": {
+      "en": "W",
+      "nl": "W",
+      "da": "W",
+      "de": "W",
+      "es": "W",
+      "fr": "W",
+      "it": "W",
+      "no": "W",
+      "sv": "W",
+      "pl": "W",
+      "ru": "Вт",
+      "ko": "W"
+    },
+    "uiComponent": null,
+    "getable": true,
+    "setable": false,
+    "decimals": 0,
+    "insights": false,
+    "icon": "/assets/charge_power.svg"
+}
+  

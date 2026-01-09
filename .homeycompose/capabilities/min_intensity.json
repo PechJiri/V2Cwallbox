@@ -1,0 +1,39 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Minimum Dynamic Intensity",
+    "nl": "Minimale Dynamische Intensiteit",
+    "da": "Minimal Dynamisk Intensitet",
+    "de": "Minimale Dynamische Intensität",
+    "es": "Intensidad Dinámica Mínima",
+    "fr": "Intensité Dynamique Minimale",
+    "it": "Intensità Dinamica Minima",
+    "no": "Minimal Dynamisk Intensitet",
+    "sv": "Minsta Dynamiska Intensitet",
+    "pl": "Minimalna Intensywność Dynamiczna",
+    "ru": "Минимальная Динамическая Интенсивность",
+    "ko": "최소 동적 강도"
+  },
+  "units": {
+    "en": "A",
+    "nl": "A",
+    "da": "A",
+    "de": "A",
+    "es": "A",
+    "fr": "A",
+    "it": "A",
+    "no": "A",
+    "sv": "A",
+    "pl": "A",
+    "ru": "A",
+    "ko": "A"
+  },
+  "min": 6,
+  "max": 32,
+  "getable": true,
+  "setable": true,
+  "decimals": 0,
+  "insights": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/min_intensity.svg"
+}

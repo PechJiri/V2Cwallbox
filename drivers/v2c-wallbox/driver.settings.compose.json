@@ -1,0 +1,291 @@
+[
+  {
+    "id": "v2c_ip",
+    "type": "text",
+    "label": {
+      "en": "V2C Wallbox IP",
+      "nl": "V2C Wallbox IP",
+      "da": "V2C Wallbox IP",
+      "de": "V2C Wallbox IP",
+      "es": "IP de V2C Wallbox",
+      "fr": "IP de V2C Wallbox",
+      "it": "IP del Wallbox V2C",
+      "no": "V2C Wallbox IP",
+      "sv": "V2C Wallbox IP",
+      "pl": "IP V2C Wallbox",
+      "ru": "IP V2C Wallbox",
+      "ko": "V2C 월박스 IP"
+    }
+  },
+  {
+    "id": "enable_logging",
+    "type": "checkbox",
+    "label": {
+      "en": "Enable Debug Logging",
+      "nl": "Debug Logging inschakelen",
+      "da": "Aktiver fejllogning",
+      "de": "Debug-Logging aktivieren",
+      "es": "Habilitar registro de depuración",
+      "fr": "Activer le journal de débogage",
+      "it": "Abilita il debug logging",
+      "no": "Aktiver feillogging",
+      "sv": "Aktivera felsökningsloggning",
+      "pl": "Włącz rejestrowanie debugowania",
+      "ru": "Включить ведение журнала отладки",
+      "ko": "디버그 로깅 활성화"
+    },
+    "value": true,
+    "hint": {
+      "en": "Enable detailed logging for debugging purposes",
+      "nl": "Gedetailleerd loggen inschakelen voor foutopsporing",
+      "da": "Aktiver detaljeret logning til fejlfinding",
+      "de": "Detailliertes Protokollieren zur Fehlerbehebung aktivieren",
+      "es": "Habilitar registro detallado para depuración",
+      "fr": "Activer la journalisation détaillée pour le débogage",
+      "it": "Abilita il log dettagliato per scopi di debug",
+      "no": "Aktiver detaljert loggføring for feilsøkingsformål",
+      "sv": "Aktivera detaljerad loggning för felsökningsändamål",
+      "pl": "Włącz szczegółowe logowanie na potrzeby debugowania",
+      "ru": "Включить подробное ведение журнала для отладки",
+      "ko": "디버깅 목적으로 자세한 로깅 활성화"
+    }
+  },
+  {
+    "id": "min_intensity",
+    "type": "number",
+    "label": {
+      "en": "Minimum Dynamic Charging Amps",
+      "nl": "Minimum dynamische laadvermogensampère",
+      "da": "Minimum dynamisk ladningsstyrke (Ampere)",
+      "de": "Minimale dynamische Ladestromstärke",
+      "es": "Amperios de carga dinámica mínima",
+      "fr": "Ampérage de charge dynamique minimum",
+      "it": "Minima intensità di carica dinamica in Ampere",
+      "no": "Minimum dynamisk ladningsstyrke i ampere",
+      "sv": "Minsta dynamiska laddningsström i ampere",
+      "pl": "Minimalne dynamiczne natężenie ładowania",
+      "ru": "Минимальные динамические амперы зарядки",
+      "ko": "최소 동적 충전 전류"
+    },
+    "hint": {
+      "en": "Minimum charging power in Amperes (6-32A)",
+      "nl": "Minimaal laadvermogen in ampère (6-32A)",
+      "da": "Minimal ladekraft i ampere (6-32A)",
+      "de": "Minimale Ladeleistung in Ampere (6-32A)",
+      "es": "Potencia de carga mínima en amperios (6-32A)",
+      "fr": "Puissance de charge minimale en ampères (6-32A)",
+      "it": "Potenza di carica minima in ampere (6-32A)",
+      "no": "Minimum ladekraft i ampere (6-32A)",
+      "sv": "Minsta laddkraft i ampere (6-32A)",
+      "pl": "Minimalna moc ładowania w amperach (6-32A)",
+      "ru": "Минимальная мощность зарядки в амперах (6-32А)",
+      "ko": "최소 충전 전력 (암페어 기준) (6-32A)"
+    },
+    "value": 6,
+    "min": 6,
+    "max": 32,
+    "units": {
+      "en": "A",
+      "nl": "A",
+      "da": "A",
+      "de": "A",
+      "es": "A",
+      "fr": "A",
+      "it": "A",
+      "no": "A",
+      "sv": "A",
+      "pl": "A",
+      "ru": "А",
+      "ko": "A"
+    }
+  },
+  {
+    "id": "max_intensity",
+    "type": "number",
+    "label": {
+      "en": "Maximum Dynamic Charging Amps",
+      "nl": "Maximum dynamische laadvermogensampère",
+      "da": "Maksimal dynamisk ladningsstyrke (Ampere)",
+      "de": "Maximale dynamische Ladestromstärke",
+      "es": "Amperios de carga dinámica máxima",
+      "fr": "Ampérage de charge dynamique maximal",
+      "it": "Massima intensità di carica dinamica in Ampere",
+      "no": "Maksimal dynamisk ladningsstyrke i ampere",
+      "sv": "Högsta dynamiska laddningsström i ampere",
+      "pl": "Maksymalne dynamiczne natężenie ładowania",
+      "ru": "Максимальные динамические амперы зарядки",
+      "ko": "최대 동적 충전 전류"
+    },
+    "hint": {
+      "en": "Maximum charging power in Amperes (6-32A)",
+      "nl": "Maximaal laadvermogen in ampère (6-32A)",
+      "da": "Maksimal ladekraft i ampere (6-32A)",
+      "de": "Maximale Ladeleistung in Ampere (6-32A)",
+      "es": "Potencia de carga máxima en amperios (6-32A)",
+      "fr": "Puissance de charge maximale en ampères (6-32A)",
+      "it": "Massima potenza di carica in ampere (6-32A)",
+      "no": "Maksimal ladekraft i ampere (6-32A)",
+      "sv": "Högsta laddkraft i ampere (6-32A)",
+      "pl": "Maksymalna moc ładowania w amperach (6-32A)",
+      "ru": "Максимальная мощность зарядки в амперах (6-32А)",
+      "ko": "최대 충전 전력 (암페어 기준) (6-32A)"
+    },
+    "value": 32,
+    "min": 6,
+    "max": 32,
+    "units": {
+      "en": "A",
+      "nl": "A",
+      "da": "A",
+      "de": "A",
+      "es": "A",
+      "fr": "A",
+      "it": "A",
+      "no": "A",
+      "sv": "A",
+      "pl": "A",
+      "ru": "А",
+      "ko": "A"
+    }
+  },
+  {
+    "id": "dynamic_power_mode",
+    "type": "dropdown",
+    "label": {
+      "en": "Dynamic Power Mode",
+      "nl": "Dynamische vermogensmodus",
+      "da": "Dynamisk strømtilstand",
+      "de": "Dynamischer Leistungsmodus",
+      "es": "Modo de potencia dinámica",
+      "fr": "Mode de puissance dynamique",
+      "it": "Modalità di potenza dinamica",
+      "no": "Dynamisk strømmodus",
+      "sv": "Dynamiskt kraftläge",
+      "pl": "Tryb dynamicznej mocy",
+      "ru": "Динамический режим мощности",
+      "ko": "동적 전력 모드"
+    },
+    "value": "disabled",
+    "values": [
+      {
+        "id": "disabled",
+        "label": {
+          "en": "Disabled",
+          "nl": "Uitgeschakeld",
+          "da": "Deaktiveret",
+          "de": "Deaktiviert",
+          "es": "Desactivado",
+          "fr": "Désactivé",
+          "it": "Disabilitato",
+          "no": "Deaktivert",
+          "sv": "Avaktiverad",
+          "pl": "Wyłączony",
+          "ru": "Отключено",
+          "ko": "비활성화"
+        }
+      },
+      {
+        "id": "0",
+        "label": {
+          "en": "Timed Power Enabled",
+          "nl": "Getimede voeding ingeschakeld",
+          "da": "Tidstaget strøm aktiveret",
+          "de": "Zeitgesteuerte Leistung aktiviert",
+          "es": "Potencia cronometrada habilitada",
+          "fr": "Puissance minutée activée",
+          "it": "Potenza temporizzata abilitata",
+          "no": "Tidsstyrt kraft aktivert",
+          "sv": "Tidsstyrd kraft aktiverad",
+          "pl": "Tryb czasowy włączony",
+          "ru": "Включено по времени",
+          "ko": "타이머 전력 활성화"
+        }
+      },
+      {
+        "id": "1",
+        "label": {
+          "en": "Timed Power Disabled",
+          "nl": "Getimede voeding uitgeschakeld",
+          "da": "Tidstaget strøm deaktiveret",
+          "de": "Zeitgesteuerte Leistung deaktiviert",
+          "es": "Potencia cronometrada deshabilitada",
+          "fr": "Puissance minutée désactivée",
+          "it": "Potenza temporizzata disabilitata",
+          "no": "Tidsstyrt kraft deaktivert",
+          "sv": "Tidsstyrd kraft avaktiverad",
+          "pl": "Tryb czasowy wyłączony",
+          "ru": "Отключено по времени",
+          "ko": "타이머 전력 비활성화"
+        }
+      },
+      {
+        "id": "2",
+        "label": {
+          "en": "FV Exclusive mode",
+          "nl": "FV Exclusieve modus",
+          "da": "FV eksklusiv tilstand",
+          "de": "FV Exklusivmodus",
+          "es": "Modo exclusivo FV",
+          "fr": "Mode exclusif FV",
+          "it": "Modalità esclusiva FV",
+          "no": "FV eksklusiv modus",
+          "sv": "FV-exklusivt läge",
+          "pl": "Tryb ekskluzywny FV",
+          "ru": "Эксклюзивный режим FV",
+          "ko": "FV 독점 모드"
+        }
+      },
+      {
+        "id": "3",
+        "label": {
+          "en": "FV+Min Power mode",
+          "nl": "FV+Min vermogensmodus",
+          "da": "FV+Min strømtilstand",
+          "de": "FV+Min Leistungsmodus",
+          "es": "Modo FV+Min Potencia",
+          "fr": "Mode FV+Min Puissance",
+          "it": "Modalità FV+Min Potenza",
+          "no": "FV+Min strømmodus",
+          "sv": "FV+Min kraftläge",
+          "pl": "Tryb FV+Min Moc",
+          "ru": "Режим FV+Мин мощность",
+          "ko": "FV+최소 전력 모드"
+        }
+      },
+      {
+        "id": "4",
+        "label": {
+          "en": "Grid+FV mode",
+          "nl": "Net+FV modus",
+          "da": "Netværk+FV tilstand",
+          "de": "Netz+FV Modus",
+          "es": "Modo Red+FV",
+          "fr": "Mode Réseau+FV",
+          "it": "Modalità Rete+FV",
+          "no": "Nett+FV modus",
+          "sv": "Nät+FV-läge",
+          "pl": "Tryb Sieć+FV",
+          "ru": "Режим Сеть+FV",
+          "ko": "그리드+FV 모드"
+        }
+      },
+      {
+        "id": "5",
+        "label": {
+          "en": "Without Charge mode",
+          "nl": "Zonder laadmodus",
+          "da": "Uden opladningstilstand",
+          "de": "Ohne Lademodus",
+          "es": "Modo sin carga",
+          "fr": "Mode sans charge",
+          "it": "Modalità senza carica",
+          "no": "Uten ladningsmodus",
+          "sv": "Utan laddningsläge",
+          "pl": "Tryb bez ładowania",
+          "ru": "Режим без зарядки",
+          "ko": "충전 없음 모드"
+        }
+      }
+    ]
+  }
+]
