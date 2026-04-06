@@ -2879,6 +2879,32 @@
       ]
     }
   ],
+  "widgets": {
+    "wallbox-status": {
+      "name": {
+        "en": "Wallbox Status"
+      },
+      "description": {
+        "en": "Displays current status of V2C Wallbox"
+      },
+      "sizes": [
+        "medium",
+        "large"
+      ],
+      "api": {
+        "getStatus": {
+          "path": "/status",
+          "method": "GET"
+        },
+        "setPaused": {
+          "path": "/paused",
+          "method": "POST"
+        }
+      },
+      "id": "wallbox-status",
+      "settings": []
+    }
+  },
   "capabilities": {
     "car_connected": {
       "id": "car_connected",
