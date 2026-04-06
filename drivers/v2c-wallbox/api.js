@@ -24,14 +24,9 @@ class v2cAPI {
             const url = `http://${this.ip}${CONSTANTS.API.ENDPOINTS.REALTIME}`;
             this.logger.debug('Inicializace session', { url });
 
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), CONSTANTS.API.TIMEOUT);
-
             const response = await fetch(url, { 
-                signal: controller.signal 
+                signal: AbortSignal.timeout(CONSTANTS.API.TIMEOUT)
             });
-            
-            clearTimeout(timeoutId);
             
             const responseData = await response.json();
             this.logger.debug('Odpověď z inicializace session', { responseData });
@@ -57,15 +52,9 @@ class v2cAPI {
                 maxErrors: this._maxConsecutiveErrors
             });
     
-            // Použijeme AbortController pro lepší kontrolu timeoutu
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), CONSTANTS.API.TIMEOUT);
-    
             const response = await fetch(url, { 
-                signal: controller.signal 
+                signal: AbortSignal.timeout(CONSTANTS.API.TIMEOUT)
             });
-            
-            clearTimeout(timeoutId);
             
             const data = await response.json();
             
@@ -155,15 +144,10 @@ class v2cAPI {
                 hodnota: value 
             });
 
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), CONSTANTS.API.TIMEOUT);
-
             const response = await fetch(url, { 
                 method: 'GET',
-                signal: controller.signal 
+                signal: AbortSignal.timeout(CONSTANTS.API.TIMEOUT)
             });
-            
-            clearTimeout(timeoutId);
             
             const responseData = await response.text();
             

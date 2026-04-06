@@ -1,5 +1,2 @@
-node_modules
-
-
-# Added by Homey CLI
+/node_modules/
 /.homeybuild/
