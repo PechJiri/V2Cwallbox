@@ -5,107 +5,194 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>V2C Wallbox Small</title>
     <style>
+        :root {
+            --v2c-navy-deep: #001a3d;
+            --v2c-navy: #00275b;
+            --v2c-cyan: #00C2FF;
+            --v2c-energy: #00E38F;
+            --v2c-warm: #FFB020;
+            --v2c-mist: #8A94A7;
+            --v2c-ivory: #F5F7FA;
+            --v2c-line: rgba(255, 255, 255, 0.08);
+            --accent: var(--v2c-mist);
+        }
+
         html, body {
             margin: 0;
             padding: 0;
             height: 100%;
-            background-color: var(--homey-background-color);
-            color: var(--homey-text-color);
             overflow: hidden;
-            font-family: var(--homey-font-family);
+            font-family: var(--homey-font-family), -apple-system, system-ui, sans-serif;
+            color: var(--v2c-ivory);
         }
 
         #container {
+            position: relative;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
             width: 100%;
             height: 100%;
-            padding: var(--homey-su-2);
+            padding: 10px 14px;
             box-sizing: border-box;
-            gap: var(--homey-su-1);
+            background: linear-gradient(135deg, var(--v2c-navy-deep) 0%, var(--v2c-navy) 100%);
+            border-radius: var(--homey-border-radius-default, 10px);
+            overflow: hidden;
+            transition: background 0.6s ease;
+        }
+
+        #container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--v2c-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--v2c-line) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        #container::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 60%;
+            height: 200%;
+            background: radial-gradient(circle at center, var(--accent) 0%, transparent 60%);
+            opacity: 0.15;
+            filter: blur(16px);
+            transition: opacity 0.6s ease, background 0.6s ease;
+            pointer-events: none;
+        }
+
+        #container.state-charging::after { opacity: 0.32; }
+        #container.state-paused::after   { opacity: 0.22; }
+        #container.state-out::after      { opacity: 0.06; }
+
+        .state-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            z-index: 1;
         }
 
         .state-dot {
-            width: 10px;
-            height: 10px;
+            position: relative;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
-            background-color: var(--homey-text-color-light);
-            display: inline-block;
-            margin-right: var(--homey-su-1);
-            vertical-align: middle;
-            transition: background-color 0.4s ease;
+            background: var(--accent);
+            flex-shrink: 0;
+            transition: background 0.4s ease;
         }
 
-        .state-dot.charging { background-color: var(--homey-color-green, #3bb273); }
-        .state-dot.paused   { background-color: var(--homey-color-orange, #e09f3e); }
-        .state-dot.plugged  { background-color: var(--homey-color-blue, #4a90e2); }
-        .state-dot.out      { background-color: var(--homey-text-color-light); }
+        .state-dot::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0;
+            transition: background 0.4s ease;
+        }
 
-        .state-label {
-            font-size: var(--homey-font-size-small);
-            color: var(--homey-text-color-light);
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        #container.state-charging .state-dot::after {
+            opacity: 0.55;
+            animation: pulse 1.8s ease-out infinite;
+        }
+
+        @keyframes pulse {
+            0%   { transform: scale(0.8); opacity: 0.55; }
+            100% { transform: scale(2.8); opacity: 0; }
+        }
+
+        .state-text {
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--v2c-ivory);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .metrics {
             display: flex;
-            justify-content: space-around;
-            width: 100%;
-            margin-top: var(--homey-su-1);
+            gap: 12px;
+            margin-top: 6px;
+            position: relative;
+            z-index: 1;
         }
 
         .metric {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             flex: 1;
+            min-width: 0;
         }
 
         .metric-value {
-            font-size: var(--homey-font-size-large);
-            font-weight: var(--homey-font-weight-bold);
-            line-height: 1.1;
+            font-family: 'SF Mono', Menlo, Consolas, 'Roboto Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.05;
+            color: var(--v2c-ivory);
+            letter-spacing: -0.02em;
+            transition: color 0.4s ease, text-shadow 0.4s ease;
+        }
+
+        #container.state-charging .metric-value {
+            color: var(--v2c-energy);
+            text-shadow: 0 0 8px rgba(0, 227, 143, 0.35);
         }
 
         .metric-unit {
-            font-size: var(--homey-font-size-small);
-            color: var(--homey-text-color-light);
+            font-size: 9px;
+            color: var(--v2c-mist);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
             margin-top: 2px;
+        }
+
+        /* V2C wordmark in corner - subtle brand anchor */
+        .brand-mark {
+            position: absolute;
+            bottom: 8px;
+            right: 12px;
+            font-family: 'SF Mono', Menlo, Consolas, 'Roboto Mono', monospace;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            color: var(--v2c-mist);
+            opacity: 0.5;
+            z-index: 1;
         }
     </style>
 </head>
 <body>
-    <div id="container">
-        <div class="state-label">
-            <span id="stateDot" class="state-dot out"></span>
-            <span id="stateText">–</span>
+    <div id="container" class="state-out">
+        <div class="state-row">
+            <span id="stateDot" class="state-dot"></span>
+            <span id="stateText" class="state-text">Loading</span>
         </div>
         <div class="metrics">
             <div class="metric">
-                <span id="kwValue" class="metric-value">0.0</span>
-                <span class="metric-unit">kW</span>
+                <div class="metric-value"><span id="kwValue">0.0</span></div>
+                <div class="metric-unit">kW</div>
             </div>
             <div class="metric">
-                <span id="kwhValue" class="metric-value">0.0</span>
-                <span class="metric-unit">kWh</span>
+                <div class="metric-value"><span id="kwhValue">0.0</span></div>
+                <div class="metric-unit">kWh</div>
             </div>
         </div>
+        <div class="brand-mark">V2C</div>
     </div>
     <script type="text/javascript">
         let Homey;
         let isUpdating = false;
         let updateInterval = 5000;
-
-        function onHomeyReady(_Homey) {
-            Homey = _Homey;
-            init();
-            Homey.ready();
-        }
 
         const STATE_TEXT = {
             plugged_out: 'Unplugged',
@@ -116,19 +203,38 @@
         };
 
         const STATE_CLASS = {
-            plugged_out: 'out',
-            plugged_in: 'plugged',
-            plugged_in_charging: 'charging',
-            plugged_in_paused: 'paused',
-            plugged_in_discharging: 'charging'
+            plugged_out: 'state-out',
+            plugged_in: 'state-plugged',
+            plugged_in_charging: 'state-charging',
+            plugged_in_paused: 'state-paused',
+            plugged_in_discharging: 'state-charging'
         };
+
+        const STATE_ACCENT = {
+            plugged_out: '#8A94A7',
+            plugged_in: '#00C2FF',
+            plugged_in_charging: '#00E38F',
+            plugged_in_paused: '#FFB020',
+            plugged_in_discharging: '#00E38F'
+        };
+
+        function onHomeyReady(_Homey) {
+            Homey = _Homey;
+            init();
+            Homey.ready();
+        }
+
+        function applyState(state) {
+            const container = document.getElementById('container');
+            container.classList.remove('state-out', 'state-plugged', 'state-charging', 'state-paused');
+            container.classList.add(STATE_CLASS[state] || 'state-out');
+            container.style.setProperty('--accent', STATE_ACCENT[state] || '#8A94A7');
+            document.getElementById('stateText').textContent = STATE_TEXT[state] || '—';
+        }
 
         function updateUI(status) {
             const state = status.evChargingState || 'plugged_out';
-            document.getElementById('stateText').textContent = STATE_TEXT[state] || '–';
-            const dot = document.getElementById('stateDot');
-            dot.className = 'state-dot ' + (STATE_CLASS[state] || 'out');
-
+            applyState(state);
             const kw = (status.chargePower || 0) / 1000;
             const kwh = status.sessionEnergy || 0;
             document.getElementById('kwValue').textContent = kw.toFixed(1);

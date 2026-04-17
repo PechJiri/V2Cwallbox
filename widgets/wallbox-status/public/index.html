@@ -5,36 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>V2C Wallbox Status</title>
     <style>
+        :root {
+            --v2c-navy-deep: #001a3d;
+            --v2c-navy: #00275b;
+            --v2c-navy-soft: #0a3a7a;
+            --v2c-cyan: #00C2FF;
+            --v2c-energy: #00E38F;
+            --v2c-warm: #FFB020;
+            --v2c-mist: #8A94A7;
+            --v2c-ivory: #F5F7FA;
+            --v2c-line: rgba(255, 255, 255, 0.08);
+            --accent: var(--v2c-mist);
+        }
+
         html, body {
             margin: 0;
             padding: 0;
             height: 100%;
-            background-color: var(--homey-background-color);
-            color: var(--homey-text-color);
             overflow: hidden;
+            font-family: var(--homey-font-family), -apple-system, system-ui, sans-serif;
+            color: var(--v2c-ivory);
         }
 
         #container {
+            position: relative;
             display: flex;
             width: 100%;
             height: 100%;
-            background-color: var(--homey-background-color);
-            border-radius: var(--homey-border-radius-default);
+            background: linear-gradient(135deg, var(--v2c-navy-deep) 0%, var(--v2c-navy) 100%);
+            border-radius: var(--homey-border-radius-default, 10px);
+            overflow: hidden;
+            transition: background 0.6s ease;
         }
 
+        /* Subtle grid texture */
+        #container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--v2c-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--v2c-line) 1px, transparent 1px);
+            background-size: 24px 24px;
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        /* Accent corner glow (animated based on state) */
+        #container::after {
+            content: '';
+            position: absolute;
+            top: -40%;
+            right: -30%;
+            width: 70%;
+            height: 180%;
+            background: radial-gradient(circle at center, var(--accent) 0%, transparent 60%);
+            opacity: 0.18;
+            filter: blur(20px);
+            transition: opacity 0.6s ease, background 0.6s ease;
+            pointer-events: none;
+        }
+
+        #container.state-charging::after { opacity: 0.35; }
+        #container.state-paused::after   { opacity: 0.25; }
+        #container.state-out::after      { opacity: 0.08; }
+
         #imageContainer {
-            flex: 1;
+            flex: 0 0 42%;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: transparent;
-            border-radius: var(--homey-border-radius-default) 0 0 var(--homey-border-radius-default);
+            position: relative;
+            z-index: 1;
         }
 
         #deviceImage {
-            max-width: 95%;
-            max-height: 95%;
+            max-width: 82%;
+            max-height: 82%;
             object-fit: contain;
+            filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35));
+            transition: filter 0.6s ease, transform 0.6s ease;
+        }
+
+        #container.state-charging #deviceImage {
+            filter: drop-shadow(0 0 14px var(--v2c-energy)) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
         }
 
         #infoContainer {
@@ -42,64 +96,158 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            padding: 12px 16px 12px 4px;
+            position: relative;
+            z-index: 1;
+            min-width: 0;
+        }
+
+        .state-row {
+            display: flex;
             align-items: center;
-            padding: var(--homey-su-2);
+            gap: 8px;
+            margin-bottom: 10px;
         }
 
-        .label {
-            font-size: var(--homey-font-size-small);
-            color: var(--homey-text-color-light);
-            margin-bottom: var(--homey-su-1);
-            text-align: center;
-            width: 100%;
+        .state-dot {
+            position: relative;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+            transition: background 0.4s ease;
         }
 
-        .value {
-            font-size: var(--homey-font-size-large);
-            font-weight: var(--homey-font-weight-bold);
-            margin-bottom: var(--homey-su-2);
-            text-align: center;
-            width: 100%;
+        .state-dot::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity 0.4s ease, background 0.4s ease;
+        }
+
+        #container.state-charging .state-dot::after {
+            opacity: 0.6;
+            animation: pulse 1.8s ease-out infinite;
+        }
+
+        @keyframes pulse {
+            0%   { transform: scale(0.8); opacity: 0.6; }
+            100% { transform: scale(2.6); opacity: 0; }
+        }
+
+        .state-text {
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--v2c-ivory);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .metrics {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 10px;
+        }
+
+        .metric {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .metric-value {
+            font-family: 'SF Mono', Menlo, Consolas, 'Roboto Mono', monospace;
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.05;
+            color: var(--v2c-ivory);
+            letter-spacing: -0.02em;
+        }
+
+        #container.state-charging .metric-value {
+            color: var(--v2c-energy);
+            text-shadow: 0 0 10px rgba(0, 227, 143, 0.35);
+        }
+
+        .metric-unit {
+            font-size: 10px;
+            color: var(--v2c-mist);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 2px;
         }
 
         .control-button {
             display: none;
-            background-color: var(--homey-color-blue);
-            color: white;
-            border: none;
-            border-radius: var(--homey-border-radius-small);
-            padding: var(--homey-su-2) var(--homey-su-4);
-            font-size: var(--homey-font-size-small);
-            font-weight: var(--homey-font-weight-bold);
+            background: transparent;
+            color: var(--v2c-ivory);
+            border: 1px solid var(--accent);
+            border-radius: 999px;
+            padding: 6px 14px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
             cursor: pointer;
-            margin-top: var(--homey-su-2);
-            transition: opacity 0.3s ease;
-            width: 80%;
+            transition: background 0.25s ease, color 0.25s ease, border-color 0.4s ease;
+            align-self: flex-start;
         }
 
-        .control-button.visible {
-            display: block;
+        .control-button.visible { display: inline-flex; align-items: center; gap: 6px; }
+        .control-button:hover:not(:disabled) {
+            background: var(--accent);
+            color: var(--v2c-navy-deep);
         }
+        .control-button:disabled { opacity: 0.5; cursor: wait; }
 
-        .control-button:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
+        .control-button::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 1px;
+            background: var(--accent);
+            transition: background 0.25s ease;
+        }
+        .control-button:hover:not(:disabled)::before { background: var(--v2c-navy-deep); }
+        #container.state-paused .control-button::before {
+            width: 0;
+            height: 0;
+            border-radius: 0;
+            background: transparent;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 8px solid var(--accent);
+        }
+        #container.state-paused .control-button:hover:not(:disabled)::before {
+            border-left-color: var(--v2c-navy-deep);
         }
     </style>
 </head>
 <body>
-    <div id="container">
+    <div id="container" class="state-out">
         <div id="imageContainer">
             <img id="deviceImage" src="large.png" alt="V2C Wallbox">
         </div>
         <div id="infoContainer">
-            <div class="label">Charger state</div>
-            <div id="wallboxState" class="value">Loading...</div>
-            <div class="label">kW | kWh</div>
-            <div id="powerInfo" class="value">
-                <span id="powerKW">-.-</span>
-                <span>|</span>
-                <span id="powerKWh">-.-</span>
+            <div class="state-row">
+                <span class="state-dot"></span>
+                <span id="wallboxState" class="state-text">Loading</span>
+            </div>
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-value"><span id="powerKW">0.0</span></div>
+                    <div class="metric-unit">kW</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value"><span id="powerKWh">0.0</span></div>
+                    <div class="metric-unit">kWh session</div>
+                </div>
             </div>
             <button id="controlButton" class="control-button">Pause</button>
         </div>
@@ -108,127 +256,116 @@
         let Homey;
         let isUpdating = false;
         let updateInterval = 5000;
-        let intervalId;
+
+        const STATE_TEXT = {
+            plugged_out: 'Unplugged',
+            plugged_in: 'Plugged in',
+            plugged_in_charging: 'Charging',
+            plugged_in_paused: 'Paused',
+            plugged_in_discharging: 'Discharging'
+        };
+
+        const STATE_CLASS = {
+            plugged_out: 'state-out',
+            plugged_in: 'state-plugged',
+            plugged_in_charging: 'state-charging',
+            plugged_in_paused: 'state-paused',
+            plugged_in_discharging: 'state-charging'
+        };
+
+        const STATE_ACCENT = {
+            plugged_out: '#8A94A7',
+            plugged_in: '#00C2FF',
+            plugged_in_charging: '#00E38F',
+            plugged_in_paused: '#FFB020',
+            plugged_in_discharging: '#00E38F'
+        };
 
         function onHomeyReady(_Homey) {
             Homey = _Homey;
-            console.log('Homey is ready');
             init();
             Homey.ready();
         }
 
-        function getChargeStateText(state, isPaused) {
-            if (isPaused) {
-                return "Paused";
+        function resolveState(status) {
+            if (status.evChargingState && STATE_TEXT[status.evChargingState]) {
+                return status.evChargingState;
             }
-            const stateMap = {
-                "0": "EV not connected",
-                "1": "EV connected",
-                "2": "Charging"
-            };
-            return stateMap[state] || "Unknown";
+            // Fallback pro starou API (measure_charge_state + paused)
+            if (status.paused) return 'plugged_in_paused';
+            if (status.chargeState === '0') return 'plugged_out';
+            if (status.chargeState === '2') return 'plugged_in_charging';
+            return 'plugged_in';
         }
 
-        function updateControlButton(state, isPaused) {
+        function applyState(state) {
+            const container = document.getElementById('container');
+            container.classList.remove('state-out', 'state-plugged', 'state-charging', 'state-paused');
+            container.classList.add(STATE_CLASS[state] || 'state-out');
+            container.style.setProperty('--accent', STATE_ACCENT[state] || '#8A94A7');
+            document.getElementById('wallboxState').textContent = STATE_TEXT[state] || '—';
+
             const button = document.getElementById('controlButton');
-            
-            if (state === "0") {
+            if (state === 'plugged_out') {
                 button.classList.remove('visible');
             } else {
                 button.classList.add('visible');
+                button.textContent = state === 'plugged_in_paused' ? 'Resume' : 'Pause';
             }
-
-            button.textContent = isPaused ? 'Resume' : 'Pause';
         }
 
-        function setupControlButton() {
-        const button = document.getElementById('controlButton');
-        button.addEventListener('click', async () => {
-        try {
-            button.disabled = true;
-            
-            // Získání aktuálního stavu
-            const result = await Homey.api('GET', '/status');
-            const currentPausedState = result.paused;
-            
-            console.log('Current paused state:', currentPausedState);
-            console.log('Setting new paused state to:', !currentPausedState);
-            
-            // Změna stavu přes API
-            const setPausedResult = await Homey.api('POST', '/paused', { 
-                paused: !currentPausedState 
-            });
-            console.log('setPaused response:', setPausedResult);
-            
-            if (!setPausedResult.success) {
-                throw new Error('Failed to set paused state');
-            }
-            
-            // Počkáme chvíli pro jistotu
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Aktualizace UI
-            await updateData();
-            } catch (error) {
-            console.error('Error toggling pause state:', error);
-            // Případně můžeme zobrazit chybu uživateli
-            // alert('Failed to change charging state');
-            } finally {
-            button.disabled = false;
-            }
-            });
-        }       
-
         function updateUI(status) {
-            console.log('Updating UI with status:', status);
-            
-            document.getElementById('wallboxState').textContent = getChargeStateText(status.chargeState, status.paused);
-            document.getElementById('powerKW').textContent = (status.chargePower / 1000).toFixed(1);
-            document.getElementById('powerKWh').textContent = status.chargeEnergy.toFixed(1);
-
-            updateControlButton(status.chargeState, status.paused);
+            const state = resolveState(status);
+            applyState(state);
+            document.getElementById('powerKW').textContent = ((status.chargePower || 0) / 1000).toFixed(1);
+            document.getElementById('powerKWh').textContent = (status.chargeEnergy || 0).toFixed(1);
         }
 
         function updateData() {
             if (isUpdating) return;
             isUpdating = true;
-            console.log('Fetching data...');
-
             Homey.api('GET', '/status')
-                .then(result => {
-                    console.log('Data received from API:', result);
-                    updateUI(result);
-                })
-                .catch(error => {
-                    console.error('Error fetching wallbox status:', error);
-                })
-                .finally(() => {
-                    isUpdating = false;
-                });
+                .then(updateUI)
+                .catch((err) => console.error('Widget fetch error:', err))
+                .finally(() => { isUpdating = false; });
+        }
+
+        function setupControlButton() {
+            const button = document.getElementById('controlButton');
+            button.addEventListener('click', async () => {
+                try {
+                    button.disabled = true;
+                    const result = await Homey.api('GET', '/status');
+                    const setPausedResult = await Homey.api('POST', '/paused', { paused: !result.paused });
+                    if (!setPausedResult.success) throw new Error('Failed to set paused state');
+                    await new Promise((r) => setTimeout(r, 400));
+                    updateData();
+                } catch (err) {
+                    console.error('Error toggling pause:', err);
+                } finally {
+                    button.disabled = false;
+                }
+            });
         }
 
         function loadUpdateInterval() {
             const settings = Homey.getSettings();
             if (settings && settings.update_interval) {
                 updateInterval = parseInt(settings.update_interval, 10) * 1000;
-                console.log('Update interval set to:', updateInterval, 'ms');
-            } else {
-                console.log('Using default update interval of 5000 ms');
             }
         }
 
         function init() {
-            console.log('Initializing widget...');
             setupControlButton();
             loadUpdateInterval();
             updateData();
-            intervalId = setInterval(updateData, updateInterval);
+            setInterval(updateData, updateInterval);
         }
 
         if (window.Homey) {
             onHomeyReady(window.Homey);
         } else {
-            document.addEventListener('homey_ready', function() {
+            document.addEventListener('homey_ready', function () {
                 onHomeyReady(window.Homey);
             });
         }
