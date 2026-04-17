@@ -240,10 +240,19 @@ class MyDevice extends Device {
     
                 const previousState = await this.getStoreValue('previousChargeState') || CONSTANTS.CHARGE_STATES.DISCONNECTED;
                 const currentState = deviceData.chargeState;
+
+                // Zachyť poslední známou session energy PŘED tím, než ji
+                // EnergyManager při plug-outu resetuje na 0 - potřebujeme ji
+                // jako token pro trigger charging-session-ended.
+                const previousSessionEnergy = this.hasCapability('ev_charging_session_energy')
+                    ? (await this.getCapabilityValue('ev_charging_session_energy') || 0)
+                    : 0;
+
                 const chargeEnergy = await this.energyManager.processEnergyData(deviceData, previousState, currentState);
-    
+
                 await this.updateCapabilities(deviceData, currentState, chargeEnergy);
-                await this.handleStateChanges(currentState, previousState, deviceData);
+                await this.handleStateChanges(currentState, previousState, deviceData, previousSessionEnergy);
+                await this._enforceMaxSessionEnergyLimit(chargeEnergy, currentState);
     
                 const hadError = await this.getCapabilityValue('measure_connection_error');
                 if (hadError) {
@@ -360,11 +369,11 @@ class MyDevice extends Device {
         return await this.energyManager.setYearlyEnergy(value);
     }
 
-    async handleStateChanges(currentState, previousState, deviceData) {
+    async handleStateChanges(currentState, previousState, deviceData, previousSessionEnergy = 0) {
         await this.setStoreValue('previousChargeState', currentState);
 
         if (currentState !== previousState) {
-            await this._handleSessionBoundary(currentState, previousState);
+            await this._handleSessionBoundary(currentState, previousState, previousSessionEnergy);
             await this._handleStateChangeTriggers(currentState, previousState);
         }
 
@@ -375,16 +384,69 @@ class MyDevice extends Device {
         }
     }
 
-    async _handleSessionBoundary(currentState, previousState) {
+    async _handleSessionBoundary(currentState, previousState, previousSessionEnergy = 0) {
         const wasPlugged = previousState !== CONSTANTS.CHARGE_STATES.DISCONNECTED;
         const isPlugged = currentState !== CONSTANTS.CHARGE_STATES.DISCONNECTED;
 
         if (!wasPlugged && isPlugged) {
             await this.setStoreValue('sessionStartTime', Date.now());
+            // Nová session - pryč s případným limitem z předchozí session
+            await this.unsetStoreValue('maxSessionEnergyLimit');
             this.logger.debug('Zahájena nová nabíjecí session');
         } else if (wasPlugged && !isPlugged) {
+            const startTime = await this.getStoreValue('sessionStartTime');
+            const durationS = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
+            try {
+                await this.flowCardManager.triggerChargingSessionEnded(
+                    previousSessionEnergy,
+                    durationS,
+                    'unplugged'
+                );
+            } catch (error) {
+                this.logger.error('Chyba při vystřelení charging-session-ended', error);
+            }
             await this.unsetStoreValue('sessionStartTime');
-            this.logger.debug('Nabíjecí session ukončena (auto odpojeno)');
+            await this.unsetStoreValue('maxSessionEnergyLimit');
+            this.logger.debug('Nabíjecí session ukončena (auto odpojeno)', {
+                sessionEnergy: previousSessionEnergy,
+                durationS
+            });
+        }
+    }
+
+    async _enforceMaxSessionEnergyLimit(currentEnergy, currentState) {
+        if (currentState === CONSTANTS.CHARGE_STATES.DISCONNECTED) return;
+
+        const limit = await this.getStoreValue('maxSessionEnergyLimit');
+        if (!limit || currentEnergy < limit) return;
+
+        const alreadyPaused = await this.getCapabilityValue('measure_paused');
+        if (alreadyPaused) {
+            // Už pauznuté (pravděpodobně už jsme limit vynutili); jen cleanup
+            await this.unsetStoreValue('maxSessionEnergyLimit');
+            return;
+        }
+
+        try {
+            await this.v2cApi.setParameter('Paused', '1');
+            await this.setCapabilityValue('measure_paused', true);
+            await this.setCapabilityValue('onoff', false);
+
+            const startTime = await this.getStoreValue('sessionStartTime');
+            const durationS = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
+            await this.flowCardManager.triggerChargingSessionEnded(
+                currentEnergy,
+                durationS,
+                'limit_reached'
+            );
+            await this.unsetStoreValue('maxSessionEnergyLimit');
+
+            this.logger.log('Dosažen limit session energy - nabíjení pauzováno', {
+                currentEnergy,
+                limit
+            });
+        } catch (error) {
+            this.logger.error('Chyba při vynucení limitu session energy', error);
         }
     }
 
@@ -565,7 +627,8 @@ class MyDevice extends Device {
             await this.unsetStoreValue('monthlyEnergyData');
             await this.unsetStoreValue('yearlyEnergyData');
             await this.unsetStoreValue('sessionStartTime');
-    
+            await this.unsetStoreValue('maxSessionEnergyLimit');
+
             if (this.logger) {
                 this.logger.log('Zařízení bylo úspěšně odstraněno');
                 await this.logger.clearHistory();

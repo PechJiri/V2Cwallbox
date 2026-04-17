@@ -210,6 +210,43 @@
         "ru": "Состояние подключения изменено на [[connection_state]]",
         "ko": "연결 상태가 [[connection_state]]로 변경되었습니다"
       }
+    },
+    {
+      "id": "charging-session-ended",
+      "title": {
+        "en": "Charging session has ended",
+        "cs": "Nabíjecí session skončila"
+      },
+      "description": {
+        "en": "Triggers when the charging session ends (car unplugged, or session energy limit reached).",
+        "cs": "Spustí se, když skončí nabíjecí session (auto odpojené, nebo dosažen limit energie session)."
+      },
+      "tokens": [
+        {
+          "name": "session_energy",
+          "type": "number",
+          "title": {
+            "en": "Session energy (kWh)",
+            "cs": "Energie session (kWh)"
+          }
+        },
+        {
+          "name": "session_duration",
+          "type": "number",
+          "title": {
+            "en": "Session duration (s)",
+            "cs": "Doba session (s)"
+          }
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "title": {
+            "en": "Reason",
+            "cs": "Důvod"
+          }
+        }
+      ]
     }
   ],
   "conditions": [
@@ -2156,6 +2193,38 @@
           "ru": "Примечание: Счетчики автоматически сбрасываются в начале каждого периода. Используйте эту карту только для ручных корректировок при необходимости.",
           "ko": "참고: 카운터는 각 기간이 시작될 때 자동으로 재설정됩니다. 필요한 경우에만 수동 수정을 위해 이 카드를 사용하세요."
       }
+    },
+    {
+      "id": "set_max_session_energy",
+      "title": {
+        "en": "Charge up to X kWh this session",
+        "cs": "Nabij maximálně X kWh v této session"
+      },
+      "titleFormatted": {
+        "en": "Charge up to [[energy]] kWh this session",
+        "cs": "Nabij maximálně [[energy]] kWh v této session"
+      },
+      "hint": {
+        "en": "When the current plug-in session reaches the set energy, charging will be paused automatically. Limit resets when the car is unplugged. If multiple flows set a limit, the last one wins.",
+        "cs": "Když aktuální session (od připojení auta) dosáhne nastavené energie, nabíjení se automaticky pauzne. Limit se resetuje při odpojení auta. Pokud více flow nastaví limit, platí poslední."
+      },
+      "args": [
+        {
+          "name": "energy",
+          "type": "number",
+          "title": {
+            "en": "Energy (kWh)",
+            "cs": "Energie (kWh)"
+          },
+          "min": 0.1,
+          "max": 500,
+          "step": 0.1,
+          "placeholder": {
+            "en": "20",
+            "cs": "20"
+          }
+        }
+      ]
     }
   ]
 }

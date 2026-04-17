@@ -48,6 +48,9 @@ class FlowCardManager {
                     const hasError = args.connection_state === 'error';
                     return state === hasError;
                 }
+            },
+            {
+                id: 'charging-session-ended'
             }
         ];
 
@@ -384,7 +387,7 @@ class FlowCardManager {
                         if (isNaN(energy)) {
                             throw new Error('Neplatná hodnota energie');
                         }
-                        
+
                         switch(args.counter_type) {
                             case 'monthly':
                                 return await args.device.setMonthlyEnergy(energy);
@@ -397,6 +400,22 @@ class FlowCardManager {
                             default:
                                 throw new Error('Neplatný typ počítadla');
                         }
+                    }
+                },
+                {
+                    id: 'set_max_session_energy',
+                    handler: async (args) => {
+                        const energy = parseFloat(args.energy);
+                        if (!Number.isFinite(energy) || energy <= 0) {
+                            throw new Error('Neplatná hodnota energie pro limit session');
+                        }
+                        // Poslední volání přepíše předchozí limit. Limit se
+                        // nuluje při odpojení auta (viz device._handleSessionBoundary).
+                        await this.device.setStoreValue('maxSessionEnergyLimit', energy);
+                        if (this.logger) {
+                            this.logger.debug('Limit session energy nastaven', { energy });
+                        }
+                        return true;
                     }
                 }
             ];
@@ -458,8 +477,16 @@ class FlowCardManager {
     }
 
     async triggerConnectionStateChanged(hasError) {
-        await this._triggerCard('connection_state_changed', {}, { 
+        await this._triggerCard('connection_state_changed', {}, {
             newState: hasError
+        });
+    }
+
+    async triggerChargingSessionEnded(sessionEnergy, sessionDurationSeconds, reason) {
+        await this._triggerCard('charging-session-ended', {
+            session_energy: Number((sessionEnergy || 0).toFixed(3)),
+            session_duration: Math.max(0, Math.floor(sessionDurationSeconds || 0)),
+            reason: String(reason || 'unplugged')
         });
     }
 
