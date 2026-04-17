@@ -1,0 +1,26 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Charging session energy (kWh)",
+    "nl": "Energie laadsessie (kWh)",
+    "da": "Energi i opladningssession (kWh)",
+    "de": "Energie der Ladesitzung (kWh)",
+    "es": "Energía de la sesión de carga (kWh)",
+    "fr": "Énergie de la session de charge (kWh)",
+    "it": "Energia sessione di ricarica (kWh)",
+    "no": "Energi i ladeøkten (kWh)",
+    "sv": "Energi i laddningssession (kWh)",
+    "pl": "Energia sesji ładowania (kWh)",
+    "ru": "Энергия сессии зарядки (кВтч)",
+    "ko": "충전 세션 에너지 (kWh)"
+  },
+  "units": {
+    "en": "kWh"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "decimals": 2,
+  "insights": true,
+  "icon": "/assets/charge_energy.svg"
+}
