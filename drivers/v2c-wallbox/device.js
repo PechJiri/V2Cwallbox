@@ -80,6 +80,10 @@ class MyDevice extends Device {
 
             // Spuštění intervalu pro aktualizaci dat
             this.startDataFetchInterval();
+
+            // Reakce na memwarn od Homey - šetrná reakce na tlak na paměť
+            this._memwarnHandler = this._onMemWarn.bind(this);
+            this.homey.on('memwarn', this._memwarnHandler);
     
             // Inicializační načtení dat pro ověření připojení
             try {
@@ -253,6 +257,11 @@ class MyDevice extends Device {
                     await this.setAvailable();
                 }
             } catch (error) {
+                if (error.message === 'API_BACKOFF_ACTIVE') {
+                    // Backoff okno po předchozí chybě - tichý skip
+                    return;
+                }
+
                 if (error.message === 'API_MAX_ERRORS_EXCEEDED') {
                     const hadError = await this.getCapabilityValue('measure_connection_error');
                     if (!hadError) {
@@ -260,18 +269,18 @@ class MyDevice extends Device {
                             errorCount: this.v2cApi.getErrorCount(),
                             maxErrors: this.v2cApi._maxConsecutiveErrors
                         });
-                        
+
                         await this.setCapabilityValue('measure_connection_error', true);
                         await this.flowCardManager.triggerConnectionStateChanged('error');
                     }
-                    
+
                 } else {
                     this.logger.debug('Dočasná chyba API', {
                         error: error.message,
                         errorCount: this.v2cApi.getErrorCount(),
                         isInErrorState: this.v2cApi.isInErrorState()
                     });
-    
+
                     if (this.lastResponse) {
                         this.logger.debug('Použita poslední známá data kvůli chybě API');
                     }
@@ -465,6 +474,42 @@ class MyDevice extends Device {
         }
     }
 
+    _onMemWarn(data) {
+        try {
+            if (this.logger) {
+                this.logger.warn('memwarn event - uvolňuji cache', data || {});
+            }
+            this.lastResponse = null;
+            this.lastResponseTime = null;
+        } catch (_) { /* defenzivní - memwarn nesmí shodit app */ }
+    }
+
+    async onUninit() {
+        try {
+            if (this.dataFetchInterval) {
+                this.homey.clearInterval(this.dataFetchInterval);
+                this.dataFetchInterval = null;
+            }
+            if (this._memwarnHandler) {
+                this.homey.removeListener('memwarn', this._memwarnHandler);
+                this._memwarnHandler = null;
+            }
+            if (this.flowCardManager) {
+                await this.flowCardManager.destroy();
+                this.flowCardManager = null;
+            }
+            this.lastResponse = null;
+            this.lastResponseTime = null;
+            this.v2cApi = null;
+            this.energyManager = null;
+            this.dataValidator = null;
+        } catch (error) {
+            if (this.logger) {
+                this.logger.error('Chyba v onUninit', error);
+            }
+        }
+    }
+
     async onAdded() {
         this.logger.log('Nové zařízení bylo přidáno');
     }
@@ -481,7 +526,12 @@ class MyDevice extends Device {
                 this.homey.clearInterval(this.dataFetchInterval);
                 this.dataFetchInterval = null;
             }
-    
+
+            if (this._memwarnHandler) {
+                this.homey.removeListener('memwarn', this._memwarnHandler);
+                this._memwarnHandler = null;
+            }
+
             this.removeAllListeners();
             
             if (this.flowCardManager) {
