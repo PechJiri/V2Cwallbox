@@ -45,6 +45,6 @@
     "ru": "Зарядное устройство разблокировано",
     "ko": "충전기가 잠금 해제되었습니다"
   },
-  "uiComponent": "sensor",
+  "uiComponent": null,
   "icon": "/assets/locked.svg"
 }

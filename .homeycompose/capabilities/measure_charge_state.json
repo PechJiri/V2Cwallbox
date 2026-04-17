@@ -69,6 +69,6 @@
     ],
     "getable": true,
     "setable": false,
-    "uiComponent": "sensor",
+    "uiComponent": null,
     "icon": "/assets/charge_state.svg"
 }

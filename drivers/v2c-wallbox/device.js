@@ -72,7 +72,11 @@ class MyDevice extends Device {
             this.registerPauseListener();
 
             // Registrace listeneru pro změnu A
-            this.registerSetIntensityListener()
+            this.registerSetIntensityListener();
+
+            // Standardní Homey listenery (onoff = negace pause, locked)
+            this.registerOnoffListener();
+            this.registerLockedListener();
 
             // Spuštění intervalu pro aktualizaci dat
             this.startDataFetchInterval();
@@ -129,15 +133,32 @@ class MyDevice extends Device {
     registerSetIntensityListener() {
         this.registerCapabilityListener('set_intensity', async (value) => {
             const intensity = parseInt(value, 10);
-            
+
             // Validace
             if (intensity < 6 || intensity > 32) {
                 throw new Error('Intensity musí být mezi 6 a 32 A');
             }
-            
+
             // API volání
             await this.v2cApi.setParameter('Intensity', intensity);
-            
+
+            return true;
+        });
+    }
+
+    registerOnoffListener() {
+        this.registerCapabilityListener('onoff', async (value) => {
+            const paused = !value;
+            await this.v2cApi.setParameter('Paused', paused ? '1' : '0');
+            await this.setCapabilityValue('measure_paused', paused);
+            return true;
+        });
+    }
+
+    registerLockedListener() {
+        this.registerCapabilityListener('locked', async (value) => {
+            await this.v2cApi.setLocked(value ? '1' : '0');
+            await this.setCapabilityValue('measure_locked', value);
             return true;
         });
     }
@@ -263,7 +284,18 @@ class MyDevice extends Device {
 
     async updateCapabilities(deviceData, currentState, chargeEnergy) {
         try {
+            const sessionDuration = await this._computeSessionDuration(currentState);
+
             await Promise.all([
+                // Standardní Homey EV Charger capabilities
+                this.setCapabilityValue('evcharger_charging_state', deviceData.evchargerChargingState),
+                this.setCapabilityValue('evcharger_charging', deviceData.evchargerCharging),
+                this.setCapabilityValue('ev_charging_session_energy', chargeEnergy),
+                this.setCapabilityValue('ev_charging_session_duration', sessionDuration),
+                this.setCapabilityValue('onoff', deviceData.onoff),
+                this.setCapabilityValue('locked', deviceData.measure_locked),
+                this.setCapabilityValue('alarm_generic', deviceData.alarmGeneric),
+                // Původní (legacy) capabilities - zachovány kvůli existujícím flow
                 this.setCapabilityValue('measure_charge_state', deviceData.chargeState),
                 this.setCapabilityValue('measure_charge_power', deviceData.chargePower),
                 this.setCapabilityValue('measure_power', deviceData.chargePower),
@@ -321,16 +353,42 @@ class MyDevice extends Device {
 
     async handleStateChanges(currentState, previousState, deviceData) {
         await this.setStoreValue('previousChargeState', currentState);
-    
+
         if (currentState !== previousState) {
+            await this._handleSessionBoundary(currentState, previousState);
             await this._handleStateChangeTriggers(currentState, previousState);
         }
-    
+
         const previousSlaveError = await this.getStoreValue('previousSlaveError');
         if (deviceData.slaveError !== previousSlaveError) {
-            await this.flowCardManager.triggerSlaveErrorChanged(deviceData.slaveError); 
+            await this.flowCardManager.triggerSlaveErrorChanged(deviceData.slaveError);
             await this.setStoreValue('previousSlaveError', deviceData.slaveError);
         }
+    }
+
+    async _handleSessionBoundary(currentState, previousState) {
+        const wasPlugged = previousState !== CONSTANTS.CHARGE_STATES.DISCONNECTED;
+        const isPlugged = currentState !== CONSTANTS.CHARGE_STATES.DISCONNECTED;
+
+        if (!wasPlugged && isPlugged) {
+            await this.setStoreValue('sessionStartTime', Date.now());
+            this.logger.debug('Zahájena nová nabíjecí session');
+        } else if (wasPlugged && !isPlugged) {
+            await this.unsetStoreValue('sessionStartTime');
+            this.logger.debug('Nabíjecí session ukončena (auto odpojeno)');
+        }
+    }
+
+    async _computeSessionDuration(currentState) {
+        if (currentState === CONSTANTS.CHARGE_STATES.DISCONNECTED) {
+            return 0;
+        }
+        let startTime = await this.getStoreValue('sessionStartTime');
+        if (!startTime) {
+            startTime = Date.now();
+            await this.setStoreValue('sessionStartTime', startTime);
+        }
+        return Math.floor((Date.now() - startTime) / 1000);
     }
     
     async _handleStateChangeTriggers(newState, oldState) {
@@ -456,6 +514,7 @@ class MyDevice extends Device {
             await this.unsetStoreValue('chargingStartEnergy');
             await this.unsetStoreValue('monthlyEnergyData');
             await this.unsetStoreValue('yearlyEnergyData');
+            await this.unsetStoreValue('sessionStartTime');
     
             if (this.logger) {
                 this.logger.log('Zařízení bylo úspěšně odstraněno');

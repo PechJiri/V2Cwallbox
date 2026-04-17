@@ -7,5 +7,8 @@
   },
   "1.5.5": {
     "en": "Widget height fix"
+  },
+  "1.6.0": {
+    "en": "EV Charger compliance: device now appears as EV Charger on Energy tab with charging sessions and standard controls (onoff, locked, alarm)."
   }
 }
