@@ -214,36 +214,31 @@
     {
       "id": "charging-session-ended",
       "title": {
-        "en": "Charging session has ended",
-        "cs": "Nabíjecí session skončila"
+        "en": "Charging session has ended"
       },
       "description": {
-        "en": "Triggers when the charging session ends (car unplugged, or session energy limit reached).",
-        "cs": "Spustí se, když skončí nabíjecí session (auto odpojené, nebo dosažen limit energie session)."
+        "en": "Triggers when the charging session ends (car unplugged, or session energy limit reached)."
       },
       "tokens": [
         {
           "name": "session_energy",
           "type": "number",
           "title": {
-            "en": "Session energy (kWh)",
-            "cs": "Energie session (kWh)"
+            "en": "Session energy (kWh)"
           }
         },
         {
           "name": "session_duration",
           "type": "number",
           "title": {
-            "en": "Session duration (s)",
-            "cs": "Doba session (s)"
+            "en": "Session duration (s)"
           }
         },
         {
           "name": "reason",
           "type": "string",
           "title": {
-            "en": "Reason",
-            "cs": "Důvod"
+            "en": "Reason"
           }
         }
       ]
@@ -2197,31 +2192,26 @@
     {
       "id": "set_max_session_energy",
       "title": {
-        "en": "Charge up to X kWh this session",
-        "cs": "Nabij maximálně X kWh v této session"
+        "en": "Charge up to X kWh this session"
       },
       "titleFormatted": {
-        "en": "Charge up to [[energy]] kWh this session",
-        "cs": "Nabij maximálně [[energy]] kWh v této session"
+        "en": "Charge up to [[energy]] kWh this session"
       },
       "hint": {
-        "en": "When the current plug-in session reaches the set energy, charging will be paused automatically. Limit resets when the car is unplugged. If multiple flows set a limit, the last one wins.",
-        "cs": "Když aktuální session (od připojení auta) dosáhne nastavené energie, nabíjení se automaticky pauzne. Limit se resetuje při odpojení auta. Pokud více flow nastaví limit, platí poslední."
+        "en": "When the current plug-in session reaches the set energy, charging will be paused automatically. Limit resets when the car is unplugged. If multiple flows set a limit, the last one wins."
       },
       "args": [
         {
           "name": "energy",
           "type": "number",
           "title": {
-            "en": "Energy (kWh)",
-            "cs": "Energie (kWh)"
+            "en": "Energy (kWh)"
           },
           "min": 0.1,
           "max": 500,
           "step": 0.1,
           "placeholder": {
-            "en": "20",
-            "cs": "20"
+            "en": "20"
           }
         }
       ]

@@ -11,14 +11,17 @@ module.exports = {
             }
 
             const device = devices[0];
-            const status = {
+            return {
                 chargeState: await device.getCapabilityValue('measure_charge_state'),
+                evChargingState: device.hasCapability('evcharger_charging_state')
+                    ? await device.getCapabilityValue('evcharger_charging_state')
+                    : null,
                 chargePower: await device.getCapabilityValue('measure_charge_power'),
-                chargeEnergy: await device.getCapabilityValue('measure_charge_energy'),
+                chargeEnergy: device.hasCapability('ev_charging_session_energy')
+                    ? (await device.getCapabilityValue('ev_charging_session_energy') || 0)
+                    : (await device.getCapabilityValue('measure_charge_energy') || 0),
                 paused: await device.getCapabilityValue('measure_paused')
             };
-
-            return status;
         } catch (error) {
             console.error('Error in getStatus:', error);
             throw error;
@@ -27,8 +30,6 @@ module.exports = {
 
     async setPaused({ homey, body }) {
         try {
-            console.log('setPaused called with body:', body);
-            
             const driver = homey.drivers.getDriver('v2c-wallbox');
             const devices = await driver.getDevices();
 
@@ -37,15 +38,16 @@ module.exports = {
             }
 
             const device = devices[0];
-            
-            // Volání API wallboxu
-            console.log('Calling setParameter with Paused:', body.paused);
-            await device.v2cApi.setParameter('Paused', body.paused ? '1' : '0');
-            
-            // Nastavení capability
-            console.log('Setting capability measure_paused');
-            await device.setCapabilityValue('measure_paused', body.paused);
-            
+
+            // Preferovat jednotnou cestu přes capability listener (onoff = !paused),
+            // která synchronizuje onoff + measure_paused + API voláním jen na 1 místě.
+            if (device.hasCapability('onoff')) {
+                await device.triggerCapabilityListener('onoff', !body.paused);
+            } else {
+                await device.v2cApi.setParameter('Paused', body.paused ? '1' : '0');
+                await device.setCapabilityValue('measure_paused', body.paused);
+            }
+
             return { success: true };
         } catch (error) {
             console.error('Error in setPaused:', error);
