@@ -1,0 +1,19 @@
+{
+  "name": {
+    "en": "Wallbox Status (Small)",
+    "cs": "Stav Wallboxu (malý)"
+  },
+  "description": {
+    "en": "Compact widget with V2C Wallbox session energy and power",
+    "cs": "Kompaktní widget se session energií a výkonem V2C Wallboxu"
+  },
+  "sizes": [
+    "small"
+  ],
+  "api": {
+    "getStatus": {
+      "path": "/status",
+      "method": "GET"
+    }
+  }
+}
