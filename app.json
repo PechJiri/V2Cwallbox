@@ -2969,9 +2969,7 @@
       "description": {
         "en": "Displays current status of V2C Wallbox"
       },
-      "sizes": [
-        "medium"
-      ],
+      "height": 180,
       "api": {
         "getStatus": {
           "path": "/status",
@@ -2992,9 +2990,7 @@
       "description": {
         "en": "Compact widget with V2C Wallbox session energy and power"
       },
-      "sizes": [
-        "small"
-      ],
+      "height": 120,
       "api": {
         "getStatus": {
           "path": "/status",
