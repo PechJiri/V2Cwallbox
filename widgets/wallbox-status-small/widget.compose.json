@@ -1,0 +1,15 @@
+{
+  "name": {
+    "en": "Wallbox Status (Small)"
+  },
+  "description": {
+    "en": "Compact widget with V2C Wallbox session energy and power"
+  },
+  "height": 120,
+  "api": {
+    "getStatus": {
+      "path": "/status",
+      "method": "GET"
+    }
+  }
+}

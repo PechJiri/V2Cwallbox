@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V2C Wallbox Small</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: var(--homey-background-color);
+            color: var(--homey-text-color);
+            overflow: hidden;
+            font-family: var(--homey-font-family);
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            padding: var(--homey-su-2);
+            box-sizing: border-box;
+            gap: var(--homey-su-1);
+        }
+
+        .state-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--homey-text-color-light);
+            display: inline-block;
+            margin-right: var(--homey-su-1);
+            vertical-align: middle;
+            transition: background-color 0.4s ease;
+        }
+
+        .state-dot.charging { background-color: var(--homey-color-green, #3bb273); }
+        .state-dot.paused   { background-color: var(--homey-color-orange, #e09f3e); }
+        .state-dot.plugged  { background-color: var(--homey-color-blue, #4a90e2); }
+        .state-dot.out      { background-color: var(--homey-text-color-light); }
+
+        .state-label {
+            font-size: var(--homey-font-size-small);
+            color: var(--homey-text-color-light);
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .metrics {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: var(--homey-su-1);
+        }
+
+        .metric {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .metric-value {
+            font-size: var(--homey-font-size-large);
+            font-weight: var(--homey-font-weight-bold);
+            line-height: 1.1;
+        }
+
+        .metric-unit {
+            font-size: var(--homey-font-size-small);
+            color: var(--homey-text-color-light);
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="state-label">
+            <span id="stateDot" class="state-dot out"></span>
+            <span id="stateText">–</span>
+        </div>
+        <div class="metrics">
+            <div class="metric">
+                <span id="kwValue" class="metric-value">0.0</span>
+                <span class="metric-unit">kW</span>
+            </div>
+            <div class="metric">
+                <span id="kwhValue" class="metric-value">0.0</span>
+                <span class="metric-unit">kWh</span>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        let Homey;
+        let isUpdating = false;
+        let updateInterval = 5000;
+
+        function onHomeyReady(_Homey) {
+            Homey = _Homey;
+            init();
+            Homey.ready();
+        }
+
+        const STATE_TEXT = {
+            plugged_out: 'Unplugged',
+            plugged_in: 'Plugged in',
+            plugged_in_charging: 'Charging',
+            plugged_in_paused: 'Paused',
+            plugged_in_discharging: 'Discharging'
+        };
+
+        const STATE_CLASS = {
+            plugged_out: 'out',
+            plugged_in: 'plugged',
+            plugged_in_charging: 'charging',
+            plugged_in_paused: 'paused',
+            plugged_in_discharging: 'charging'
+        };
+
+        function updateUI(status) {
+            const state = status.evChargingState || 'plugged_out';
+            document.getElementById('stateText').textContent = STATE_TEXT[state] || '–';
+            const dot = document.getElementById('stateDot');
+            dot.className = 'state-dot ' + (STATE_CLASS[state] || 'out');
+
+            const kw = (status.chargePower || 0) / 1000;
+            const kwh = status.sessionEnergy || 0;
+            document.getElementById('kwValue').textContent = kw.toFixed(1);
+            document.getElementById('kwhValue').textContent = kwh.toFixed(1);
+        }
+
+        function updateData() {
+            if (isUpdating) return;
+            isUpdating = true;
+            Homey.api('GET', '/status')
+                .then(updateUI)
+                .catch((err) => console.error('Widget fetch error:', err))
+                .finally(() => { isUpdating = false; });
+        }
+
+        function init() {
+            updateData();
+            setInterval(updateData, updateInterval);
+        }
+
+        if (window.Homey) {
+            onHomeyReady(window.Homey);
+        } else {
+            document.addEventListener('homey_ready', function () {
+                onHomeyReady(window.Homey);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -12,6 +12,13 @@ class v2cAPI {
         this.validator = new DataValidator(this.logger);
         this._apiErrorCount = 0;
         this._maxConsecutiveErrors = CONSTANTS.API.MAX_CONSECUTIVE_ERRORS;
+        this._nextAllowedAt = 0;
+    }
+
+    _computeBackoffDelay() {
+        const step = Math.max(0, this._apiErrorCount - 1);
+        const delay = CONSTANTS.BACKOFF.BASE_MS * Math.pow(2, step);
+        return Math.min(delay, CONSTANTS.BACKOFF.MAX_MS);
     }
 
     setLoggingEnabled(enabled) {
@@ -44,57 +51,56 @@ class v2cAPI {
     }
 
     async getData() {
+        // Pokud jsme v backoff okně po předchozí chybě, volání přeskočíme
+        if (this._nextAllowedAt && Date.now() < this._nextAllowedAt) {
+            throw new Error('API_BACKOFF_ACTIVE');
+        }
+
         try {
             const url = `http://${this.ip}${CONSTANTS.API.ENDPOINTS.REALTIME}`;
-            this.logger.debug('Načítání dat', { 
-                url, 
+            this.logger.debug('Načítání dat', {
+                url,
                 errorCount: this._apiErrorCount,
                 maxErrors: this._maxConsecutiveErrors
             });
-    
-            const response = await fetch(url, { 
+
+            const response = await fetch(url, {
                 signal: AbortSignal.timeout(CONSTANTS.API.TIMEOUT)
             });
-            
+
             const data = await response.json();
-            
-            // Reset počítadla chyb při úspěšném požadavku
+
+            // Reset počítadla chyb a backoff okna při úspěšném požadavku
             if (this._apiErrorCount > 0) {
                 this.logger.debug(`Reset počítadla chyb z ${this._apiErrorCount} na 0`);
                 this._apiErrorCount = 0;
             }
-            
-            return data;
-            
-        } catch (error) {
-            // Specifická zpráva pro timeout
-            if (error.name === 'AbortError') {
-                this._apiErrorCount++;
-                this.logger.debug(`API timeout #${this._apiErrorCount} z ${this._maxConsecutiveErrors}`);
-                
-                if (this._apiErrorCount >= this._maxConsecutiveErrors) {
-                    throw new Error('API_MAX_ERRORS_EXCEEDED');
-                }
-                
-                throw new Error('API timeout - zařízení neodpovědělo včas');
-            }
+            this._nextAllowedAt = 0;
 
+            return data;
+
+        } catch (error) {
             this._apiErrorCount++;
-            
-            this.logger.debug(`API chyba #${this._apiErrorCount} z ${this._maxConsecutiveErrors}`, {
-                error: error.message,
-                stack: error.stack
+            const backoff = this._computeBackoffDelay();
+            this._nextAllowedAt = Date.now() + backoff;
+
+            const isTimeout = error.name === 'AbortError';
+            this.logger.debug(`API ${isTimeout ? 'timeout' : 'chyba'} #${this._apiErrorCount} z ${this._maxConsecutiveErrors}, backoff ${backoff}ms`, {
+                error: error.message
             });
-    
+
             if (this._apiErrorCount >= this._maxConsecutiveErrors) {
                 this.logger.error('Překročen limit po sobě jdoucích chyb API', error, {
                     errorCount: this._apiErrorCount,
                     maxErrors: this._maxConsecutiveErrors
                 });
-                
                 throw new Error('API_MAX_ERRORS_EXCEEDED');
             }
-    
+
+            if (isTimeout) {
+                throw new Error('API timeout - zařízení neodpovědělo včas');
+            }
+
             this.logger.error('Selhalo načtení dat', error);
             throw new Error(`Načtení dat selhalo: ${error.message}`);
         }
@@ -107,6 +113,7 @@ class v2cAPI {
     resetErrorCount() {
         const oldCount = this._apiErrorCount;
         this._apiErrorCount = 0;
+        this._nextAllowedAt = 0;
         if (oldCount > 0) {
             this.logger.debug(`Manuální reset počítadla chyb z ${oldCount} na 0`);
         }

@@ -5,9 +5,7 @@
   "description": {
     "en": "Displays current status of V2C Wallbox"
   },
-  "sizes": [
-    "medium"
-  ],
+  "height": 180,
   "api": {
     "getStatus": {
       "path": "/status",

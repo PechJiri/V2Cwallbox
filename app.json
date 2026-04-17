@@ -1,8 +1,8 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.v2c.wallbox",
-  "version": "1.5.5",
-  "compatibility": ">=12.3.0",
+  "version": "1.6.0",
+  "compatibility": ">=12.4.5",
   "sdk": 3,
   "brandColor": "#00275b",
   "platforms": [
@@ -407,6 +407,45 @@
           "ru": "Состояние подключения изменено на [[connection_state]]",
           "ko": "연결 상태가 [[connection_state]]로 변경되었습니다"
         }
+      },
+      {
+        "id": "charging-session-ended",
+        "title": {
+          "en": "Charging session has ended"
+        },
+        "description": {
+          "en": "Triggers when the charging session ends (car unplugged, or session energy limit reached)."
+        },
+        "tokens": [
+          {
+            "name": "session_energy",
+            "type": "number",
+            "title": {
+              "en": "Session energy (kWh)"
+            }
+          },
+          {
+            "name": "session_duration",
+            "type": "number",
+            "title": {
+              "en": "Session duration (s)"
+            }
+          },
+          {
+            "name": "reason",
+            "type": "string",
+            "title": {
+              "en": "Reason"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=v2c-wallbox"
+          }
+        ]
       }
     ],
     "conditions": [
@@ -2516,6 +2555,38 @@
           "ru": "Примечание: Счетчики автоматически сбрасываются в начале каждого периода. Используйте эту карту только для ручных корректировок при необходимости.",
           "ko": "참고: 카운터는 각 기간이 시작될 때 자동으로 재설정됩니다. 필요한 경우에만 수동 수정을 위해 이 카드를 사용하세요."
         }
+      },
+      {
+        "id": "set_max_session_energy",
+        "title": {
+          "en": "Charge up to X kWh this session"
+        },
+        "titleFormatted": {
+          "en": "Charge up to [[energy]] kWh this session"
+        },
+        "hint": {
+          "en": "When the current plug-in session reaches the set energy, charging will be paused automatically. Limit resets when the car is unplugged. If multiple flows set a limit, the last one wins."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=v2c-wallbox"
+          },
+          {
+            "name": "energy",
+            "type": "number",
+            "title": {
+              "en": "Energy (kWh)"
+            },
+            "min": 0.1,
+            "max": 500,
+            "step": 0.1,
+            "placeholder": {
+              "en": "20"
+            }
+          }
+        ]
       }
     ]
   },
@@ -2526,6 +2597,10 @@
         "en": "V2C Wallbox"
       },
       "class": "evcharger",
+      "energy": {
+        "evCharger": true,
+        "meterPowerImportedCapability": "meter_power"
+      },
       "platforms": [
         "local"
       ],
@@ -2533,6 +2608,13 @@
         "lan"
       ],
       "capabilities": [
+        "evcharger_charging_state",
+        "evcharger_charging",
+        "ev_charging_session_energy",
+        "ev_charging_session_duration",
+        "onoff",
+        "locked",
+        "alarm_generic",
         "measure_charge_state",
         "measure_dynamic",
         "measure_charge_power",
@@ -2887,9 +2969,7 @@
       "description": {
         "en": "Displays current status of V2C Wallbox"
       },
-      "sizes": [
-        "medium"
-      ],
+      "height": 180,
       "api": {
         "getStatus": {
           "path": "/status",
@@ -2901,6 +2981,23 @@
         }
       },
       "id": "wallbox-status",
+      "settings": []
+    },
+    "wallbox-status-small": {
+      "name": {
+        "en": "Wallbox Status (Small)"
+      },
+      "description": {
+        "en": "Compact widget with V2C Wallbox session energy and power"
+      },
+      "height": 120,
+      "api": {
+        "getStatus": {
+          "path": "/status",
+          "method": "GET"
+        }
+      },
+      "id": "wallbox-status-small",
       "settings": []
     }
   },
@@ -2954,6 +3051,58 @@
         "ru": "Машина была отключена",
         "ko": "차량 연결이 해제되었습니다"
       }
+    },
+    "ev_charging_session_duration": {
+      "type": "number",
+      "title": {
+        "en": "Charging session duration (s)",
+        "nl": "Duur laadsessie (s)",
+        "da": "Varighed af opladningssession (s)",
+        "de": "Dauer der Ladesitzung (s)",
+        "es": "Duración de la sesión de carga (s)",
+        "fr": "Durée de la session de charge (s)",
+        "it": "Durata sessione di ricarica (s)",
+        "no": "Varighet på ladeøkt (s)",
+        "sv": "Laddningssessionens varaktighet (s)",
+        "pl": "Czas trwania sesji ładowania (s)",
+        "ru": "Длительность сессии зарядки (с)",
+        "ko": "충전 세션 시간 (초)"
+      },
+      "units": {
+        "en": "s"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "decimals": 0,
+      "insights": false,
+      "icon": "/assets/charge_time.svg"
+    },
+    "ev_charging_session_energy": {
+      "type": "number",
+      "title": {
+        "en": "Charging session energy (kWh)",
+        "nl": "Energie laadsessie (kWh)",
+        "da": "Energi i opladningssession (kWh)",
+        "de": "Energie der Ladesitzung (kWh)",
+        "es": "Energía de la sesión de carga (kWh)",
+        "fr": "Énergie de la session de charge (kWh)",
+        "it": "Energia sessione di ricarica (kWh)",
+        "no": "Energi i ladeøkten (kWh)",
+        "sv": "Energi i laddningssession (kWh)",
+        "pl": "Energia sesji ładowania (kWh)",
+        "ru": "Энергия сессии зарядки (кВтч)",
+        "ko": "충전 세션 에너지 (kWh)"
+      },
+      "units": {
+        "en": "kWh"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "decimals": 2,
+      "insights": true,
+      "icon": "/assets/charge_energy.svg"
     },
     "firmware_version": {
       "type": "string",
@@ -3052,6 +3201,189 @@
       "decimals": 0,
       "insights": true,
       "icon": "/assets/battery_power.svg"
+    },
+    "measure_charge_energy": {
+      "type": "number",
+      "title": {
+        "en": "Charged energy (kWh)",
+        "da": "Opladet energi (kWh)",
+        "de": "Geladene Energie (kWh)",
+        "es": "Energía cargada (kWh)",
+        "fr": "Énergie chargée (kWh)",
+        "it": "Energia caricata (kWh)",
+        "no": "Ladet energi (kWh)",
+        "sv": "Laddad energi (kWh)",
+        "pl": "Naładowana energia (kWh)",
+        "ru": "Заряженная энергия (кВтч)",
+        "ko": "충전된 에너지 (kWh)"
+      },
+      "units": {
+        "en": "kWh",
+        "da": "kWh",
+        "de": "kWh",
+        "es": "kWh",
+        "fr": "kWh",
+        "it": "kWh",
+        "no": "kWh",
+        "sv": "kWh",
+        "pl": "kWh",
+        "ru": "кВтч",
+        "ko": "kWh"
+      },
+      "uiComponent": "sensor",
+      "getable": true,
+      "setable": false,
+      "decimals": 1,
+      "insights": true,
+      "icon": "/assets/charge_energy.svg"
+    },
+    "measure_charge_power": {
+      "type": "number",
+      "title": {
+        "en": "Current charging power (W)",
+        "nl": "Huidig laadvermogen (W)",
+        "da": "Aktuel opladningseffekt (W)",
+        "de": "Aktuelle Ladeleistung (W)",
+        "es": "Potencia de carga actual (W)",
+        "fr": "Puissance de charge actuelle (W)",
+        "it": "Potenza di carica attuale (W)",
+        "no": "Nåværende ladekraft (W)",
+        "sv": "Nuvarande laddningseffekt (W)",
+        "pl": "Bieżąca moc ładowania (W)",
+        "ru": "Текущая мощность зарядки (Вт)",
+        "ko": "현재 충전 전력 (W)"
+      },
+      "units": {
+        "en": "W",
+        "nl": "W",
+        "da": "W",
+        "de": "W",
+        "es": "W",
+        "fr": "W",
+        "it": "W",
+        "no": "W",
+        "sv": "W",
+        "pl": "W",
+        "ru": "Вт",
+        "ko": "W"
+      },
+      "uiComponent": "sensor",
+      "getable": true,
+      "setable": false,
+      "decimals": 0,
+      "insights": true,
+      "icon": "/assets/charge_power.svg"
+    },
+    "measure_charge_state": {
+      "type": "enum",
+      "title": {
+        "en": "Charger state",
+        "nl": "Lader status",
+        "da": "Oplader tilstand",
+        "de": "Ladezustand",
+        "es": "Estado del cargador",
+        "fr": "État du chargeur",
+        "it": "Stato del caricatore",
+        "no": "Ladestatus",
+        "sv": "Laddarstatus",
+        "pl": "Stan ładowarki",
+        "ru": "Состояние зарядного устройства",
+        "ko": "충전기 상태"
+      },
+      "values": [
+        {
+          "id": "0",
+          "title": {
+            "en": "EV not connected",
+            "nl": "EV niet verbonden",
+            "da": "EV ikke tilsluttet",
+            "de": "EV nicht verbunden",
+            "es": "EV no conectado",
+            "fr": "EV non connecté",
+            "it": "EV non connesso",
+            "no": "EV ikke tilkoblet",
+            "sv": "EV inte ansluten",
+            "pl": "EV nie podłączony",
+            "ru": "EV не подключен",
+            "ko": "EV 연결되지 않음"
+          }
+        },
+        {
+          "id": "1",
+          "title": {
+            "en": "EV connected",
+            "nl": "EV verbonden",
+            "da": "EV tilsluttet",
+            "de": "EV verbunden",
+            "es": "EV conectado",
+            "fr": "EV connecté",
+            "it": "EV connesso",
+            "no": "EV tilkoblet",
+            "sv": "EV ansluten",
+            "pl": "EV podłączony",
+            "ru": "EV подключен",
+            "ko": "EV 연결됨"
+          }
+        },
+        {
+          "id": "2",
+          "title": {
+            "en": "Charging",
+            "nl": "Opladen",
+            "da": "Oplader",
+            "de": "Laden",
+            "es": "Cargando",
+            "fr": "En charge",
+            "it": "In carica",
+            "no": "Lader",
+            "sv": "Laddar",
+            "pl": "Ładowanie",
+            "ru": "Зарядка",
+            "ko": "충전 중"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": false,
+      "uiComponent": null,
+      "icon": "/assets/charge_state.svg"
+    },
+    "measure_charge_time": {
+      "type": "number",
+      "title": {
+        "en": "Car connected (min)",
+        "nl": "Auto verbonden (min)",
+        "da": "Bil tilsluttet (min)",
+        "de": "Auto verbunden (Min)",
+        "es": "Coche conectado (min)",
+        "fr": "Voiture connectée (min)",
+        "it": "Auto connessa (min)",
+        "no": "Bil tilkoblet (min)",
+        "sv": "Bil ansluten (min)",
+        "pl": "Samochód podłączony (min)",
+        "ru": "Автомобиль подключен (мин)",
+        "ko": "자동차 연결됨 (분)"
+      },
+      "units": {
+        "en": "min",
+        "nl": "min",
+        "da": "min",
+        "de": "min",
+        "es": "min",
+        "fr": "min",
+        "it": "min",
+        "no": "min",
+        "sv": "min",
+        "pl": "min",
+        "ru": "мин",
+        "ko": "분"
+      },
+      "uiComponent": "sensor",
+      "getable": true,
+      "setable": false,
+      "decimals": 0,
+      "insights": true,
+      "icon": "/assets/charge_time.svg"
     },
     "measure_connection_error": {
       "type": "boolean",
@@ -3228,189 +3560,6 @@
       "insights": true,
       "icon": "/assets/house_power.svg"
     },
-    "measure_charge_energy": {
-      "type": "number",
-      "title": {
-        "en": "Charged energy (kWh)",
-        "da": "Opladet energi (kWh)",
-        "de": "Geladene Energie (kWh)",
-        "es": "Energía cargada (kWh)",
-        "fr": "Énergie chargée (kWh)",
-        "it": "Energia caricata (kWh)",
-        "no": "Ladet energi (kWh)",
-        "sv": "Laddad energi (kWh)",
-        "pl": "Naładowana energia (kWh)",
-        "ru": "Заряженная энергия (кВтч)",
-        "ko": "충전된 에너지 (kWh)"
-      },
-      "units": {
-        "en": "kWh",
-        "da": "kWh",
-        "de": "kWh",
-        "es": "kWh",
-        "fr": "kWh",
-        "it": "kWh",
-        "no": "kWh",
-        "sv": "kWh",
-        "pl": "kWh",
-        "ru": "кВтч",
-        "ko": "kWh"
-      },
-      "uiComponent": "sensor",
-      "getable": true,
-      "setable": false,
-      "decimals": 1,
-      "insights": true,
-      "icon": "/assets/charge_energy.svg"
-    },
-    "measure_charge_power": {
-      "type": "number",
-      "title": {
-        "en": "Current charging power (W)",
-        "nl": "Huidig laadvermogen (W)",
-        "da": "Aktuel opladningseffekt (W)",
-        "de": "Aktuelle Ladeleistung (W)",
-        "es": "Potencia de carga actual (W)",
-        "fr": "Puissance de charge actuelle (W)",
-        "it": "Potenza di carica attuale (W)",
-        "no": "Nåværende ladekraft (W)",
-        "sv": "Nuvarande laddningseffekt (W)",
-        "pl": "Bieżąca moc ładowania (W)",
-        "ru": "Текущая мощность зарядки (Вт)",
-        "ko": "현재 충전 전력 (W)"
-      },
-      "units": {
-        "en": "W",
-        "nl": "W",
-        "da": "W",
-        "de": "W",
-        "es": "W",
-        "fr": "W",
-        "it": "W",
-        "no": "W",
-        "sv": "W",
-        "pl": "W",
-        "ru": "Вт",
-        "ko": "W"
-      },
-      "uiComponent": "sensor",
-      "getable": true,
-      "setable": false,
-      "decimals": 0,
-      "insights": true,
-      "icon": "/assets/charge_power.svg"
-    },
-    "measure_charge_state": {
-      "type": "enum",
-      "title": {
-        "en": "Charger state",
-        "nl": "Lader status",
-        "da": "Oplader tilstand",
-        "de": "Ladezustand",
-        "es": "Estado del cargador",
-        "fr": "État du chargeur",
-        "it": "Stato del caricatore",
-        "no": "Ladestatus",
-        "sv": "Laddarstatus",
-        "pl": "Stan ładowarki",
-        "ru": "Состояние зарядного устройства",
-        "ko": "충전기 상태"
-      },
-      "values": [
-        {
-          "id": "0",
-          "title": {
-            "en": "EV not connected",
-            "nl": "EV niet verbonden",
-            "da": "EV ikke tilsluttet",
-            "de": "EV nicht verbunden",
-            "es": "EV no conectado",
-            "fr": "EV non connecté",
-            "it": "EV non connesso",
-            "no": "EV ikke tilkoblet",
-            "sv": "EV inte ansluten",
-            "pl": "EV nie podłączony",
-            "ru": "EV не подключен",
-            "ko": "EV 연결되지 않음"
-          }
-        },
-        {
-          "id": "1",
-          "title": {
-            "en": "EV connected",
-            "nl": "EV verbonden",
-            "da": "EV tilsluttet",
-            "de": "EV verbunden",
-            "es": "EV conectado",
-            "fr": "EV connecté",
-            "it": "EV connesso",
-            "no": "EV tilkoblet",
-            "sv": "EV ansluten",
-            "pl": "EV podłączony",
-            "ru": "EV подключен",
-            "ko": "EV 연결됨"
-          }
-        },
-        {
-          "id": "2",
-          "title": {
-            "en": "Charging",
-            "nl": "Opladen",
-            "da": "Oplader",
-            "de": "Laden",
-            "es": "Cargando",
-            "fr": "En charge",
-            "it": "In carica",
-            "no": "Lader",
-            "sv": "Laddar",
-            "pl": "Ładowanie",
-            "ru": "Зарядка",
-            "ko": "충전 중"
-          }
-        }
-      ],
-      "getable": true,
-      "setable": false,
-      "uiComponent": "sensor",
-      "icon": "/assets/charge_state.svg"
-    },
-    "measure_charge_time": {
-      "type": "number",
-      "title": {
-        "en": "Car connected (min)",
-        "nl": "Auto verbonden (min)",
-        "da": "Bil tilsluttet (min)",
-        "de": "Auto verbunden (Min)",
-        "es": "Coche conectado (min)",
-        "fr": "Voiture connectée (min)",
-        "it": "Auto connessa (min)",
-        "no": "Bil tilkoblet (min)",
-        "sv": "Bil ansluten (min)",
-        "pl": "Samochód podłączony (min)",
-        "ru": "Автомобиль подключен (мин)",
-        "ko": "자동차 연결됨 (분)"
-      },
-      "units": {
-        "en": "min",
-        "nl": "min",
-        "da": "min",
-        "de": "min",
-        "es": "min",
-        "fr": "min",
-        "it": "min",
-        "no": "min",
-        "sv": "min",
-        "pl": "min",
-        "ru": "мин",
-        "ko": "분"
-      },
-      "uiComponent": "sensor",
-      "getable": true,
-      "setable": false,
-      "decimals": 0,
-      "insights": true,
-      "icon": "/assets/charge_time.svg"
-    },
     "measure_intensity": {
       "type": "number",
       "title": {
@@ -3495,7 +3644,7 @@
         "ru": "Зарядное устройство разблокировано",
         "ko": "충전기가 잠금 해제되었습니다"
       },
-      "uiComponent": "sensor",
+      "uiComponent": null,
       "icon": "/assets/locked.svg"
     },
     "measure_monthly_energy": {
@@ -3582,7 +3731,7 @@
         "ru": "Зарядка возобновлена",
         "ko": "충전기가 재개되었습니다"
       },
-      "uiComponent": "toggle",
+      "uiComponent": null,
       "icon": "/assets/paused.svg"
     },
     "measure_power": {

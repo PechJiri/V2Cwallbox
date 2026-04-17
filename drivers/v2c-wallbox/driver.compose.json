@@ -4,6 +4,10 @@
     "en": "V2C Wallbox"
   },
   "class": "evcharger",
+  "energy": {
+    "evCharger": true,
+    "meterPowerImportedCapability": "meter_power"
+  },
   "platforms": [
     "local"
   ],
@@ -11,6 +15,13 @@
     "lan"
   ],
   "capabilities": [
+    "evcharger_charging_state",
+    "evcharger_charging",
+    "ev_charging_session_energy",
+    "ev_charging_session_duration",
+    "onoff",
+    "locked",
+    "alarm_generic",
     "measure_charge_state",
     "measure_dynamic",
     "measure_charge_power",

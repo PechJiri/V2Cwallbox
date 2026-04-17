@@ -72,10 +72,18 @@ class MyDevice extends Device {
             this.registerPauseListener();
 
             // Registrace listeneru pro změnu A
-            this.registerSetIntensityListener()
+            this.registerSetIntensityListener();
+
+            // Standardní Homey listenery (onoff = negace pause, locked)
+            this.registerOnoffListener();
+            this.registerLockedListener();
 
             // Spuštění intervalu pro aktualizaci dat
             this.startDataFetchInterval();
+
+            // Reakce na memwarn od Homey - šetrná reakce na tlak na paměť
+            this._memwarnHandler = this._onMemWarn.bind(this);
+            this.homey.on('memwarn', this._memwarnHandler);
     
             // Inicializační načtení dat pro ověření připojení
             try {
@@ -129,15 +137,32 @@ class MyDevice extends Device {
     registerSetIntensityListener() {
         this.registerCapabilityListener('set_intensity', async (value) => {
             const intensity = parseInt(value, 10);
-            
+
             // Validace
             if (intensity < 6 || intensity > 32) {
                 throw new Error('Intensity musí být mezi 6 a 32 A');
             }
-            
+
             // API volání
             await this.v2cApi.setParameter('Intensity', intensity);
-            
+
+            return true;
+        });
+    }
+
+    registerOnoffListener() {
+        this.registerCapabilityListener('onoff', async (value) => {
+            const paused = !value;
+            await this.v2cApi.setParameter('Paused', paused ? '1' : '0');
+            await this.setCapabilityValue('measure_paused', paused);
+            return true;
+        });
+    }
+
+    registerLockedListener() {
+        this.registerCapabilityListener('locked', async (value) => {
+            await this.v2cApi.setLocked(value ? '1' : '0');
+            await this.setCapabilityValue('measure_locked', value);
             return true;
         });
     }
@@ -215,10 +240,19 @@ class MyDevice extends Device {
     
                 const previousState = await this.getStoreValue('previousChargeState') || CONSTANTS.CHARGE_STATES.DISCONNECTED;
                 const currentState = deviceData.chargeState;
+
+                // Zachyť poslední známou session energy PŘED tím, než ji
+                // EnergyManager při plug-outu resetuje na 0 - potřebujeme ji
+                // jako token pro trigger charging-session-ended.
+                const previousSessionEnergy = this.hasCapability('ev_charging_session_energy')
+                    ? (await this.getCapabilityValue('ev_charging_session_energy') || 0)
+                    : 0;
+
                 const chargeEnergy = await this.energyManager.processEnergyData(deviceData, previousState, currentState);
-    
+
                 await this.updateCapabilities(deviceData, currentState, chargeEnergy);
-                await this.handleStateChanges(currentState, previousState, deviceData);
+                await this.handleStateChanges(currentState, previousState, deviceData, previousSessionEnergy);
+                await this._enforceMaxSessionEnergyLimit(chargeEnergy, currentState);
     
                 const hadError = await this.getCapabilityValue('measure_connection_error');
                 if (hadError) {
@@ -232,6 +266,11 @@ class MyDevice extends Device {
                     await this.setAvailable();
                 }
             } catch (error) {
+                if (error.message === 'API_BACKOFF_ACTIVE') {
+                    // Backoff okno po předchozí chybě - tichý skip
+                    return;
+                }
+
                 if (error.message === 'API_MAX_ERRORS_EXCEEDED') {
                     const hadError = await this.getCapabilityValue('measure_connection_error');
                     if (!hadError) {
@@ -239,18 +278,18 @@ class MyDevice extends Device {
                             errorCount: this.v2cApi.getErrorCount(),
                             maxErrors: this.v2cApi._maxConsecutiveErrors
                         });
-                        
+
                         await this.setCapabilityValue('measure_connection_error', true);
                         await this.flowCardManager.triggerConnectionStateChanged('error');
                     }
-                    
+
                 } else {
                     this.logger.debug('Dočasná chyba API', {
                         error: error.message,
                         errorCount: this.v2cApi.getErrorCount(),
                         isInErrorState: this.v2cApi.isInErrorState()
                     });
-    
+
                     if (this.lastResponse) {
                         this.logger.debug('Použita poslední známá data kvůli chybě API');
                     }
@@ -263,7 +302,18 @@ class MyDevice extends Device {
 
     async updateCapabilities(deviceData, currentState, chargeEnergy) {
         try {
+            const sessionDuration = await this._computeSessionDuration(currentState);
+
             await Promise.all([
+                // Standardní Homey EV Charger capabilities
+                this.setCapabilityValue('evcharger_charging_state', deviceData.evchargerChargingState),
+                this.setCapabilityValue('evcharger_charging', deviceData.evchargerCharging),
+                this.setCapabilityValue('ev_charging_session_energy', chargeEnergy),
+                this.setCapabilityValue('ev_charging_session_duration', sessionDuration),
+                this.setCapabilityValue('onoff', deviceData.onoff),
+                this.setCapabilityValue('locked', deviceData.measure_locked),
+                this.setCapabilityValue('alarm_generic', deviceData.alarmGeneric),
+                // Původní (legacy) capabilities - zachovány kvůli existujícím flow
                 this.setCapabilityValue('measure_charge_state', deviceData.chargeState),
                 this.setCapabilityValue('measure_charge_power', deviceData.chargePower),
                 this.setCapabilityValue('measure_power', deviceData.chargePower),
@@ -319,18 +369,97 @@ class MyDevice extends Device {
         return await this.energyManager.setYearlyEnergy(value);
     }
 
-    async handleStateChanges(currentState, previousState, deviceData) {
+    async handleStateChanges(currentState, previousState, deviceData, previousSessionEnergy = 0) {
         await this.setStoreValue('previousChargeState', currentState);
-    
+
         if (currentState !== previousState) {
+            await this._handleSessionBoundary(currentState, previousState, previousSessionEnergy);
             await this._handleStateChangeTriggers(currentState, previousState);
         }
-    
+
         const previousSlaveError = await this.getStoreValue('previousSlaveError');
         if (deviceData.slaveError !== previousSlaveError) {
-            await this.flowCardManager.triggerSlaveErrorChanged(deviceData.slaveError); 
+            await this.flowCardManager.triggerSlaveErrorChanged(deviceData.slaveError);
             await this.setStoreValue('previousSlaveError', deviceData.slaveError);
         }
+    }
+
+    async _handleSessionBoundary(currentState, previousState, previousSessionEnergy = 0) {
+        const wasPlugged = previousState !== CONSTANTS.CHARGE_STATES.DISCONNECTED;
+        const isPlugged = currentState !== CONSTANTS.CHARGE_STATES.DISCONNECTED;
+
+        if (!wasPlugged && isPlugged) {
+            await this.setStoreValue('sessionStartTime', Date.now());
+            // Nová session - pryč s případným limitem z předchozí session
+            await this.unsetStoreValue('maxSessionEnergyLimit');
+            this.logger.debug('Zahájena nová nabíjecí session');
+        } else if (wasPlugged && !isPlugged) {
+            const startTime = await this.getStoreValue('sessionStartTime');
+            const durationS = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
+            try {
+                await this.flowCardManager.triggerChargingSessionEnded(
+                    previousSessionEnergy,
+                    durationS,
+                    'unplugged'
+                );
+            } catch (error) {
+                this.logger.error('Chyba při vystřelení charging-session-ended', error);
+            }
+            await this.unsetStoreValue('sessionStartTime');
+            await this.unsetStoreValue('maxSessionEnergyLimit');
+            this.logger.debug('Nabíjecí session ukončena (auto odpojeno)', {
+                sessionEnergy: previousSessionEnergy,
+                durationS
+            });
+        }
+    }
+
+    async _enforceMaxSessionEnergyLimit(currentEnergy, currentState) {
+        if (currentState === CONSTANTS.CHARGE_STATES.DISCONNECTED) return;
+
+        const limit = await this.getStoreValue('maxSessionEnergyLimit');
+        if (!limit || currentEnergy < limit) return;
+
+        const alreadyPaused = await this.getCapabilityValue('measure_paused');
+        if (alreadyPaused) {
+            // Už pauznuté (pravděpodobně už jsme limit vynutili); jen cleanup
+            await this.unsetStoreValue('maxSessionEnergyLimit');
+            return;
+        }
+
+        try {
+            await this.v2cApi.setParameter('Paused', '1');
+            await this.setCapabilityValue('measure_paused', true);
+            await this.setCapabilityValue('onoff', false);
+
+            const startTime = await this.getStoreValue('sessionStartTime');
+            const durationS = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
+            await this.flowCardManager.triggerChargingSessionEnded(
+                currentEnergy,
+                durationS,
+                'limit_reached'
+            );
+            await this.unsetStoreValue('maxSessionEnergyLimit');
+
+            this.logger.log('Dosažen limit session energy - nabíjení pauzováno', {
+                currentEnergy,
+                limit
+            });
+        } catch (error) {
+            this.logger.error('Chyba při vynucení limitu session energy', error);
+        }
+    }
+
+    async _computeSessionDuration(currentState) {
+        if (currentState === CONSTANTS.CHARGE_STATES.DISCONNECTED) {
+            return 0;
+        }
+        let startTime = await this.getStoreValue('sessionStartTime');
+        if (!startTime) {
+            startTime = Date.now();
+            await this.setStoreValue('sessionStartTime', startTime);
+        }
+        return Math.floor((Date.now() - startTime) / 1000);
     }
     
     async _handleStateChangeTriggers(newState, oldState) {
@@ -407,6 +536,42 @@ class MyDevice extends Device {
         }
     }
 
+    _onMemWarn(data) {
+        try {
+            if (this.logger) {
+                this.logger.warn('memwarn event - uvolňuji cache', data || {});
+            }
+            this.lastResponse = null;
+            this.lastResponseTime = null;
+        } catch (_) { /* defenzivní - memwarn nesmí shodit app */ }
+    }
+
+    async onUninit() {
+        try {
+            if (this.dataFetchInterval) {
+                this.homey.clearInterval(this.dataFetchInterval);
+                this.dataFetchInterval = null;
+            }
+            if (this._memwarnHandler) {
+                this.homey.removeListener('memwarn', this._memwarnHandler);
+                this._memwarnHandler = null;
+            }
+            if (this.flowCardManager) {
+                await this.flowCardManager.destroy();
+                this.flowCardManager = null;
+            }
+            this.lastResponse = null;
+            this.lastResponseTime = null;
+            this.v2cApi = null;
+            this.energyManager = null;
+            this.dataValidator = null;
+        } catch (error) {
+            if (this.logger) {
+                this.logger.error('Chyba v onUninit', error);
+            }
+        }
+    }
+
     async onAdded() {
         this.logger.log('Nové zařízení bylo přidáno');
     }
@@ -423,7 +588,12 @@ class MyDevice extends Device {
                 this.homey.clearInterval(this.dataFetchInterval);
                 this.dataFetchInterval = null;
             }
-    
+
+            if (this._memwarnHandler) {
+                this.homey.removeListener('memwarn', this._memwarnHandler);
+                this._memwarnHandler = null;
+            }
+
             this.removeAllListeners();
             
             if (this.flowCardManager) {
@@ -456,7 +626,9 @@ class MyDevice extends Device {
             await this.unsetStoreValue('chargingStartEnergy');
             await this.unsetStoreValue('monthlyEnergyData');
             await this.unsetStoreValue('yearlyEnergyData');
-    
+            await this.unsetStoreValue('sessionStartTime');
+            await this.unsetStoreValue('maxSessionEnergyLimit');
+
             if (this.logger) {
                 this.logger.log('Zařízení bylo úspěšně odstraněno');
                 await this.logger.clearHistory();

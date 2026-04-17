@@ -1,0 +1,26 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Charging session duration (s)",
+    "nl": "Duur laadsessie (s)",
+    "da": "Varighed af opladningssession (s)",
+    "de": "Dauer der Ladesitzung (s)",
+    "es": "Duración de la sesión de carga (s)",
+    "fr": "Durée de la session de charge (s)",
+    "it": "Durata sessione di ricarica (s)",
+    "no": "Varighet på ladeøkt (s)",
+    "sv": "Laddningssessionens varaktighet (s)",
+    "pl": "Czas trwania sesji ładowania (s)",
+    "ru": "Длительность сессии зарядки (с)",
+    "ko": "충전 세션 시간 (초)"
+  },
+  "units": {
+    "en": "s"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "decimals": 0,
+  "insights": false,
+  "icon": "/assets/charge_time.svg"
+}
