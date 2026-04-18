@@ -181,9 +181,9 @@
             grid-row: 2;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            justify-content: center;
+            gap: 10px;
             min-width: 0;
-            padding-bottom: 2px;
         }
 
         .metrics {
@@ -254,7 +254,6 @@
         /* Action button - ve sloupci vpravo, těsně pod metrikami */
         .action-btn {
             display: none;
-            margin-top: auto;
             align-self: stretch;
             align-items: center;
             justify-content: center;
@@ -379,11 +378,25 @@
         let isUpdating = false;
         let updateInterval = 5000;
         let intervalId = null;
+        let selectedDeviceId = null;
 
         function onHomeyReady(_Homey) {
             Homey = _Homey;
             init();
             Homey.ready();
+        }
+
+        function resolveSelectedDeviceId() {
+            // Primárně settings typu "devices" vrací pole ID přes getDeviceIds()
+            try {
+                if (typeof Homey.getDeviceIds === 'function') {
+                    const ids = Homey.getDeviceIds();
+                    if (Array.isArray(ids) && ids.length > 0) return ids[0];
+                }
+            } catch (e) {
+                console.warn('getDeviceIds unavailable', e);
+            }
+            return null;
         }
 
         // Priority: error > disconnected (no car) > paused > charging > connected (ready)
@@ -459,7 +472,10 @@
             if (isUpdating) return;
             isUpdating = true;
             try {
-                const result = await Homey.api('GET', '/status');
+                const path = selectedDeviceId
+                    ? '/status?deviceId=' + encodeURIComponent(selectedDeviceId)
+                    : '/status';
+                const result = await Homey.api('GET', path);
                 updateUI(result);
             } catch (error) {
                 console.error('Error fetching wallbox status:', error);
@@ -480,10 +496,16 @@
                         Homey.hapticFeedback();
                     }
 
-                    const current = await Homey.api('GET', '/status');
+                    const statusPath = selectedDeviceId
+                        ? '/status?deviceId=' + encodeURIComponent(selectedDeviceId)
+                        : '/status';
+                    const current = await Homey.api('GET', statusPath);
                     const newPaused = !current.paused;
 
-                    await Homey.api('POST', '/paused', { paused: newPaused });
+                    await Homey.api('POST', '/paused', {
+                        paused: newPaused,
+                        deviceId: selectedDeviceId
+                    });
 
                     await new Promise(r => setTimeout(r, 400));
                     await updateData();
@@ -503,6 +525,7 @@
         }
 
         function init() {
+            selectedDeviceId = resolveSelectedDeviceId();
             setupControlButton();
             loadUpdateInterval();
             updateData();

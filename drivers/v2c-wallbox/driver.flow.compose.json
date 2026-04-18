@@ -2,6 +2,7 @@
   "triggers": [
     {
       "id": "car-connected",
+      "deprecated": true,
       "title": {
         "en": "Car is connected",
         "nl": "Auto is verbonden",
@@ -33,6 +34,7 @@
     },
     {
       "id": "car-disconnected",
+      "deprecated": true,
       "title": {
         "en": "Car is disconnected",
         "nl": "Auto is losgekoppeld",
@@ -215,6 +217,7 @@
   "conditions": [
     {
       "id": "car-connected-condition",
+      "deprecated": true,
       "title": {
         "en": "Car is connected",
         "nl": "Auto is verbonden",
@@ -246,6 +249,7 @@
     },
     {
       "id": "car-is-charging",
+      "deprecated": true,
       "title": {
         "en": "Car is charging",
         "nl": "Auto wordt opgeladen",
@@ -409,6 +413,7 @@
     },
     {
       "id": "charging-is-paused",
+      "deprecated": true,
       "title": {
         "en": "Charging is paused",
         "nl": "Opladen is gepauzeerd",
@@ -441,6 +446,7 @@
     },
     {
       "id": "charging-is-not-paused",
+      "deprecated": true,
       "title": {
         "en": "Charging is not paused",
         "nl": "Opladen is niet gepauzeerd",
@@ -607,6 +613,7 @@
   "actions": [
     {
       "id": "set_paused",
+      "deprecated": true,
       "args": [
         {
           "name": "paused",
@@ -694,6 +701,7 @@
     },
     {
       "id": "set_locked",
+      "deprecated": true,
       "args": [
         {
           "name": "locked",

@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.v2c.wallbox",
-  "version": "1.6.0",
+  "version": "2.0.0",
   "compatibility": ">=12.4.5",
   "sdk": 3,
   "brandColor": "#00275b",
@@ -166,6 +166,7 @@
     "triggers": [
       {
         "id": "car-connected",
+        "deprecated": true,
         "title": {
           "en": "Car is connected",
           "nl": "Auto is verbonden",
@@ -204,6 +205,7 @@
       },
       {
         "id": "car-disconnected",
+        "deprecated": true,
         "title": {
           "en": "Car is disconnected",
           "nl": "Auto is losgekoppeld",
@@ -412,6 +414,7 @@
     "conditions": [
       {
         "id": "car-connected-condition",
+        "deprecated": true,
         "title": {
           "en": "Car is connected",
           "nl": "Auto is verbonden",
@@ -450,6 +453,7 @@
       },
       {
         "id": "car-is-charging",
+        "deprecated": true,
         "title": {
           "en": "Car is charging",
           "nl": "Auto wordt opgeladen",
@@ -630,6 +634,7 @@
       },
       {
         "id": "charging-is-paused",
+        "deprecated": true,
         "title": {
           "en": "Charging is paused",
           "nl": "Opladen is gepauzeerd",
@@ -668,6 +673,7 @@
       },
       {
         "id": "charging-is-not-paused",
+        "deprecated": true,
         "title": {
           "en": "Charging is not paused",
           "nl": "Opladen is niet gepauzeerd",
@@ -917,6 +923,7 @@
     "actions": [
       {
         "id": "set_paused",
+        "deprecated": true,
         "args": [
           {
             "type": "device",
@@ -1009,6 +1016,7 @@
       },
       {
         "id": "set_locked",
+        "deprecated": true,
         "args": [
           {
             "type": "device",
@@ -2533,7 +2541,6 @@
         "lan"
       ],
       "capabilities": [
-        "measure_charge_state",
         "measure_dynamic",
         "measure_charge_power",
         "measure_charge_energy",
@@ -2541,7 +2548,7 @@
         "measure_intensity",
         "measure_monthly_energy",
         "measure_yearly_energy",
-        "measure_locked",
+        "locked",
         "timer_state",
         "measure_slave_error",
         "measure_house_power",
@@ -2552,7 +2559,6 @@
         "firmware_version",
         "signal_status",
         "measure_voltage_installation",
-        "measure_paused",
         "measure_connection_error",
         "measure_power",
         "meter_power",
@@ -2894,6 +2900,13 @@
         "en": "Displays current status of V2C Wallbox"
       },
       "height": 180,
+      "devices": {
+        "type": "app",
+        "singular": true,
+        "filter": {
+          "class": "evcharger"
+        }
+      },
       "api": {
         "getStatus": {
           "path": "/status",
@@ -3375,7 +3388,7 @@
       ],
       "getable": true,
       "setable": false,
-      "uiComponent": "sensor",
+      "uiComponent": null,
       "icon": "/assets/charge_state.svg"
     },
     "measure_charge_time": {
@@ -3499,7 +3512,7 @@
         "ru": "Зарядное устройство разблокировано",
         "ko": "충전기가 잠금 해제되었습니다"
       },
-      "uiComponent": "sensor",
+      "uiComponent": null,
       "icon": "/assets/locked.svg"
     },
     "measure_monthly_energy": {
@@ -3586,7 +3599,7 @@
         "ru": "Зарядка возобновлена",
         "ko": "충전기가 재개되었습니다"
       },
-      "uiComponent": "toggle",
+      "uiComponent": null,
       "icon": "/assets/paused.svg"
     },
     "measure_power": {

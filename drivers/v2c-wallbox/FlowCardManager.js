@@ -20,21 +20,21 @@ class FlowCardManager {
         }
 
         // Definice základních triggerů s použitím konstant
+        // Pozn.: car-* triggery nemají runListener — jsou spouštěny explicitně
+        // z device._handleStateChangeTriggers(). `capability`/`comparison` pole
+        // zde nejsou runtime použita, slouží jen jako dokumentace.
         this._basicTriggers = [
             {
                 id: 'car-connected',
-                capability: 'measure_charge_state',
-                comparison: (state) => state === CONSTANTS.CHARGE_STATES.CONNECTED
+                deprecated: true
             },
             {
                 id: 'car-disconnected',
-                capability: 'measure_charge_state',
-                comparison: (state) => state === CONSTANTS.CHARGE_STATES.DISCONNECTED
+                deprecated: true
             },
             {
                 id: 'car-start-charging',
-                capability: 'measure_charge_state',
-                comparison: (state) => state === CONSTANTS.CHARGE_STATES.CHARGING
+                deprecated: true
             },
             {
                 id: 'slave_error_changed',
@@ -54,24 +54,27 @@ class FlowCardManager {
         // Definice základních podmínek s použitím konstant
         this._basicConditions = [
             {
+                // Deprecated — systémová evcharger_charging_state má auto-generated "is plugged_in" condition
                 id: 'car-connected-condition',
-                capability: 'measure_charge_state',
-                comparison: (state) => state === CONSTANTS.CHARGE_STATES.CONNECTED
+                source: 'internalChargeState',
+                comparison: (state) => state === CONSTANTS.CHARGE_STATES.CONNECTED || state === CONSTANTS.CHARGE_STATES.CHARGING
             },
             {
+                // Deprecated — systémová evcharger_charging má auto-generated "is charging" condition
                 id: 'car-is-charging',
-                capability: 'measure_charge_state',
+                source: 'internalChargeState',
                 comparison: (state) => state === CONSTANTS.CHARGE_STATES.CHARGING
             },
             {
+                // evcharger_charging je invertovaně — true znamená "nabíjí/chce nabíjet", false = "pauzováno"
                 id: 'charging-is-paused',
-                capability: 'measure_paused',
-                comparison: (state) => state === true
+                capability: 'evcharger_charging',
+                comparison: (state) => state === false
             },
             {
                 id: 'charging-is-not-paused',
-                capability: 'measure_paused',
-                comparison: (state) => state === false
+                capability: 'evcharger_charging',
+                comparison: (state) => state === true
             },
             {
                 id: 'power-greater-than',
@@ -199,13 +202,20 @@ class FlowCardManager {
                         return condition.comparison(args);
                     });
                 } else {
-                    // Původní handler pro ostatní podmínky
+                    // Generický handler — data bere buď z capability, nebo z interního state getteru
+                    // (podle source fieldu) pro deprekované karty po odstranění measure_charge_state
+                    const conditionRef = condition;
                     card.registerRunListener(async (args) => {
-                        const currentValue = await this.device.getCapabilityValue(condition.capability);
-                        if (args.value !== undefined) {
-                            return condition.comparison(currentValue, args.value);
+                        let currentValue;
+                        if (conditionRef.source === 'internalChargeState') {
+                            currentValue = this.device.getInternalChargeState();
+                        } else {
+                            currentValue = await this.device.getCapabilityValue(conditionRef.capability);
                         }
-                        return condition.comparison(currentValue); 
+                        if (args.value !== undefined) {
+                            return conditionRef.comparison(currentValue, args.value);
+                        }
+                        return conditionRef.comparison(currentValue);
                     });
                 }
      
@@ -235,17 +245,21 @@ class FlowCardManager {
                     handler: async (args) => {
                         const paused = args.paused === '1';
                         await this.device.v2cApi.setParameter('Paused', paused ? '1' : '0');
-                        await this.device.setCapabilityValue('measure_paused', paused);
+                        // evcharger_charging je invertem paused (true = nabíjí)
+                        await this.device.setCapabilityValue('evcharger_charging', !paused);
                         if (this.logger) {
-                            this.logger.debug('Capability measure_paused nastavena', { paused });
+                            this.logger.debug('Capability evcharger_charging nastavena', { paused, charging: !paused });
                         }
                         return true;
                     }
                 },
                 {
                     id: 'set_locked',
+                    // Deprecated: použij systémovou capability 'locked' a její flow karty.
+                    // Zachováváme handler kvůli zpětné kompatibilitě existujících Flow u uživatelů.
                     handler: async (args) => {
-                        await this.device.v2cApi.setLocked(args.locked);
+                        const locked = args.locked === '1';
+                        await this.device.triggerCapabilityListener('locked', locked);
                         return true;
                     }
                 },

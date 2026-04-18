@@ -11,7 +11,6 @@
     "lan"
   ],
   "capabilities": [
-    "measure_charge_state",
     "measure_dynamic",
     "measure_charge_power",
     "measure_charge_energy",
@@ -19,7 +18,7 @@
     "measure_intensity",
     "measure_monthly_energy",
     "measure_yearly_energy",
-    "measure_locked",
+    "locked",
     "timer_state",
     "measure_slave_error",
     "measure_house_power",
@@ -30,7 +29,6 @@
     "firmware_version",
     "signal_status",
     "measure_voltage_installation",
-    "measure_paused",
     "measure_connection_error",
     "measure_power",
     "meter_power",

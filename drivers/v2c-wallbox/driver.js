@@ -4,6 +4,7 @@ const { Driver } = require('homey');
 const Logger = require('../../lib/Logger');
 const { v2cAPI } = require('./api');
 const CONSTANTS = require('../../lib/constants');
+const { validateWallboxIP } = require('../../lib/ip_validator');
 
 class V2CWallboxDriver extends Driver {
     /**
@@ -45,7 +46,18 @@ class V2CWallboxDriver extends Driver {
      */
     async onPairListDevices() {
         this.logger.debug("Spuštěno hledání zařízení");
-    
+
+        // Validace IP adresy — povolujeme jen privátní / loopback rozsahy
+        // (ochrana proti SSRF přes Homey na veřejné cíle nebo jiné lokální sítě)
+        const ipCheck = validateWallboxIP(this.settingsData.ip);
+        if (!ipCheck.valid) {
+            this.logger.warn('Neplatná IP adresa při párování', {
+                ip: this.settingsData.ip,
+                reason: ipCheck.reason
+            });
+            throw new Error(this.homey.__('pair.v2cwallbox.invalid_ip') || 'Invalid IP address — only private network IPv4 addresses are allowed');
+        }
+
         try {
             const v2cApi = new v2cAPI(this.homey, this.settingsData.ip);
             const baseSession = await v2cApi.getData();
@@ -90,6 +102,13 @@ class V2CWallboxDriver extends Driver {
      */
     async onCheck(data) {
         this.logger.debug("Kontrola připojení", { data });
+
+        const ipCheck = validateWallboxIP(data.ip);
+        if (!ipCheck.valid) {
+            this.logger.warn('Neplatná IP v onCheck', { ip: data.ip, reason: ipCheck.reason });
+            return this.homey.__('pair.v2cwallbox.invalid_ip') || 'Invalid IP address';
+        }
+
         const v2cApi = new v2cAPI(this.homey, data.ip);
 
         try {

@@ -78,7 +78,7 @@ Energy consumption statistics (measure_charge_energy, measure_monthly_energy, me
 House power monitoring (measure_house_power)
 Solar production tracking (measure_fv_power)
 Battery status (measure_battery_power)
-Charging control (measure_paused, measure_locked)
+Charging control (evcharger_charging, locked)
 Dynamic charging management (measure_dynamic, min_intensity, max_intensity)
 System monitoring (firmware_version, signal_status, measure_slave_error)
 

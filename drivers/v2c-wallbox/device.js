@@ -8,11 +8,17 @@ const DataValidator = require('../../lib/DataValidator');
 const Logger = require('../../lib/Logger');
 const EnergyManager = require('../../lib/EnergyManager');
 const CONSTANTS = require('../../lib/constants');
+const { validateWallboxIP } = require('../../lib/ip_validator');
 
 class MyDevice extends Device {
     _isProcessing = false;
     dataFetchInterval = null;
     _currentInterval = CONSTANTS.INTERVALS.DISCONNECTED;
+    _consecutivePollErrors = 0;
+    // Interní cache V2C stavu ('0'/'1'/'2'). Už není exponováno jako Homey capability
+    // (nahrazeno systémovou evcharger_charging_state). Potřeba pro polling interval
+    // a pro runtime handlery deprekovaných flow karet.
+    _lastChargeState = CONSTANTS.CHARGE_STATES.DISCONNECTED;
 
     async onInit() {
         try {
@@ -54,12 +60,19 @@ class MyDevice extends Device {
     
             this.dataValidator = new DataValidator(this.logger);
     
-            // Kontrola IP adresy
+            // Kontrola a validace IP adresy — povolujeme jen privátní rozsahy
             const ip = this.getSetting('v2c_ip');
             if (!ip) {
                 this.logger.error('IP adresa není nastavena');
                 await this.setCapabilityValue('measure_connection_error', true);
                 return this.setUnavailable('IP adresa není nastavena');
+            }
+
+            const ipCheck = validateWallboxIP(ip);
+            if (!ipCheck.valid) {
+                this.logger.error('Neplatná IP adresa v settings', { ip, reason: ipCheck.reason });
+                await this.setCapabilityValue('measure_connection_error', true);
+                return this.setUnavailable('Invalid IP — only private network addresses allowed');
             }
     
             // Inicializace API
@@ -76,14 +89,15 @@ class MyDevice extends Device {
             // Nastavení capabilities
             await this.initializeCapabilities();
     
-            // Registrace listeneru pro tlačítko pause
-            this.registerPauseListener();
-
             // Registrace listeneru pro změnu A
             this.registerSetIntensityListener()
 
-            // Registrace listeneru pro Homey SDK evcharger_charging (Energy tab)
+            // Registrace listeneru pro Homey SDK evcharger_charging
+            // (nahrazuje bývalou measure_paused; Homey Energy tab, Flow karty, Insights)
             this.registerEvChargerChargingListener();
+
+            // Registrace listeneru pro systémovou capability locked
+            this.registerLockedListener();
 
             // Spuštění intervalu pro aktualizaci dat
             this.startDataFetchInterval();
@@ -153,20 +167,6 @@ class MyDevice extends Device {
         });
     }
 
-    registerPauseListener() {
-        this.registerCapabilityListener('measure_paused', async (value) => {
-            try {
-                this.logger.debug('Změna stavu pause', { novýStav: value });
-                await this.v2cApi.setParameter('Paused', value ? '1' : '0');
-                await this.setCapabilityValue('measure_paused', value);
-                return true;
-            } catch (error) {
-                this.logger.error('Selhalo nastavení stavu pause', error);
-                throw new Error('Selhalo nastavení stavu pause');
-            }
-        });
-    }
-
     registerSetIntensityListener() {
         this.registerCapabilityListener('set_intensity', async (value) => {
             const intensity = parseInt(value, 10);
@@ -184,18 +184,30 @@ class MyDevice extends Device {
     }
 
     registerEvChargerChargingListener() {
-        // Homey SDK capability — inverzní k measure_paused:
-        // true  = start / resume charging (Paused = 0)
-        // false = pause charging          (Paused = 1)
+        // Homey SDK systémová capability — mapuje na V2C Paused flag (invertovaně):
+        // true  = uživatel chce nabíjet   → Paused = 0
+        // false = uživatel pauzuje        → Paused = 1
         this.registerCapabilityListener('evcharger_charging', async (value) => {
             try {
                 this.logger.debug('Změna evcharger_charging', { novýStav: value });
                 await this.v2cApi.setParameter('Paused', value ? '0' : '1');
-                await this.setCapabilityValue('measure_paused', !value);
                 return true;
             } catch (error) {
                 this.logger.error('Selhalo nastavení evcharger_charging', error);
                 throw new Error('Selhalo nastavení stavu nabíjení');
+            }
+        });
+    }
+
+    registerLockedListener() {
+        this.registerCapabilityListener('locked', async (value) => {
+            try {
+                this.logger.debug('Změna locked', { novýStav: value });
+                await this.v2cApi.setLocked(value ? '1' : '0');
+                return true;
+            } catch (error) {
+                this.logger.error('Selhalo nastavení locked', error);
+                throw new Error('Selhalo nastavení stavu zámku');
             }
         });
     }
@@ -217,7 +229,7 @@ class MyDevice extends Device {
                 this.logger.debug('Interval změněn podle stavu nabíjení', {
                     starýInterval: `${this._currentInterval / 1000}s`,
                     novýInterval: `${requiredInterval / 1000}s`,
-                    stav: this.getCapabilityValue('measure_charge_state'),
+                    stav: this._lastChargeState,
                     změna: `${this._currentInterval / 1000}s -> ${requiredInterval / 1000}s`
                 });
                 
@@ -238,17 +250,31 @@ class MyDevice extends Device {
     }
 
     _getRequiredInterval() {
-        const chargeState = this.getCapabilityValue('measure_charge_state');
-        
+        const chargeState = this._lastChargeState;
+
+        let baseInterval;
         switch(chargeState) {
             case CONSTANTS.CHARGE_STATES.CHARGING: // '2'
-                return CONSTANTS.INTERVALS.CHARGING;
+                baseInterval = CONSTANTS.INTERVALS.CHARGING;
+                break;
             case CONSTANTS.CHARGE_STATES.CONNECTED: // '1'
-                return CONSTANTS.INTERVALS.CONNECTED;
+                baseInterval = CONSTANTS.INTERVALS.CONNECTED;
+                break;
             case CONSTANTS.CHARGE_STATES.DISCONNECTED: // '0'
             default:
-                return CONSTANTS.INTERVALS.DISCONNECTED;
+                baseInterval = CONSTANTS.INTERVALS.DISCONNECTED;
         }
+
+        // Exponential backoff při po sobě jdoucích chybách.
+        // 5s → 15s → 45s → 135s → 300s (cap). Reset při první úspěšné odpovědi.
+        if (this._consecutivePollErrors === 0) {
+            return baseInterval;
+        }
+        const backoff = baseInterval * Math.pow(
+            CONSTANTS.INTERVALS.BACKOFF_MULTIPLIER,
+            this._consecutivePollErrors
+        );
+        return Math.min(backoff, CONSTANTS.INTERVALS.BACKOFF_MAX);
     }
     
     async getProductionData() {
@@ -268,9 +294,17 @@ class MyDevice extends Device {
                     throw new Error('Data z API jsou neplatná.');
                 }
     
+                // Úspěšný fetch — reset error counteru a backoffu
+                if (this._consecutivePollErrors > 0) {
+                    this.logger.debug('Polling error counter reset', {
+                        předchozí: this._consecutivePollErrors
+                    });
+                    this._consecutivePollErrors = 0;
+                }
+
                 this.lastResponse = baseSession;
                 this.lastResponseTime = now;
-    
+
                 const previousState = await this.getStoreValue('previousChargeState') || CONSTANTS.CHARGE_STATES.DISCONNECTED;
                 const currentState = deviceData.chargeState;
                 const chargeEnergy = await this.energyManager.processEnergyData(deviceData, previousState, currentState);
@@ -290,25 +324,29 @@ class MyDevice extends Device {
                     await this.setAvailable();
                 }
             } catch (error) {
+                // Increment error counteru pro exponential backoff pollingu
+                this._consecutivePollErrors++;
+
                 if (error.message === 'API_MAX_ERRORS_EXCEEDED') {
                     const hadError = await this.getCapabilityValue('measure_connection_error');
                     if (!hadError) {
                         this.logger.error('API není dostupné po více pokusech', {
                             errorCount: this.v2cApi.getErrorCount(),
-                            maxErrors: this.v2cApi._maxConsecutiveErrors
+                            maxErrors: this.v2cApi._maxConsecutiveErrors,
+                            pollBackoffCount: this._consecutivePollErrors
                         });
-                        
+
                         await this.setCapabilityValue('measure_connection_error', true);
                         await this.flowCardManager.triggerConnectionStateChanged('error');
                     }
-                    
                 } else {
                     this.logger.debug('Dočasná chyba API', {
                         error: error.message,
                         errorCount: this.v2cApi.getErrorCount(),
+                        pollBackoffCount: this._consecutivePollErrors,
                         isInErrorState: this.v2cApi.isInErrorState()
                     });
-    
+
                     if (this.lastResponse) {
                         this.logger.debug('Použita poslední známá data kvůli chybě API');
                     }
@@ -321,6 +359,10 @@ class MyDevice extends Device {
 
     async updateCapabilities(deviceData, currentState, chargeEnergy) {
         try {
+            // Aktualizace interní proměnné — využívá se v _getRequiredInterval
+            // a v FlowCardManager pro deprekované condition karty (car-connected, car-is-charging)
+            this._lastChargeState = currentState;
+
             // Lifetime energie pro Homey Energy tab (monotónní, nikdy neklesá při odpojení)
             const lifetimeEnergy = this.energyManager.getLifetimeEnergy();
 
@@ -330,23 +372,18 @@ class MyDevice extends Device {
                 : Promise.resolve();
 
             await Promise.all([
-                this.setCapabilityValue('measure_charge_state', deviceData.chargeState),
                 this.setCapabilityValue('measure_charge_power', deviceData.chargePower),
                 this.setCapabilityValue('measure_power', deviceData.chargePower),
                 this.setCapabilityValue('measure_voltage_installation', deviceData.voltageInstallation),
                 this.setCapabilityValue('measure_slave_error', deviceData.slaveError),
                 this.setCapabilityValue('measure_charge_time', Math.floor(deviceData.chargeTime / 60)),
-                this.setCapabilityValue('measure_paused', deviceData.paused),
-                this.setCapabilityValue('measure_locked', deviceData.measure_locked),
+                this.setCapabilityValue('locked', deviceData.locked),
                 this.setCapabilityValue('measure_intensity', deviceData.intensity),
                 this.setCapabilityValue('measure_dynamic', deviceData.dynamic),
-                this.setCapabilityValue('car_connected', [
-                    CONSTANTS.CHARGE_STATES.CONNECTED,
-                    CONSTANTS.CHARGE_STATES.CHARGING
-                ].includes(currentState)),
                 this.setCapabilityValue('measure_charge_energy', chargeEnergy),
                 this.setCapabilityValue('meter_power', lifetimeEnergy),
-                safeSet('evcharger_charging', currentState === CONSTANTS.CHARGE_STATES.CHARGING),
+                // evcharger_charging = user intent (inverzní k V2C Paused flagu); nahrazuje bývalé measure_paused
+                safeSet('evcharger_charging', !deviceData.paused),
                 safeSet('evcharger_charging_state', this._mapEvChargerState(currentState, deviceData.paused)),
                 this.setCapabilityValue('measure_house_power', deviceData.housePower),
                 this.setCapabilityValue('measure_fv_power', deviceData.fvPower),
@@ -371,6 +408,12 @@ class MyDevice extends Device {
         }
     }
     
+    // Veřejné API pro FlowCardManager — interní V2C chargeState ('0'/'1'/'2')
+    // již není exponován jako Homey capability, flow handlery ho čtou odtud
+    getInternalChargeState() {
+        return this._lastChargeState || CONSTANTS.CHARGE_STATES.DISCONNECTED;
+    }
+
     _mapEvChargerState(chargeState, paused) {
         switch (chargeState) {
             case CONSTANTS.CHARGE_STATES.CHARGING:
@@ -468,9 +511,14 @@ class MyDevice extends Device {
                         }
                         break;
                         
-                    case 'v2c_ip':
+                    case 'v2c_ip': {
+                        const ipCheck = validateWallboxIP(newSettings.v2c_ip);
+                        if (!ipCheck.valid) {
+                            throw new Error(`Invalid IP address (${ipCheck.reason}) — only private network IPv4 addresses are allowed`);
+                        }
                         this.v2cApi = new v2cAPI(this.homey, newSettings.v2c_ip);
                         break;
+                    }
                         
                     case 'enable_logging':
                         this.logger.setEnabled(newSettings.enable_logging);
