@@ -5,219 +5,504 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>V2C Wallbox Status</title>
     <style>
-        body {
+        :root {
+            /* V2C brand palette — fixní, ne-závislá na módu */
+            --v2c-navy: #00275b;
+            --v2c-navy-soft: #1a3d72;
+
+            /* Stavové akcenty (shodné v obou módech — slouží jako status indikátory) */
+            --v2c-green: #6DD400;
+            --v2c-green-soft: rgba(109, 212, 0, 0.18);
+            --v2c-blue: #00A3FF;
+            --v2c-blue-soft: rgba(0, 163, 255, 0.15);
+            --v2c-amber: #FF9500;
+            --v2c-amber-soft: rgba(255, 149, 0, 0.15);
+            --v2c-grey: #9AA0A6;
+            --v2c-grey-soft: rgba(154, 160, 166, 0.15);
+            --v2c-red: #E5484D;
+            --v2c-red-soft: rgba(229, 72, 77, 0.15);
+
+            /* Defaultní stavové akcenty — přepíšou je .state-* třídy */
+            --accent: var(--v2c-grey);
+            --accent-soft: var(--v2c-grey-soft);
+
+            /* Brand barvy pro text — přepisujeme v dark mode */
+            --brand-text: var(--v2c-navy);
+            --brand-dot: var(--v2c-navy);
+
+            /* Tlačítko — navy jako primary v obou módech (konzistence brandu) */
+            --btn-bg: var(--v2c-navy);
+            --btn-bg-hover: var(--v2c-navy-soft);
+            --btn-text: #FFFFFF;
+        }
+
+        /* Dark mode override — .homey-dark-mode třída přichází od Homey runtime */
+        .homey-dark-mode,
+        .homey-dark-mode body {
+            --brand-text: #FFFFFF;
+            --brand-dot: #FFFFFF;
+            --btn-bg: #FFFFFF;
+            --btn-bg-hover: rgba(255, 255, 255, 0.85);
+            --btn-text: var(--v2c-navy);
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
             margin: 0;
             padding: 0;
-            background-color: var(--homey-background-color);
+            width: 100%;
+            height: 100%;
+            background: transparent;
             color: var(--homey-text-color);
+            font-family: var(--homey-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+            -webkit-font-smoothing: antialiased;
             overflow: hidden;
         }
 
         #container {
-            display: flex;
             width: 100%;
             height: 100%;
-            background-color: var(--homey-background-color);
-            border-radius: var(--homey-border-radius-default);
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            grid-template-rows: auto 1fr;
+            gap: var(--homey-su-2, 8px);
+            padding: var(--homey-su-3, 12px);
+            border-radius: var(--homey-border-radius-default, 12px);
+            background: var(--homey-background-color);
+            position: relative;
+            overflow: hidden;
         }
 
-        #imageContainer {
-            flex: 1;
+        /* Header row - přes obě kolony */
+        .header {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: var(--homey-font-weight-bold, 700);
+            letter-spacing: 1.2px;
+            color: var(--brand-text);
+            text-transform: uppercase;
+        }
+
+        .brand-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--brand-dot);
+        }
+
+        .state-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            font-size: 11px;
+            font-weight: var(--homey-font-weight-medium, 600);
+            color: var(--accent);
+            white-space: nowrap;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .state-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+        }
+
+        /* Device panel — obrázek + glow */
+        .device-panel {
+            grid-column: 1;
+            grid-row: 2;
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: transparent;
-            border-radius: var(--homey-border-radius-default) 0 0 var(--homey-border-radius-default);
+            padding: 2px;
+        }
+
+        .device-glow {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle at center,
+                var(--accent-soft) 0%,
+                transparent 65%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .state-charging .device-glow {
+            opacity: 1;
+            animation: glow-pulse 2.2s ease-in-out infinite;
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% {
+                opacity: 0.55;
+                transform: scale(0.95);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
         }
 
         #deviceImage {
-            max-width: 95%;
-            max-height: 95%;
+            max-width: 100%;
+            max-height: 100%;
             object-fit: contain;
+            position: relative;
+            z-index: 1;
+            transition: filter 0.3s ease;
         }
 
-        #infoContainer {
-            flex: 1;
+        .state-charging #deviceImage {
+            filter: drop-shadow(0 0 8px var(--v2c-green-soft));
+        }
+
+        /* Info panel */
+        .info-panel {
+            grid-column: 2;
+            grid-row: 2;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: var(--homey-su-2);
+            gap: 8px;
+            min-width: 0;
+            padding-bottom: 2px;
         }
 
-        .label {
-            font-size: var(--homey-font-size-small);
+        .metrics {
+            display: flex;
+            gap: 12px;
+            align-items: baseline;
+        }
+
+        .metric {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .metric-primary {
+            flex: 1.3;
+        }
+
+        .metric-secondary {
+            flex: 1;
+        }
+
+        .metric-value {
+            font-size: 22px;
+            font-weight: var(--homey-font-weight-bold, 700);
+            line-height: 1.1;
+            color: var(--homey-text-color);
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.5px;
+        }
+
+        .metric-primary .metric-value {
+            color: var(--accent);
+            transition: color 0.3s ease;
+        }
+
+        .metric-unit {
+            font-size: 10px;
+            font-weight: var(--homey-font-weight-medium, 600);
+            letter-spacing: 0.5px;
             color: var(--homey-text-color-light);
-            margin-bottom: var(--homey-su-1);
-            text-align: center;
-            width: 100%;
+            text-transform: uppercase;
+            margin-top: 2px;
         }
 
-        .value {
-            font-size: var(--homey-font-size-large);
-            font-weight: var(--homey-font-weight-bold);
-            margin-bottom: var(--homey-su-2);
-            text-align: center;
-            width: 100%;
-        }
-
-        .control-button {
-            display: none;
-            background-color: var(--homey-color-blue);
-            color: white;
-            border: none;
-            border-radius: var(--homey-border-radius-small);
-            padding: var(--homey-su-2) var(--homey-su-4);
-            font-size: var(--homey-font-size-small);
-            font-weight: var(--homey-font-weight-bold);
-            cursor: pointer;
-            margin-top: var(--homey-su-2);
+        .flow-line {
+            height: 2px;
+            border-radius: 2px;
+            background: linear-gradient(90deg,
+                transparent,
+                var(--accent) 50%,
+                transparent);
+            background-size: 200% 100%;
+            opacity: 0;
             transition: opacity 0.3s ease;
-            width: 80%;
         }
 
-        .control-button.visible {
-            display: block;
+        .state-charging .flow-line {
+            opacity: 1;
+            animation: flow-shimmer 1.6s linear infinite;
         }
 
-        .control-button:disabled {
-            opacity: 0.7;
+        @keyframes flow-shimmer {
+            from { background-position: 200% 0; }
+            to { background-position: -200% 0; }
+        }
+
+        /* Action button - ve sloupci vpravo, těsně pod metrikami */
+        .action-btn {
+            display: none;
+            margin-top: auto;
+            align-self: stretch;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border: none;
+            border-radius: var(--homey-border-radius-small, 8px);
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: var(--homey-font-weight-medium, 600);
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            transition: transform 0.15s ease, background 0.25s ease, opacity 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .action-btn.visible { display: inline-flex; }
+
+        .action-btn:hover { background: var(--btn-bg-hover); }
+
+        .action-btn:active { transform: scale(0.98); }
+
+        .action-btn:disabled {
+            opacity: 0.55;
             cursor: not-allowed;
+        }
+
+        .action-btn svg {
+            width: 11px;
+            height: 11px;
+            flex-shrink: 0;
+        }
+
+        /* Stavové varianty barev */
+        .state-charging { --accent: var(--v2c-green); --accent-soft: var(--v2c-green-soft); }
+        .state-connected { --accent: var(--v2c-blue); --accent-soft: var(--v2c-blue-soft); }
+        .state-paused { --accent: var(--v2c-amber); --accent-soft: var(--v2c-amber-soft); }
+        .state-disconnected { --accent: var(--v2c-grey); --accent-soft: var(--v2c-grey-soft); }
+        .state-error { --accent: var(--v2c-red); --accent-soft: var(--v2c-red-soft); }
+
+        /* Pulzující dot při charging */
+        .state-charging .state-dot {
+            animation: dot-pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes dot-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 var(--accent); opacity: 1; }
+            70% { box-shadow: 0 0 0 6px transparent; opacity: 0.8; }
+        }
+
+        /* Dýchající dot při connected (auto připojené, ale nenabíjí - např. timer) */
+        .state-connected .state-dot {
+            animation: dot-breathe 2.4s ease-in-out infinite;
+        }
+
+        /* Blikající dot při paused (jemně, signalizuje stav) */
+        .state-paused .state-dot {
+            animation: dot-breathe 1.8s ease-in-out infinite;
+        }
+
+        @keyframes dot-breathe {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.45; }
         }
     </style>
 </head>
 <body>
-    <div id="container">
-        <div id="imageContainer">
+    <div id="container" class="state-disconnected">
+        <div class="header">
+            <div class="brand">
+                <span class="brand-dot"></span>
+                <span>V2C · Wallbox</span>
+            </div>
+            <div class="state-badge">
+                <span class="state-dot"></span>
+                <span id="stateText">Loading…</span>
+            </div>
+        </div>
+
+        <div class="device-panel">
+            <div class="device-glow"></div>
             <img id="deviceImage" src="large.png" alt="V2C Wallbox">
         </div>
-        <div id="infoContainer">
-            <div class="label">Charger state</div>
-            <div id="wallboxState" class="value">Loading...</div>
-            <div class="label">kW | kWh</div>
-            <div id="powerInfo" class="value">
-                <span id="powerKW">-.-</span>
-                <span>|</span>
-                <span id="powerKWh">-.-</span>
+
+        <div class="info-panel">
+            <div class="metrics">
+                <div class="metric metric-primary">
+                    <span class="metric-value" id="powerValue">0.0</span>
+                    <span class="metric-unit">kW · Power</span>
+                </div>
+                <div class="metric metric-secondary">
+                    <span class="metric-value" id="energyValue">0.0</span>
+                    <span class="metric-unit">kWh · Session</span>
+                </div>
             </div>
-            <button id="controlButton" class="control-button">Pause</button>
+            <div class="flow-line"></div>
+            <button id="controlButton" class="action-btn" aria-label="Toggle charging">
+                <svg viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+                    <rect x="2" y="1.5" width="2.5" height="9" rx="0.5"/>
+                    <rect x="7.5" y="1.5" width="2.5" height="9" rx="0.5"/>
+                </svg>
+                <span id="controlButtonText">Pause</span>
+            </button>
         </div>
     </div>
+
     <script type="text/javascript">
+        const STATE = {
+            DISCONNECTED: '0',
+            CONNECTED: '1',
+            CHARGING: '2'
+        };
+
+        const ICONS = {
+            pause: '<rect x="2" y="1.5" width="2.5" height="9" rx="0.5"/><rect x="7.5" y="1.5" width="2.5" height="9" rx="0.5"/>',
+            play: '<path d="M3 1.5 L10 6 L3 10.5 Z"/>'
+        };
+
         let Homey;
         let isUpdating = false;
         let updateInterval = 5000;
-        let intervalId;
+        let intervalId = null;
 
         function onHomeyReady(_Homey) {
             Homey = _Homey;
-            console.log('Homey is ready');
             init();
             Homey.ready();
         }
 
-        function getChargeStateText(state, isPaused) {
-            if (isPaused) {
-                return "Paused";
-            }
-            const stateMap = {
-                "0": "EV not connected",
-                "1": "EV connected",
-                "2": "Charging"
-            };
-            return stateMap[state] || "Unknown";
+        // Priority: error > disconnected (no car) > paused > charging > connected (ready)
+        function classifyState(chargeState, paused, connectionError) {
+            if (connectionError) return 'error';
+            if (chargeState === STATE.DISCONNECTED) return 'disconnected';
+            if (paused) return 'paused';
+            if (chargeState === STATE.CHARGING) return 'charging';
+            return 'connected';
         }
 
-        function updateControlButton(state, isPaused) {
-            const button = document.getElementById('controlButton');
-            
-            if (state === "0") {
-                button.classList.remove('visible');
-            } else {
-                button.classList.add('visible');
+        function stateLabel(kind) {
+            switch (kind) {
+                case 'charging':     return 'Charging';
+                case 'connected':    return 'Ready';
+                case 'paused':       return 'Paused';
+                case 'error':        return 'Offline';
+                case 'disconnected':
+                default:             return 'Idle';
             }
+        }
 
-            button.textContent = isPaused ? 'Resume' : 'Pause';
+        function applyState(kind) {
+            const el = document.getElementById('container');
+            el.className = 'state-' + kind;
+            document.getElementById('stateText').textContent = stateLabel(kind);
+        }
+
+        function updateControlButton(kind, paused) {
+            const button = document.getElementById('controlButton');
+            const label = document.getElementById('controlButtonText');
+            const svg = button.querySelector('svg');
+
+            // Tlačítko má smysl jen když je auto připojené (nebo nabíjí / paused)
+            const shouldShow = kind === 'charging' || kind === 'connected' || kind === 'paused';
+            button.classList.toggle('visible', shouldShow);
+
+            if (paused) {
+                label.textContent = 'Resume';
+                svg.innerHTML = ICONS.play;
+            } else {
+                label.textContent = 'Pause';
+                svg.innerHTML = ICONS.pause;
+            }
+        }
+
+        function updateUI(status) {
+            const kind = classifyState(
+                String(status.chargeState ?? STATE.DISCONNECTED),
+                Boolean(status.paused),
+                Boolean(status.connectionError)
+            );
+
+            applyState(kind);
+
+            const powerKw = ((status.chargePower ?? 0) / 1000);
+            const energyKwh = (status.chargeEnergy ?? 0);
+
+            document.getElementById('powerValue').textContent = powerKw.toFixed(1);
+            document.getElementById('energyValue').textContent = energyKwh.toFixed(1);
+
+            updateControlButton(kind, Boolean(status.paused));
+        }
+
+        function setError() {
+            applyState('error');
+            document.getElementById('powerValue').textContent = '—';
+            document.getElementById('energyValue').textContent = '—';
+            document.getElementById('controlButton').classList.remove('visible');
+        }
+
+        async function updateData() {
+            if (isUpdating) return;
+            isUpdating = true;
+            try {
+                const result = await Homey.api('GET', '/status');
+                updateUI(result);
+            } catch (error) {
+                console.error('Error fetching wallbox status:', error);
+                setError();
+            } finally {
+                isUpdating = false;
+            }
         }
 
         function setupControlButton() {
-        const button = document.getElementById('controlButton');
-        button.addEventListener('click', async () => {
-        try {
-            button.disabled = true;
-            
-            // Získání aktuálního stavu
-            const result = await Homey.api('GET', '/status');
-            const currentPausedState = result.paused;
-            
-            console.log('Current paused state:', currentPausedState);
-            console.log('Setting new paused state to:', !currentPausedState);
-            
-            // Změna stavu přes API
-            const setPausedResult = await Homey.api('POST', '/paused', { 
-                paused: !currentPausedState 
+            const button = document.getElementById('controlButton');
+            button.addEventListener('click', async () => {
+                if (button.disabled) return;
+                try {
+                    button.disabled = true;
+
+                    if (typeof Homey.hapticFeedback === 'function') {
+                        Homey.hapticFeedback();
+                    }
+
+                    const current = await Homey.api('GET', '/status');
+                    const newPaused = !current.paused;
+
+                    await Homey.api('POST', '/paused', { paused: newPaused });
+
+                    await new Promise(r => setTimeout(r, 400));
+                    await updateData();
+                } catch (error) {
+                    console.error('Error toggling pause:', error);
+                } finally {
+                    button.disabled = false;
+                }
             });
-            console.log('setPaused response:', setPausedResult);
-            
-            if (!setPausedResult.success) {
-                throw new Error('Failed to set paused state');
-            }
-            
-            // Počkáme chvíli pro jistotu
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Aktualizace UI
-            await updateData();
-            } catch (error) {
-            console.error('Error toggling pause state:', error);
-            // Případně můžeme zobrazit chybu uživateli
-            // alert('Failed to change charging state');
-            } finally {
-            button.disabled = false;
-            }
-            });
-        }       
-
-        function updateUI(status) {
-            console.log('Updating UI with status:', status);
-            
-            document.getElementById('wallboxState').textContent = getChargeStateText(status.chargeState, status.paused);
-            document.getElementById('powerKW').textContent = (status.chargePower / 1000).toFixed(1);
-            document.getElementById('powerKWh').textContent = status.chargeEnergy.toFixed(1);
-
-            updateControlButton(status.chargeState, status.paused);
-        }
-
-        function updateData() {
-            if (isUpdating) return;
-            isUpdating = true;
-            console.log('Fetching data...');
-
-            Homey.api('GET', '/status')
-                .then(result => {
-                    console.log('Data received from API:', result);
-                    updateUI(result);
-                })
-                .catch(error => {
-                    console.error('Error fetching wallbox status:', error);
-                })
-                .finally(() => {
-                    isUpdating = false;
-                });
         }
 
         function loadUpdateInterval() {
             const settings = Homey.getSettings();
             if (settings && settings.update_interval) {
-                updateInterval = parseInt(settings.update_interval, 10) * 1000;
-                console.log('Update interval set to:', updateInterval, 'ms');
-            } else {
-                console.log('Using default update interval of 5000 ms');
+                updateInterval = Math.max(3000, parseInt(settings.update_interval, 10) * 1000);
             }
         }
 
         function init() {
-            console.log('Initializing widget...');
             setupControlButton();
             loadUpdateInterval();
             updateData();
@@ -227,9 +512,7 @@
         if (window.Homey) {
             onHomeyReady(window.Homey);
         } else {
-            document.addEventListener('homey_ready', function() {
-                onHomeyReady(window.Homey);
-            });
+            document.addEventListener('homey_ready', () => onHomeyReady(window.Homey));
         }
     </script>
 </body>

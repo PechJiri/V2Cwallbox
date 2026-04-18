@@ -34,8 +34,14 @@
     "measure_connection_error",
     "measure_power",
     "meter_power",
-    "set_intensity"
+    "set_intensity",
+    "evcharger_charging",
+    "evcharger_charging_state"
   ],
+  "energy": {
+    "evCharger": true,
+    "meterPowerImportedCapability": "meter_power"
+  },
   "images": {
     "small": "{{driverAssetsPath}}/images/small.png",
     "large": "{{driverAssetsPath}}/images/large.png",

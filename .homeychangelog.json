@@ -7,5 +7,8 @@
   },
   "1.5.5": {
     "en": "Widget height fix"
+  },
+  "1.6.0": {
+    "en": "Added full Homey Energy tab support: the wallbox now appears as an EV charger with evcharger_charging, evcharger_charging_state and meter_power.charged capabilities. Fixed cumulative charged energy — meter_power no longer resets to 0 when the car is disconnected."
   }
 }

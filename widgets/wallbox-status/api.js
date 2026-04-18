@@ -15,7 +15,10 @@ module.exports = {
                 chargeState: await device.getCapabilityValue('measure_charge_state'),
                 chargePower: await device.getCapabilityValue('measure_charge_power'),
                 chargeEnergy: await device.getCapabilityValue('measure_charge_energy'),
-                paused: await device.getCapabilityValue('measure_paused')
+                paused: await device.getCapabilityValue('measure_paused'),
+                connectionError: device.hasCapability('measure_connection_error')
+                    ? await device.getCapabilityValue('measure_connection_error')
+                    : false
             };
 
             return status;

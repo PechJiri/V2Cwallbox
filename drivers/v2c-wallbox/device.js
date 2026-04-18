@@ -28,6 +28,14 @@ class MyDevice extends Device {
             }
             await this.setCapabilityValue('measure_connection_error', false);
             this._lastSuccessfulUpdate = Date.now();
+
+            // Úklid orphaned capabilities z neúspěšných migrací v pre-release buildech
+            await this._cleanupOrphanedCapabilities();
+
+            // Diagnostika - loguje aktuální capabilities na zařízení
+            this.logger.debug('Aktuální capabilities na zařízení po úklidu', {
+                caps: this.getCapabilities()
+            });
     
             // Inicializace proměnných pro cache
             this.lastResponse = null;
@@ -74,6 +82,9 @@ class MyDevice extends Device {
             // Registrace listeneru pro změnu A
             this.registerSetIntensityListener()
 
+            // Registrace listeneru pro Homey SDK evcharger_charging (Energy tab)
+            this.registerEvChargerChargingListener();
+
             // Spuštění intervalu pro aktualizaci dat
             this.startDataFetchInterval();
     
@@ -93,23 +104,53 @@ class MyDevice extends Device {
         }
     }
 
-    async initializeCapabilities() {
-        try {
-            // Použití capabilities z konstant
-            for (const capability of CONSTANTS.DEVICE_CAPABILITIES) {
-                if (!this.hasCapability(capability)) {
-                    this.logger.debug(`Přidávání capability: ${capability}`);
-                    await this.addCapability(capability);
-                }
+    async _cleanupOrphanedCapabilities() {
+        // Pokud některý z předchozích pre-release buildů přidal capability, kterou jsme pak
+        // odstranili z manifestu, zůstává na zařízení a může rozbít UI v mobilní appce.
+        // Projdeme aktuální capabilities na zařízení a odstraníme ty, které nejsou očekávané.
+        const expected = new Set([
+            ...CONSTANTS.DEVICE_CAPABILITIES,
+            'measure_connection_error'
+        ]);
+
+        const currentCaps = this.getCapabilities();
+        for (const cap of currentCaps) {
+            if (expected.has(cap)) continue;
+
+            this.logger.debug(`Odebírám orphaned capability: ${cap}`);
+            try {
+                await this.removeCapability(cap);
+            } catch (error) {
+                this.logger.warn(`Nepodařilo se odebrat capability ${cap}`, {
+                    error: error.message
+                });
             }
-            
-            this.logger.debug('Inicializace capabilities dokončena', {
-                totalCapabilities: CONSTANTS.DEVICE_CAPABILITIES.length
-            });
-        } catch (error) {
-            this.logger.error('Chyba při inicializaci capabilities', error);
-            throw error;
         }
+    }
+
+    async initializeCapabilities() {
+        const failed = [];
+        for (const capability of CONSTANTS.DEVICE_CAPABILITIES) {
+            if (this.hasCapability(capability)) continue;
+
+            this.logger.debug(`Přidávání capability: ${capability}`);
+            try {
+                await this.addCapability(capability);
+            } catch (error) {
+                // Některé capabilities nemusí být dostupné na starším firmware.
+                // Nechceme, aby selhala celá inicializace - zalogujeme a pokračujeme.
+                failed.push({ capability, error: error.message });
+                this.logger.warn(`Capability ${capability} se nepodařilo přidat, pokračuji`, {
+                    error: error.message
+                });
+            }
+        }
+
+        this.logger.debug('Inicializace capabilities dokončena', {
+            totalCapabilities: CONSTANTS.DEVICE_CAPABILITIES.length,
+            failedCount: failed.length,
+            failed
+        });
     }
 
     registerPauseListener() {
@@ -129,16 +170,33 @@ class MyDevice extends Device {
     registerSetIntensityListener() {
         this.registerCapabilityListener('set_intensity', async (value) => {
             const intensity = parseInt(value, 10);
-            
+
             // Validace
             if (intensity < 6 || intensity > 32) {
                 throw new Error('Intensity musí být mezi 6 a 32 A');
             }
-            
+
             // API volání
             await this.v2cApi.setParameter('Intensity', intensity);
-            
+
             return true;
+        });
+    }
+
+    registerEvChargerChargingListener() {
+        // Homey SDK capability — inverzní k measure_paused:
+        // true  = start / resume charging (Paused = 0)
+        // false = pause charging          (Paused = 1)
+        this.registerCapabilityListener('evcharger_charging', async (value) => {
+            try {
+                this.logger.debug('Změna evcharger_charging', { novýStav: value });
+                await this.v2cApi.setParameter('Paused', value ? '0' : '1');
+                await this.setCapabilityValue('measure_paused', !value);
+                return true;
+            } catch (error) {
+                this.logger.error('Selhalo nastavení evcharger_charging', error);
+                throw new Error('Selhalo nastavení stavu nabíjení');
+            }
         });
     }
 
@@ -263,6 +321,14 @@ class MyDevice extends Device {
 
     async updateCapabilities(deviceData, currentState, chargeEnergy) {
         try {
+            // Lifetime energie pro Homey Energy tab (monotónní, nikdy neklesá při odpojení)
+            const lifetimeEnergy = this.energyManager.getLifetimeEnergy();
+
+            // Pomocník — setCapabilityValue jen pokud capability existuje (kvůli postupné migraci)
+            const safeSet = (cap, val) => this.hasCapability(cap)
+                ? this.setCapabilityValue(cap, val)
+                : Promise.resolve();
+
             await Promise.all([
                 this.setCapabilityValue('measure_charge_state', deviceData.chargeState),
                 this.setCapabilityValue('measure_charge_power', deviceData.chargePower),
@@ -279,7 +345,9 @@ class MyDevice extends Device {
                     CONSTANTS.CHARGE_STATES.CHARGING
                 ].includes(currentState)),
                 this.setCapabilityValue('measure_charge_energy', chargeEnergy),
-                this.setCapabilityValue('meter_power', chargeEnergy),
+                this.setCapabilityValue('meter_power', lifetimeEnergy),
+                safeSet('evcharger_charging', currentState === CONSTANTS.CHARGE_STATES.CHARGING),
+                safeSet('evcharger_charging_state', this._mapEvChargerState(currentState, deviceData.paused)),
                 this.setCapabilityValue('measure_house_power', deviceData.housePower),
                 this.setCapabilityValue('measure_fv_power', deviceData.fvPower),
                 this.setCapabilityValue('measure_battery_power', deviceData.batteryPower),
@@ -303,6 +371,20 @@ class MyDevice extends Device {
         }
     }
     
+    _mapEvChargerState(chargeState, paused) {
+        switch (chargeState) {
+            case CONSTANTS.CHARGE_STATES.CHARGING:
+                return CONSTANTS.EVCHARGER_STATES.PLUGGED_IN_CHARGING;
+            case CONSTANTS.CHARGE_STATES.CONNECTED:
+                return paused
+                    ? CONSTANTS.EVCHARGER_STATES.PLUGGED_IN_PAUSED
+                    : CONSTANTS.EVCHARGER_STATES.PLUGGED_IN;
+            case CONSTANTS.CHARGE_STATES.DISCONNECTED:
+            default:
+                return CONSTANTS.EVCHARGER_STATES.PLUGGED_OUT;
+        }
+    }
+
     async resetMonthlyEnergy() {
         return await this.energyManager.resetMonthlyEnergy();
     }
@@ -456,6 +538,7 @@ class MyDevice extends Device {
             await this.unsetStoreValue('chargingStartEnergy');
             await this.unsetStoreValue('monthlyEnergyData');
             await this.unsetStoreValue('yearlyEnergyData');
+            await this.unsetStoreValue('lifetimeEnergyData');
     
             if (this.logger) {
                 this.logger.log('Zařízení bylo úspěšně odstraněno');
