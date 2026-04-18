@@ -206,6 +206,9 @@
       {
         "id": "car-disconnected",
         "deprecated": true,
+        "hint": {
+          "en": "Deprecated. Use the system trigger 'The charging state changed' (evcharger_charging_state) and filter for 'plugged_out'."
+        },
         "title": {
           "en": "Car is disconnected",
           "nl": "Auto is losgekoppeld",
@@ -415,6 +418,9 @@
       {
         "id": "car-connected-condition",
         "deprecated": true,
+        "hint": {
+          "en": "Deprecated. Use the system condition on 'evcharger_charging_state' with value 'plugged_in' (or any of the plugged_in_* states)."
+        },
         "title": {
           "en": "Car is connected",
           "nl": "Auto is verbonden",
@@ -454,6 +460,9 @@
       {
         "id": "car-is-charging",
         "deprecated": true,
+        "hint": {
+          "en": "Deprecated. Use the system condition 'Is charging' from the 'evcharger_charging' capability."
+        },
         "title": {
           "en": "Car is charging",
           "nl": "Auto wordt opgeladen",
@@ -635,6 +644,9 @@
       {
         "id": "charging-is-paused",
         "deprecated": true,
+        "hint": {
+          "en": "Deprecated. Use the system condition 'Is not charging' from the 'evcharger_charging' capability."
+        },
         "title": {
           "en": "Charging is paused",
           "nl": "Opladen is gepauzeerd",
@@ -674,6 +686,9 @@
       {
         "id": "charging-is-not-paused",
         "deprecated": true,
+        "hint": {
+          "en": "Deprecated. Use the system condition 'Is charging' from the 'evcharger_charging' capability."
+        },
         "title": {
           "en": "Charging is not paused",
           "nl": "Opladen is niet gepauzeerd",
@@ -924,6 +939,9 @@
       {
         "id": "set_paused",
         "deprecated": true,
+        "hint": {
+          "en": "Deprecated. Use the system action 'Turn charging on/off' from the 'evcharger_charging' capability."
+        },
         "args": [
           {
             "type": "device",
