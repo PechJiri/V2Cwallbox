@@ -17,12 +17,15 @@ Advanced Control
 Pause/Resume charging
 Lock/Unlock charger
 Adjustable charging intensity (6-32A)
-Dynamic power management with multiple modes:
+Homey Energy tab control — set charging power in Watts (target_power) with automatic W↔A conversion based on your installation's phase count
+Power management modes exposed via target_power_mode (standard Homey Energy capability):
 
-FV Exclusive mode
-FV+Min Power mode
-Grid+FV mode
-Timed power modes
+Homey controls (Homey drives target_power)
+V2C Dynamic — Timed Power Enabled / Disabled
+V2C Dynamic — FV Exclusive
+V2C Dynamic — FV + Min Power
+V2C Dynamic — Grid + FV
+V2C Dynamic — Without Charge
 
 
 Timer control
@@ -61,25 +64,31 @@ Add your wallbox through Devices > Add Device > V2C Wallbox
 Enter your wallbox's static IP address
 Configure desired settings:
 
-Update interval
+Installation phase count (1 or 3) — important for correct W↔A conversion when using Homey Energy target_power
+Voltage measurement type (Line-to-Neutral ~230V / Line-to-Line ~400V) — only affects 3-phase installations; set this to whatever your V2C reports as installation voltage
 Min/Max charging intensity
 Dynamic power mode preferences
 Debug logging options
+
+Upgrading from v1.x
+
+After upgrading to v2.0 it is recommended to remove and re-pair your V2C Wallbox. Automatic capability migration runs on first launch, but Homey's system flow cards for target_power, evcharger_charging and target_power_mode are only generated for freshly paired devices — existing devices won't see them in the flow editor until re-paired.
 
 
 
 Capabilities
 The app provides extensive capabilities including:
 
-Charging state monitoring (measure_charge_state)
-Power consumption tracking (measure_charge_power)
+Charging state monitoring (evcharger_charging_state)
+Power consumption tracking (measure_charge_power, measure_power)
 Installation voltage monitoring (measure_voltage_installation)
-Energy consumption statistics (measure_charge_energy, measure_monthly_energy, measure_yearly_energy)
+Energy consumption statistics (measure_charge_energy, measure_monthly_energy, measure_yearly_energy, meter_power)
 House power monitoring (measure_house_power)
 Solar production tracking (measure_fv_power)
 Battery status (measure_battery_power)
 Charging control (evcharger_charging, locked)
-Dynamic charging management (measure_dynamic, min_intensity, max_intensity)
+Homey Energy target control (target_power, target_power_mode)
+Dynamic charging management (min_intensity, max_intensity, set_intensity)
 System monitoring (firmware_version, signal_status, measure_slave_error)
 
 Troubleshooting

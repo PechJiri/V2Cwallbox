@@ -12,6 +12,25 @@ class v2cAPI {
         this.validator = new DataValidator(this.logger);
         this._apiErrorCount = 0;
         this._maxConsecutiveErrors = CONSTANTS.API.MAX_CONSECUTIVE_ERRORS;
+        // V2C wallbox nezvládá souběžné HTTP requesty — souběžný polling + setParameter
+        // vede k timeoutu na obou stranách. Všechny HTTP volání serializujeme přes tuto frontu.
+        this._requestQueue = Promise.resolve();
+    }
+
+    _serialized(fn) {
+        // Po každém requestu vkládáme malou pauzu. V2C Trydan firmware má intermitentní
+        // problém s rychle po sobě jdoucími requesty — vrací HTTP 404 "This URI does not exist".
+        const delayed = async () => {
+            try {
+                return await fn();
+            } finally {
+                await new Promise(r => setTimeout(r, 150));
+            }
+        };
+        const next = this._requestQueue.then(delayed, delayed);
+        // Zajistíme že případný reject v aktuálním requestu nezlomí frontu pro další.
+        this._requestQueue = next.catch(() => {});
+        return next;
     }
 
     setLoggingEnabled(enabled) {
@@ -44,28 +63,32 @@ class v2cAPI {
     }
 
     async getData() {
+        return this._serialized(async () => this._getDataImpl());
+    }
+
+    async _getDataImpl() {
         try {
             const url = `http://${this.ip}${CONSTANTS.API.ENDPOINTS.REALTIME}`;
-            this.logger.debug('Načítání dat', { 
-                url, 
+            this.logger.debug('Načítání dat', {
+                url,
                 errorCount: this._apiErrorCount,
                 maxErrors: this._maxConsecutiveErrors
             });
-    
-            const response = await fetch(url, { 
+
+            const response = await fetch(url, {
                 signal: AbortSignal.timeout(CONSTANTS.API.TIMEOUT)
             });
-            
+
             const data = await response.json();
-            
+
             // Reset počítadla chyb při úspěšném požadavku
             if (this._apiErrorCount > 0) {
                 this.logger.debug(`Reset počítadla chyb z ${this._apiErrorCount} na 0`);
                 this._apiErrorCount = 0;
             }
-            
+
             return data;
-            
+
         } catch (error) {
             // Specifická zpráva pro timeout
             if (error.name === 'AbortError') {
@@ -137,22 +160,26 @@ class v2cAPI {
     }
 
     async setParameter(parameter, value) {
+        return this._serialized(async () => this._setParameterImpl(parameter, value));
+    }
+
+    async _setParameterImpl(parameter, value) {
         try {
             const url = `http://${this.ip}${CONSTANTS.API.ENDPOINTS.WRITE}/${parameter}=${value}`;
-            this.logger.debug(`Nastavování parametru ${parameter}`, { 
-                url, 
-                hodnota: value 
+            this.logger.debug(`Nastavování parametru ${parameter}`, {
+                url,
+                hodnota: value
             });
 
-            const response = await fetch(url, { 
+            const response = await fetch(url, {
                 method: 'GET',
                 signal: AbortSignal.timeout(CONSTANTS.API.TIMEOUT)
             });
-            
+
             const responseData = await response.text();
-            
-            this.logger.debug(`Odpověď na nastavení ${parameter}`, { 
-                odpověď: responseData 
+
+            this.logger.debug(`Odpověď na nastavení ${parameter}`, {
+                odpověď: responseData
             });
 
             if (!response.ok) {
@@ -164,7 +191,7 @@ class v2cAPI {
                 hodnota: value,
                 odpověď: responseData
             });
-            
+
             return responseData;
         } catch (error) {
             this.logger.error(`Chyba při nastavování parametru ${parameter}`, error, {

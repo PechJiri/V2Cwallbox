@@ -12,7 +12,8 @@
     "sv": "Laddad energi under detta år (kWh)",
     "pl": "Ładowana energia w tym roku (kWh)",
     "ru": "Заряженная энергия в этом году (кВтч)",
-    "ko": "올해 충전된 에너지 (kWh)"
+    "ko": "올해 충전된 에너지 (kWh)",
+    "ar": "الطاقة المشحونة خلال هذا العام (كيلوواط ساعة)"
   },
   "units": {
     "en": "kWh",
@@ -26,7 +27,8 @@
     "sv": "kWh",
     "pl": "kWh",
     "ru": "кВтч",
-    "ko": "kWh"
+    "ko": "kWh",
+    "ar": "كيلوواط ساعة"
   },
   "uiComponent": "sensor",
   "getable": true,

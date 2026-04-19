@@ -1,9 +1,33 @@
 {
   "name": {
-    "en": "Wallbox Status"
+    "en": "Wallbox Status",
+    "nl": "Wallbox Status",
+    "da": "Wallbox-status",
+    "de": "Wallbox-Status",
+    "es": "Estado de la Wallbox",
+    "fr": "Statut de la Wallbox",
+    "it": "Stato della Wallbox",
+    "no": "Wallbox-status",
+    "sv": "Wallbox-status",
+    "pl": "Status Wallboxa",
+    "ru": "Статус Wallbox",
+    "ko": "월박스 상태",
+    "ar": "حالة Wallbox"
   },
   "description": {
-    "en": "Displays current status of V2C Wallbox"
+    "en": "Displays current status of V2C Wallbox",
+    "nl": "Geeft de huidige status van V2C Wallbox weer.",
+    "da": "Viser den aktuelle status for V2C Wallbox",
+    "de": "Zeigt den aktuellen Status der V2C Wallbox an",
+    "es": "Muestra el estado actual de V2C Wallbox",
+    "fr": "Affiche l'état actuel de V2C Wallbox",
+    "it": "Visualizza lo stato attuale della V2C Wallbox",
+    "no": "Viser gjeldende status for V2C Wallbox",
+    "sv": "Visar aktuell status för V2C Wallbox",
+    "pl": "Wyświetla bieżący status V2C Wallbox.",
+    "ru": "Отображает текущий статус V2C Wallbox.",
+    "ko": "V2C Wallbox의 현재 상태를 표시합니다.",
+    "ar": "يعرض الحالة الحالية لـ V2C Wallbox"
   },
   "height": 180,
   "devices": {

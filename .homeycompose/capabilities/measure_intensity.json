@@ -12,7 +12,8 @@
     "sv": "Intensitet (A)",
     "pl": "Intensywność (A)",
     "ru": "Интенсивность (A)",
-    "ko": "강도 (A)"
+    "ko": "강도 (A)",
+    "ar": "الشدة (A)"
   },
   "units": {
     "en": "A",
@@ -26,7 +27,8 @@
     "sv": "A",
     "pl": "A",
     "ru": "A",
-    "ko": "A"
+    "ko": "A",
+    "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
   },
   "uiComponent": "sensor",
   "getable": true,

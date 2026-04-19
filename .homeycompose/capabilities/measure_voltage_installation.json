@@ -12,7 +12,8 @@
     "sv": "Installationsspänning",
     "pl": "Napięcie instalacyjne",
     "ru": "Установочное напряжение",
-    "ko": "설치 전압"
+    "ko": "설치 전압",
+    "ar": "جهد التركيب"
   },
   "units": {
     "en": "V",
@@ -26,7 +27,8 @@
     "sv": "V",
     "pl": "V",
     "ru": "В",
-    "ko": "V"
+    "ko": "V",
+    "ar": "في"
   },
   "uiComponent": "sensor",
   "getable": true,

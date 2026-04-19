@@ -98,6 +98,44 @@ class V2CWallboxDriver extends Driver {
     }
 
     /**
+     * onRepair je volána když uživatel spustí Repair flow na existujícím zařízení.
+     * Umožňuje změnit IP adresu (např. po přestěhování wallboxu do jiné sítě)
+     * a re-validovat připojení bez ztráty historie, settings a device ID.
+     */
+    async onRepair(session, device) {
+        this.logger.debug('Začíná repair proces', { deviceId: device.getData().id });
+
+        session.setHandler('getDeviceIP', async () => {
+            return device.getSetting('v2c_ip') || '';
+        });
+
+        session.setHandler('check', async (data) => {
+            return await this.onCheck(data);
+        });
+
+        session.setHandler('save_ip', async (data) => {
+            const ipCheck = validateWallboxIP(data.ip);
+            if (!ipCheck.valid) {
+                this.logger.warn('Neplatná IP při repair', { ip: data.ip, reason: ipCheck.reason });
+                throw new Error(this.homey.__('pair.v2cwallbox.invalid_ip') || 'Invalid IP address');
+            }
+
+            const v2cApi = new v2cAPI(this.homey, data.ip);
+            try {
+                await v2cApi.initializeSession();
+            } catch (error) {
+                this.logger.error('Repair: nepodařilo se ověřit připojení', error);
+                throw new Error(this.homey.__('pair.v2cwallbox.connection_error') || 'Cannot connect to wallbox');
+            }
+
+            // setSettings spustí device.onSettings(), který vytvoří nový v2cAPI client s novou IP.
+            await device.setSettings({ v2c_ip: data.ip });
+            this.logger.log('Repair: IP adresa úspěšně aktualizována', { newIp: data.ip });
+            return true;
+        });
+    }
+
+    /**
      * onCheck kontroluje dostupnost zařízení
      */
     async onCheck(data) {

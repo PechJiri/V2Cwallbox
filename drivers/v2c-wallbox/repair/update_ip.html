@@ -1,0 +1,90 @@
+<script type="application/javascript">
+    Homey.setTitle(Homey.__("repair.v2cwallbox.title"));
+
+    // Předvyplníme aktuální IP zařízení
+    Homey.emit("getDeviceIP").then(function (ip) {
+        if (ip) {
+            document.getElementById('ip').value = ip;
+        }
+    }).catch(function (error) {
+        console.error("Error during getDeviceIP:", error);
+    });
+
+    function check() {
+        const value = { "ip": document.getElementById('ip').value };
+        Homey.emit("check", value).then(function (result) {
+            Homey.alert(result);
+        }).catch(function (error) {
+            Homey.alert("Error: " + error.message);
+        });
+    }
+
+    function save() {
+        const value = { "ip": document.getElementById('ip').value };
+        Homey.emit("save_ip", value).then(function () {
+            Homey.alert(Homey.__("repair.v2cwallbox.saved"), "info", function () {
+                Homey.done();
+            });
+        }).catch(function (error) {
+            Homey.alert("Error: " + error.message);
+        });
+    }
+</script>
+
+<style type="text/css">
+    .form-wrapper {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    .input-field {
+        margin-top: 10px;
+        width: 100%;
+    }
+
+    .button-row {
+        margin-top: 20px;
+        width: 100%;
+        display: flex;
+        gap: 10px;
+    }
+
+    .check-button {
+        flex: 1;
+    }
+
+    .save-button {
+        flex: 1;
+        background-color: #00c139 !important;
+        color: white !important;
+    }
+
+    .help {
+        margin-top: 20px;
+        font-size: 0.85em;
+        color: #888;
+    }
+</style>
+
+<base target="_parent" />
+<div class="form-wrapper">
+    <div class="input-field">
+        <label for="ip"><span data-i18n="pair.v2cwallbox.ip"></span></label>
+        <input type="text" minlength="7" maxlength="15"
+            pattern="^((\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$" id="ip"
+            placeholder="IP address" value="" />
+    </div>
+    <div class="button-row">
+        <button class="check-button" onclick="check()">
+            <span data-i18n="pair.v2cwallbox.check">Check</span>
+        </button>
+        <button class="save-button" onclick="save()">
+            <span data-i18n="repair.v2cwallbox.save">Save</span>
+        </button>
+    </div>
+    <p class="help"><span data-i18n="repair.v2cwallbox.hint"></span></p>
+</div>

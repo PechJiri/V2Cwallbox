@@ -12,7 +12,8 @@
     "sv": "PV-effekt",
     "pl": "Moc PV",
     "ru": "Мощность PV",
-    "ko": "PV 출력"
+    "ko": "PV 출력",
+    "ar": "طاقة الألواح الشمسية"
   },
   "units": {
     "en": "W",
@@ -26,7 +27,8 @@
     "sv": "W",
     "pl": "W",
     "ru": "Вт",
-    "ko": "W"
+    "ko": "W",
+    "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
   },
   "uiComponent": "sensor",
   "getable": true,

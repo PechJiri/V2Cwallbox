@@ -1,7 +1,19 @@
 {
   "id": "v2c-wallbox",
   "name": {
-    "en": "V2C Wallbox"
+    "en": "V2C Wallbox",
+    "nl": "V2C Wallbox",
+    "da": "V2C Wallbox",
+    "de": "V2C Wallbox",
+    "es": "V2C Wallbox",
+    "fr": "V2C Wallbox",
+    "it": "V2C Wallbox",
+    "no": "V2C Wallbox",
+    "sv": "V2C Wallbox",
+    "pl": "V2C Wallbox",
+    "ru": "V2C Wallbox",
+    "ko": "V2C Wallbox",
+    "ar": "V2C Wallbox"
   },
   "class": "evcharger",
   "platforms": [
@@ -11,7 +23,8 @@
     "lan"
   ],
   "capabilities": [
-    "measure_dynamic",
+    "target_power_mode",
+    "target_power",
     "measure_charge_power",
     "measure_charge_energy",
     "measure_charge_time",
@@ -36,6 +49,153 @@
     "evcharger_charging",
     "evcharger_charging_state"
   ],
+  "capabilitiesOptions": {
+    "target_power": {
+      "min": 0,
+      "max": 22080,
+      "step": 230,
+      "excludeMin": 0,
+      "excludeMax": 1380,
+      "decimals": 0
+    },
+    "target_power_mode": {
+      "values": [
+        {
+          "id": "homey",
+          "title": {
+            "en": "Homey",
+            "nl": "Homey",
+            "da": "Homey",
+            "de": "Homey",
+            "es": "Homey",
+            "fr": "Homey",
+            "it": "Homey",
+            "no": "Homey",
+            "sv": "Homey",
+            "pl": "Homey",
+            "ru": "Homey",
+            "ko": "Homey",
+            "ar": "هوميي",
+            "cs": "Homey ovládá"
+          }
+        },
+        {
+          "id": "v2c_timed_on",
+          "title": {
+            "en": "V2C Dynamic — Timed Power Enabled",
+            "nl": "V2C Dynamic — Getimede voeding ingeschakeld",
+            "da": "V2C Dynamic — Tidstaget strøm aktiveret",
+            "de": "V2C Dynamic — Zeitgesteuerte Leistung aktiviert",
+            "es": "V2C Dynamic — Potencia cronometrada habilitada",
+            "fr": "V2C Dynamic — Puissance minutée activée",
+            "it": "V2C Dynamic — Potenza temporizzata abilitata",
+            "no": "V2C Dynamic — Tidsstyrt kraft aktivert",
+            "sv": "V2C Dynamic — Tidsstyrd kraft aktiverad",
+            "pl": "V2C Dynamic — Tryb czasowy włączony",
+            "ru": "V2C Dynamic — Включено по времени",
+            "ko": "V2C Dynamic — 타이머 전력 활성화",
+            "ar": "V2C Dynamic — تمكين الطاقة المؤقتة",
+            "cs": "V2C Dynamic — Časovaný výkon zapnut"
+          }
+        },
+        {
+          "id": "v2c_timed_off",
+          "title": {
+            "en": "V2C Dynamic — Timed Power Disabled",
+            "nl": "V2C Dynamic — Getimede voeding uitgeschakeld",
+            "da": "V2C Dynamic — Tidstaget strøm deaktiveret",
+            "de": "V2C Dynamic — Zeitgesteuerte Leistung deaktiviert",
+            "es": "V2C Dynamic — Potencia cronometrada deshabilitada",
+            "fr": "V2C Dynamic — Puissance minutée désactivée",
+            "it": "V2C Dynamic — Potenza temporizzata disabilitata",
+            "no": "V2C Dynamic — Tidsstyrt kraft deaktivert",
+            "sv": "V2C Dynamic — Tidsstyrd kraft avaktiverad",
+            "pl": "V2C Dynamic — Tryb czasowy wyłączony",
+            "ru": "V2C Dynamic — Отключено по времени",
+            "ko": "V2C Dynamic — 타이머 전력 비활성화",
+            "ar": "V2C Dynamic — تم تعطيل الطاقة المؤقتة",
+            "cs": "V2C Dynamic — Časovaný výkon vypnut"
+          }
+        },
+        {
+          "id": "v2c_fv_exclusive",
+          "title": {
+            "en": "V2C Dynamic — FV Exclusive",
+            "nl": "V2C Dynamic — FV Exclusief",
+            "da": "V2C Dynamic — FV eksklusiv",
+            "de": "V2C Dynamic — FV Exklusiv",
+            "es": "V2C Dynamic — Exclusivo FV",
+            "fr": "V2C Dynamic — FV Exclusif",
+            "it": "V2C Dynamic — FV Esclusivo",
+            "no": "V2C Dynamic — FV Eksklusiv",
+            "sv": "V2C Dynamic — FV Exklusiv",
+            "pl": "V2C Dynamic — Ekskluzywny FV",
+            "ru": "V2C Dynamic — Эксклюзивный FV",
+            "ko": "V2C Dynamic — FV 독점",
+            "ar": "V2C Dynamic — FV Exclusive",
+            "cs": "V2C Dynamic — Výhradně FV"
+          }
+        },
+        {
+          "id": "v2c_fv_min",
+          "title": {
+            "en": "V2C Dynamic — FV + Min Power",
+            "nl": "V2C Dynamic — FV + Min vermogen",
+            "da": "V2C Dynamic — FV + Min strøm",
+            "de": "V2C Dynamic — FV + Min Leistung",
+            "es": "V2C Dynamic — FV + Min Potencia",
+            "fr": "V2C Dynamic — FV + Min Puissance",
+            "it": "V2C Dynamic — FV + Min Potenza",
+            "no": "V2C Dynamic — FV + Min kraft",
+            "sv": "V2C Dynamic — FV + Min kraft",
+            "pl": "V2C Dynamic — FV + Min Moc",
+            "ru": "V2C Dynamic — FV + Мин мощность",
+            "ko": "V2C Dynamic — FV + 최소 전력",
+            "ar": "V2C ديناميكي — FV + الحد الأدنى للطاقة",
+            "cs": "V2C Dynamic — FV + Minimální výkon"
+          }
+        },
+        {
+          "id": "v2c_grid_fv",
+          "title": {
+            "en": "V2C Dynamic — Grid + FV",
+            "nl": "V2C Dynamic — Net + FV",
+            "da": "V2C Dynamic — Netværk + FV",
+            "de": "V2C Dynamic — Netz + FV",
+            "es": "V2C Dynamic — Red + FV",
+            "fr": "V2C Dynamic — Réseau + FV",
+            "it": "V2C Dynamic — Rete + FV",
+            "no": "V2C Dynamic — Nett + FV",
+            "sv": "V2C Dynamic — Nät + FV",
+            "pl": "V2C Dynamic — Sieć + FV",
+            "ru": "V2C Dynamic — Сеть + FV",
+            "ko": "V2C Dynamic — 그리드 + FV",
+            "ar": "V2C ديناميكي — الشبكة + FV",
+            "cs": "V2C Dynamic — Síť + FV"
+          }
+        },
+        {
+          "id": "v2c_no_charge",
+          "title": {
+            "en": "V2C Dynamic — Without Charge",
+            "nl": "V2C Dynamic — Zonder laden",
+            "da": "V2C Dynamic — Uden opladning",
+            "de": "V2C Dynamic — Ohne Laden",
+            "es": "V2C Dynamic — Sin carga",
+            "fr": "V2C Dynamic — Sans charge",
+            "it": "V2C Dynamic — Senza carica",
+            "no": "V2C Dynamic — Uten lading",
+            "sv": "V2C Dynamic — Utan laddning",
+            "pl": "V2C Dynamic — Bez ładowania",
+            "ru": "V2C Dynamic — Без зарядки",
+            "ko": "V2C Dynamic — 충전 없음",
+            "ar": "V2C ديناميكي — بدون شحن",
+            "cs": "V2C Dynamic — Bez nabíjení"
+          }
+        }
+      ]
+    }
+  },
   "energy": {
     "evCharger": true,
     "meterPowerImportedCapability": "meter_power"
@@ -66,6 +226,11 @@
     {
       "id": "add_my_devices",
       "template": "add_devices"
+    }
+  ],
+  "repair": [
+    {
+      "id": "update_ip"
     }
   ]
 }

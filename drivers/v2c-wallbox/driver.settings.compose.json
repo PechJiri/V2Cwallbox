@@ -14,7 +14,8 @@
       "sv": "V2C Wallbox IP",
       "pl": "IP V2C Wallbox",
       "ru": "IP V2C Wallbox",
-      "ko": "V2C 월박스 IP"
+      "ko": "V2C 월박스 IP",
+      "ar": "V2C Wallbox IP"
     }
   },
   {
@@ -32,7 +33,8 @@
       "sv": "Aktivera felsökningsloggning",
       "pl": "Włącz rejestrowanie debugowania",
       "ru": "Включить ведение журнала отладки",
-      "ko": "디버그 로깅 활성화"
+      "ko": "디버그 로깅 활성화",
+      "ar": "تفعيل تسجيل الأخطاء (Debug Logging)"
     },
     "value": true,
     "hint": {
@@ -47,8 +49,163 @@
       "sv": "Aktivera detaljerad loggning för felsökningsändamål",
       "pl": "Włącz szczegółowe logowanie na potrzeby debugowania",
       "ru": "Включить подробное ведение журнала для отладки",
-      "ko": "디버깅 목적으로 자세한 로깅 활성화"
+      "ko": "디버깅 목적으로 자세한 로깅 활성화",
+      "ar": "تفعيل تسجيل التفاصيل لأغراض تصحيح الأخطاء"
     }
+  },
+  {
+    "id": "phase_mode",
+    "type": "dropdown",
+    "label": {
+      "en": "Installation Phase Count",
+      "nl": "Aantal fasen installatie",
+      "da": "Antal faser installation",
+      "de": "Anzahl der Phasen der Installation",
+      "es": "Número de fases de la instalación",
+      "fr": "Nombre de phases de l'installation",
+      "it": "Numero di fasi dell'installazione",
+      "no": "Antall faser installasjon",
+      "sv": "Antal faser installation",
+      "pl": "Liczba faz instalacji",
+      "ru": "Количество фаз установки",
+      "ko": "설치 단계 수",
+      "ar": "عدد مراحل التثبيت",
+      "cs": "Počet fází instalace"
+    },
+    "hint": {
+      "en": "Number of phases the wallbox is connected to. Used to convert between Watts (target_power) and Amperes (V2C Intensity).",
+      "nl": "Aantal fasen waarop de wallbox is aangesloten. Gebruikt voor conversie tussen Watt (target_power) en Ampère (V2C Intensity).",
+      "da": "Antal faser wallboxen er tilsluttet. Bruges til konvertering mellem Watt (target_power) og Ampere (V2C Intensity).",
+      "de": "Anzahl der Phasen, an die die Wallbox angeschlossen ist. Wird zur Umrechnung zwischen Watt (target_power) und Ampere (V2C Intensity) verwendet.",
+      "es": "Número de fases a las que está conectado el wallbox. Se usa para convertir entre vatios (target_power) y amperios (V2C Intensity).",
+      "fr": "Nombre de phases auxquelles le wallbox est connecté. Utilisé pour convertir entre Watts (target_power) et Ampères (V2C Intensity).",
+      "it": "Numero di fasi a cui è collegato il wallbox. Utilizzato per la conversione tra Watt (target_power) e Ampere (V2C Intensity).",
+      "no": "Antall faser wallboxen er koblet til. Brukes til konvertering mellom Watt (target_power) og Ampere (V2C Intensity).",
+      "sv": "Antal faser wallboxen är ansluten till. Används för konvertering mellan Watt (target_power) och Ampere (V2C Intensity).",
+      "pl": "Liczba faz, do których podłączony jest wallbox. Używane do konwersji między watami (target_power) a amperami (V2C Intensity).",
+      "ru": "Количество фаз, к которым подключен wallbox. Используется для преобразования между ваттами (target_power) и амперами (V2C Intensity).",
+      "ko": "월박스가 연결된 단계 수. 와트(target_power)와 암페어(V2C Intensity) 간 변환에 사용됩니다.",
+      "ar": "عدد المراحل التي يتصل بها الجدار. تُستخدم للتحويل بين الواط (الطاقة المستهدفة) والأمبير (شدة V2C).",
+      "cs": "Na kolik fází je wallbox zapojen. Používá se pro převod mezi Watty (target_power) a Ampéry (V2C Intensity)."
+    },
+    "value": "3",
+    "values": [
+      {
+        "id": "1",
+        "label": {
+          "en": "Single-phase (1 phase)",
+          "nl": "Eenfasig (1 fase)",
+          "da": "Enfaset (1 fase)",
+          "de": "Einphasig (1 Phase)",
+          "es": "Monofásico (1 fase)",
+          "fr": "Monophasé (1 phase)",
+          "it": "Monofase (1 fase)",
+          "no": "Enfaset (1 fase)",
+          "sv": "Enfas (1 fas)",
+          "pl": "Jednofazowe (1 faza)",
+          "ru": "Однофазный (1 фаза)",
+          "ko": "단상 (1상)",
+          "ar": "أحادي الطور (1 طور)",
+          "cs": "Jednofázové (1 fáze)"
+        }
+      },
+      {
+        "id": "3",
+        "label": {
+          "en": "Three-phase (3 phases)",
+          "nl": "Driefasig (3 fasen)",
+          "da": "Trefaset (3 faser)",
+          "de": "Dreiphasig (3 Phasen)",
+          "es": "Trifásico (3 fases)",
+          "fr": "Triphasé (3 phases)",
+          "it": "Trifase (3 fasi)",
+          "no": "Trefaset (3 faser)",
+          "sv": "Trefas (3 faser)",
+          "pl": "Trójfazowe (3 fazy)",
+          "ru": "Трёхфазный (3 фазы)",
+          "ko": "삼상 (3상)",
+          "ar": "ثلاثي الطور (3 أطوار)",
+          "cs": "Třífázové (3 fáze)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "voltage_type",
+    "type": "dropdown",
+    "label": {
+      "en": "Voltage Measurement Type (3-phase only)",
+      "nl": "Type spanningsmeting (alleen 3-fasig)",
+      "da": "Type spændingsmåling (kun 3-faset)",
+      "de": "Spannungsmessungstyp (nur 3-phasig)",
+      "es": "Tipo de medición de tensión (solo trifásico)",
+      "fr": "Type de mesure de tension (triphasé uniquement)",
+      "it": "Tipo di misurazione della tensione (solo trifase)",
+      "no": "Type spenningsmåling (kun 3-faset)",
+      "sv": "Typ av spänningsmätning (endast 3-fas)",
+      "pl": "Typ pomiaru napięcia (tylko 3-fazowe)",
+      "ru": "Тип измерения напряжения (только 3-фазное)",
+      "ko": "전압 측정 유형 (3상 전용)",
+      "ar": "نوع قياس الجهد (للتيار ثلاثي الطور فقط)",
+      "cs": "Typ měření napětí (pouze 3-fázové)"
+    },
+    "hint": {
+      "en": "How V2C reports installation voltage: Line-to-Neutral ~230V (most common) or Line-to-Line ~400V. Ignored for single-phase installations.",
+      "nl": "Hoe V2C de installatiespanning rapporteert: Fase-nul ~230V (meest gebruikelijk) of Fase-fase ~400V. Genegeerd voor eenfasige installaties.",
+      "da": "Hvordan V2C rapporterer installationsspænding: Fase-nul ~230V (mest almindelig) eller Fase-fase ~400V. Ignoreres for enfasede installationer.",
+      "de": "Wie V2C die Installationsspannung meldet: Phase-Neutral ~230V (häufigste) oder Phase-Phase ~400V. Bei einphasigen Installationen ignoriert.",
+      "es": "Cómo V2C reporta el voltaje de instalación: Fase-Neutro ~230V (más común) o Fase-Fase ~400V. Ignorado para instalaciones monofásicas.",
+      "fr": "Comment V2C rapporte la tension d'installation : Phase-Neutre ~230V (le plus courant) ou Phase-Phase ~400V. Ignoré pour les installations monophasées.",
+      "it": "Come V2C riporta la tensione di installazione: Fase-Neutro ~230V (più comune) o Fase-Fase ~400V. Ignorato per impianti monofase.",
+      "no": "Hvordan V2C rapporterer installasjonsspenning: Fase-nøytral ~230V (vanligst) eller Fase-fase ~400V. Ignoreres for enfasede installasjoner.",
+      "sv": "Hur V2C rapporterar installationsspänning: Fas-neutral ~230V (vanligast) eller Fas-fas ~400V. Ignoreras för enfas installationer.",
+      "pl": "Jak V2C raportuje napięcie instalacji: Faza-neutralny ~230V (najczęściej) lub Faza-faza ~400V. Ignorowane dla instalacji jednofazowych.",
+      "ru": "Как V2C сообщает напряжение установки: Фаза-нейтраль ~230В (наиболее распространённо) или Фаза-фаза ~400В. Игнорируется для однофазных установок.",
+      "ko": "V2C가 설치 전압을 보고하는 방식: 선-중성선 ~230V(가장 일반적) 또는 선-선 ~400V. 단상 설치에서는 무시됩니다.",
+      "ar": "كيف تبلغ V2C عن جهد التركيب: من الخط إلى المحايد ~230 فولت (الأكثر شيوعًا) أو من الخط إلى الخط ~400 فولت. يتم تجاهله في التركيبات أحادية الطور.",
+      "cs": "Jak V2C hlásí napětí instalace: Fáze-neutrál ~230V (nejběžnější) nebo Fáze-fáze ~400V. U jednofázových instalací se ignoruje."
+    },
+    "value": "line_to_neutral",
+    "values": [
+      {
+        "id": "line_to_neutral",
+        "label": {
+          "en": "Line-to-Neutral (~230V)",
+          "nl": "Fase-nul (~230V)",
+          "da": "Fase-nul (~230V)",
+          "de": "Phase-Neutral (~230V)",
+          "es": "Fase-Neutro (~230V)",
+          "fr": "Phase-Neutre (~230V)",
+          "it": "Fase-Neutro (~230V)",
+          "no": "Fase-nøytral (~230V)",
+          "sv": "Fas-neutral (~230V)",
+          "pl": "Faza-neutralny (~230V)",
+          "ru": "Фаза-нейтраль (~230В)",
+          "ko": "선-중성선 (~230V)",
+          "ar": "خط إلى محايد (~230 فولت)",
+          "cs": "Fáze-neutrál (~230V)"
+        }
+      },
+      {
+        "id": "line_to_line",
+        "label": {
+          "en": "Line-to-Line (~400V)",
+          "nl": "Fase-fase (~400V)",
+          "da": "Fase-fase (~400V)",
+          "de": "Phase-Phase (~400V)",
+          "es": "Fase-Fase (~400V)",
+          "fr": "Phase-Phase (~400V)",
+          "it": "Fase-Fase (~400V)",
+          "no": "Fase-fase (~400V)",
+          "sv": "Fas-fas (~400V)",
+          "pl": "Faza-faza (~400V)",
+          "ru": "Фаза-фаза (~400В)",
+          "ko": "선-선 (~400V)",
+          "ar": "خط إلى خط (~400 فولت)",
+          "cs": "Fáze-fáze (~400V)"
+        }
+      }
+    ]
   },
   {
     "id": "min_intensity",
@@ -65,7 +222,8 @@
       "sv": "Minsta dynamiska laddningsström i ampere",
       "pl": "Minimalne dynamiczne natężenie ładowania",
       "ru": "Минимальные динамические амперы зарядки",
-      "ko": "최소 동적 충전 전류"
+      "ko": "최소 동적 충전 전류",
+      "ar": "الحد الأدنى للأمبيرات الديناميكية للشحن"
     },
     "hint": {
       "en": "Minimum charging power in Amperes (6-32A)",
@@ -79,7 +237,8 @@
       "sv": "Minsta laddkraft i ampere (6-32A)",
       "pl": "Minimalna moc ładowania w amperach (6-32A)",
       "ru": "Минимальная мощность зарядки в амперах (6-32А)",
-      "ko": "최소 충전 전력 (암페어 기준) (6-32A)"
+      "ko": "최소 충전 전력 (암페어 기준) (6-32A)",
+      "ar": "الحد الأدنى لقوة الشحن بالأمبير (6-32A)"
     },
     "value": 6,
     "min": 6,
@@ -96,7 +255,8 @@
       "sv": "A",
       "pl": "A",
       "ru": "А",
-      "ko": "A"
+      "ko": "A",
+      "ar": "أ"
     }
   },
   {
@@ -114,7 +274,8 @@
       "sv": "Högsta dynamiska laddningsström i ampere",
       "pl": "Maksymalne dynamiczne natężenie ładowania",
       "ru": "Максимальные динамические амперы зарядки",
-      "ko": "최대 동적 충전 전류"
+      "ko": "최대 동적 충전 전류",
+      "ar": "الحد الأقصى للأمبيرات الديناميكية للشحن"
     },
     "hint": {
       "en": "Maximum charging power in Amperes (6-32A)",
@@ -128,7 +289,8 @@
       "sv": "Högsta laddkraft i ampere (6-32A)",
       "pl": "Maksymalna moc ładowania w amperach (6-32A)",
       "ru": "Максимальная мощность зарядки в амперах (6-32А)",
-      "ko": "최대 충전 전력 (암페어 기준) (6-32A)"
+      "ko": "최대 충전 전력 (암페어 기준) (6-32A)",
+      "ar": "الحد الأقصى لقوة الشحن بالأمبير (6-32A)"
     },
     "value": 32,
     "min": 6,
@@ -145,7 +307,8 @@
       "sv": "A",
       "pl": "A",
       "ru": "А",
-      "ko": "A"
+      "ko": "A",
+      "ar": "أ"
     }
   },
   {
@@ -163,7 +326,8 @@
       "sv": "Dynamiskt kraftläge",
       "pl": "Tryb dynamicznej mocy",
       "ru": "Динамический режим мощности",
-      "ko": "동적 전력 모드"
+      "ko": "동적 전력 모드",
+      "ar": "وضع الطاقة الديناميكي"
     },
     "value": "disabled",
     "values": [
@@ -181,7 +345,8 @@
           "sv": "Avaktiverad",
           "pl": "Wyłączony",
           "ru": "Отключено",
-          "ko": "비활성화"
+          "ko": "비활성화",
+          "ar": "معطل"
         }
       },
       {
@@ -198,7 +363,8 @@
           "sv": "Tidsstyrd kraft aktiverad",
           "pl": "Tryb czasowy włączony",
           "ru": "Включено по времени",
-          "ko": "타이머 전력 활성화"
+          "ko": "타이머 전력 활성화",
+          "ar": "تمكين الطاقة المؤقتة"
         }
       },
       {
@@ -215,7 +381,8 @@
           "sv": "Tidsstyrd kraft avaktiverad",
           "pl": "Tryb czasowy wyłączony",
           "ru": "Отключено по времени",
-          "ko": "타이머 전력 비활성화"
+          "ko": "타이머 전력 비활성화",
+          "ar": "تم تعطيل الطاقة المؤقتة"
         }
       },
       {
@@ -232,7 +399,8 @@
           "sv": "FV-exklusivt läge",
           "pl": "Tryb ekskluzywny FV",
           "ru": "Эксклюзивный режим FV",
-          "ko": "FV 독점 모드"
+          "ko": "FV 독점 모드",
+          "ar": "وضع FV الحصري"
         }
       },
       {
@@ -249,7 +417,8 @@
           "sv": "FV+Min kraftläge",
           "pl": "Tryb FV+Min Moc",
           "ru": "Режим FV+Мин мощность",
-          "ko": "FV+최소 전력 모드"
+          "ko": "FV+최소 전력 모드",
+          "ar": "وضع FV+Min Power"
         }
       },
       {
@@ -266,7 +435,8 @@
           "sv": "Nät+FV-läge",
           "pl": "Tryb Sieć+FV",
           "ru": "Режим Сеть+FV",
-          "ko": "그리드+FV 모드"
+          "ko": "그리드+FV 모드",
+          "ar": "وضع الشبكة + FV"
         }
       },
       {
@@ -283,7 +453,8 @@
           "sv": "Utan laddningsläge",
           "pl": "Tryb bez ładowania",
           "ru": "Режим без зарядки",
-          "ko": "충전 없음 모드"
+          "ko": "충전 없음 모드",
+          "ar": "وضع بدون شحن"
         }
       }
     ]

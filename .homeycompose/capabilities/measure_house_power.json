@@ -12,7 +12,8 @@
     "sv": "Husets Kraft",
     "pl": "Moc Domu",
     "ru": "Мощность дома",
-    "ko": "집 전력"
+    "ko": "집 전력",
+    "ar": "قوة المنزل"
   },
   "units": {
     "en": "W",
@@ -26,7 +27,8 @@
     "sv": "W",
     "pl": "W",
     "ru": "Вт",
-    "ko": "W"
+    "ko": "W",
+    "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
   },
   "uiComponent": "sensor",
   "getable": true,

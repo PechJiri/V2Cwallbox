@@ -12,7 +12,8 @@
     "sv": "Timer",
     "pl": "Stoper",
     "ru": "Таймер",
-    "ko": "타이머"
+    "ko": "타이머",
+    "ar": "مؤقت"
   },
   "getable": true,
   "setable": true,
@@ -29,7 +30,8 @@
     "sv": "Timer påslagen",
     "pl": "Stoper włączony",
     "ru": "Таймер включен",
-    "ko": "타이머 켜짐"
+    "ko": "타이머 켜짐",
+    "ar": "تم تشغيل المؤقت"
   },
   "insightsTitleFalse": {
     "en": "Timer turned Off",
@@ -43,7 +45,8 @@
     "sv": "Timer avstängd",
     "pl": "Stoper wyłączony",
     "ru": "Таймер выключен",
-    "ko": "타이머 꺼짐"
+    "ko": "타이머 꺼짐",
+    "ar": "تم إيقاف المؤقت"
   },
   "uiComponent": "sensor",
   "icon": "/assets/timer.svg"

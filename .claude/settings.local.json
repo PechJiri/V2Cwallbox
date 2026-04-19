@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git pull *)",
+      "Bash(homey app *)",
+      "WebFetch(domain:apps.developer.homey.app)",
+      "WebFetch(domain:apps-sdk-v3.developer.homey.app)",
+      "Bash(npx --no-install homey app validate)",
+      "Bash(node -c drivers/v2c-wallbox/device.js)",
+      "Bash(node -c lib/EnergyManager.js)",
+      "Bash(node -c lib/constants.js)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:v2charge.com)",
+      "Bash(node -c drivers/v2c-wallbox/driver.js)",
+      "Bash(node -c lib/DataValidator.js)",
+      "Bash(node -c lib/Logger.js)",
+      "Bash(node -c lib/ip_validator.js)",
+      "Bash(node -c widgets/wallbox-status/api.js)",
+      "Bash(node -c drivers/v2c-wallbox/FlowCardManager.js)",
+      "Bash(node -e \"const j = require\\('./app.json'\\); console.log\\('Compatibility:', j.compatibility\\); console.log\\('Driver capabilities:', j.drivers[0].capabilities\\); console.log\\('Has target_power:', j.drivers[0].capabilities.includes\\('target_power'\\)\\); console.log\\('Has target_power_mode:', j.drivers[0].capabilities.includes\\('target_power_mode'\\)\\); console.log\\('Has measure_dynamic:', j.drivers[0].capabilities.includes\\('measure_dynamic'\\)\\); console.log\\('capabilitiesOptions:', JSON.stringify\\(j.drivers[0].capabilitiesOptions?.target_power, null, 2\\)\\); console.log\\('phase_mode setting:', j.drivers[0].settings?.find\\(s => s.id === 'phase_mode'\\)?.id\\);\")",
+      "Bash(node -e \"const j = require\\('./app.json'\\); console.log\\('target_power_mode values count:', j.drivers[0].capabilitiesOptions?.target_power_mode?.values?.length\\); console.log\\('target_power_mode values:', j.drivers[0].capabilitiesOptions?.target_power_mode?.values?.map\\(v => v.id\\)\\);\")",
+      "Bash(node -e ' *)",
+      "WebFetch(domain:community.homey.app)"
+    ]
+  }
+}

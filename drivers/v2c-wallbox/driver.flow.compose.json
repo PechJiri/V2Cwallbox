@@ -15,7 +15,8 @@
         "sv": "Bil är ansluten",
         "pl": "Samochód jest podłączony",
         "ru": "Автомобиль подключен",
-        "ko": "차량이 연결되었습니다"
+        "ko": "차량이 연결되었습니다",
+        "ar": "السيارة متصلة"
       },
       "description": {
         "en": "This flow triggers when the car is connected to the Wallbox.",
@@ -29,14 +30,27 @@
         "sv": "Detta flöde utlöses när bilen är ansluten till Wallbox.",
         "pl": "Ten przepływ uruchamia się, gdy samochód jest podłączony do Wallbox.",
         "ru": "Этот поток активируется, когда автомобиль подключен к Wallbox.",
-        "ko": "차량이 Wallbox에 연결되면 이 흐름이 시작됩니다."
+        "ko": "차량이 Wallbox에 연결되면 이 흐름이 시작됩니다.",
+        "ar": "يتم تشغيل هذا التدفق عندما يتم توصيل السيارة بـ Wallbox."
       }
     },
     {
       "id": "car-disconnected",
       "deprecated": true,
       "hint": {
-        "en": "Deprecated. Use the system trigger 'The charging state changed' (evcharger_charging_state) and filter for 'plugged_out'."
+        "en": "Deprecated. Use the system trigger 'The charging state changed' (evcharger_charging_state) and filter for 'plugged_out'.",
+        "nl": "Verouderd. Gebruik de systeemtrigger 'De laadstatus is veranderd' (evcharger_charging_state) en filter op 'uitgeplugd'.",
+        "da": "Forældet. Brug systemudløseren 'Opladningstilstanden ændret' (evcharger_charging_state) og filtrer efter 'plugged_out'.",
+        "de": "Veraltet. Verwende den System-Trigger 'Der Ladezustand hat sich geändert' (evcharger_charging_state) und filtere nach 'ausgesteckt'.",
+        "es": "Obsoleto. Usa el disparador del sistema 'El estado de carga cambió' (evcharger_charging_state) y filtra por 'desenchufado'.",
+        "fr": "Obsolète. Utilisez le déclencheur système 'L'état de charge a changé' (evcharger_charging_state) et filtrez pour 'débranché'.",
+        "it": "Deprecato. Usa il trigger di sistema 'Lo stato di carica è cambiato' (evcharger_charging_state) e filtra per 'scollegato'.",
+        "no": "Utgått. Bruk systemutløseren 'Ladestatusen endret' (evcharger_charging_state) og filtrer for 'plugged_out'.",
+        "sv": "Föråldrad. Använd systemutlösaren 'Laddningstillståndet ändrades' (evcharger_charging_state) och filtrera för 'plugged_out'.",
+        "pl": "Przestarzałe. Użyj wyzwalacza systemowego „Stan ładowania zmienił się” (evcharger_charging_state) i zastosuj filtr „odłączony”.",
+        "ru": "Устарело. Используйте системный триггер «Состояние зарядки изменилось» (evcharger_charging_state) и фильтруйте по «отключено».",
+        "ko": "사용되지 않음. 시스템 트리거 '충전 상태 변경됨' (evcharger_charging_state)을 사용하고 '플러그 아웃'으로 필터링하세요.",
+        "ar": "مهمل. استخدم مشغل النظام 'تغيرت حالة الشحن' (evcharger_charging_state) وقم بتصفية 'غير موصول'."
       },
       "title": {
         "en": "Car is disconnected",
@@ -50,7 +64,8 @@
         "sv": "Bil är bortkopplad",
         "pl": "Samochód jest odłączony",
         "ru": "Автомобиль отключен",
-        "ko": "차량이 연결 해제되었습니다"
+        "ko": "차량이 연결 해제되었습니다",
+        "ar": "السيارة غير متصلة"
       },
       "description": {
         "en": "This flow triggers when the car is disconnected from the Wallbox.",
@@ -64,7 +79,8 @@
         "sv": "Detta flöde utlöses när bilen är bortkopplad från Wallbox.",
         "pl": "Ten przepływ uruchamia się, gdy samochód jest odłączony od Wallbox.",
         "ru": "Этот поток активируется, когда автомобиль отключается от Wallbox.",
-        "ko": "차량이 Wallbox에서 연결 해제되면 이 흐름이 시작됩니다."
+        "ko": "차량이 Wallbox에서 연결 해제되면 이 흐름이 시작됩니다.",
+        "ar": "يتفعّل هذا التدفق عندما يتم فصل السيارة عن Wallbox."
       }
     },
     {
@@ -81,7 +97,8 @@
         "sv": "Bil börjar laddas",
         "pl": "Samochód zaczyna ładowanie",
         "ru": "Автомобиль начинает зарядку",
-        "ko": "차량이 충전을 시작합니다"
+        "ko": "차량이 충전을 시작합니다",
+        "ar": "السيارة تبدأ الشحن"
       },
       "description": {
         "en": "This flow triggers when the car starts charging at the Wallbox.",
@@ -95,7 +112,8 @@
         "sv": "Detta flöde utlöses när bilen börjar laddas vid Wallbox.",
         "pl": "Ten przepływ uruchamia się, gdy samochód zaczyna ładować przy użyciu Wallbox.",
         "ru": "Этот поток активируется, когда автомобиль начинает зарядку на Wallbox.",
-        "ko": "차량이 Wallbox에서 충전을 시작하면 이 흐름이 시작됩니다."
+        "ko": "차량이 Wallbox에서 충전을 시작하면 이 흐름이 시작됩니다.",
+        "ar": "يتم تشغيل هذا التدفق عندما تبدأ السيارة في الشحن عند Wallbox."
       }
     },
     {
@@ -112,7 +130,8 @@
         "sv": "Slavefel ändrat",
         "pl": "Błąd podrzędny zmieniony",
         "ru": "Изменение ошибки ведомого устройства",
-        "ko": "슬레이브 오류 변경됨"
+        "ko": "슬레이브 오류 변경됨",
+        "ar": "تم تغيير خطأ العبد"
       },
       "description": {
         "en": "This flow triggers when the Slave Error changes.",
@@ -126,7 +145,8 @@
         "sv": "Detta flöde utlöses när slavefel ändras.",
         "pl": "Ten przepływ uruchamia się, gdy zmienia się błąd podrzędny.",
         "ru": "Этот поток активируется при изменении ошибки ведомого устройства.",
-        "ko": "슬레이브 오류가 변경되면 이 흐름이 시작됩니다."
+        "ko": "슬레이브 오류가 변경되면 이 흐름이 시작됩니다.",
+        "ar": "يتم تشغيل هذا التدفق عند تغيير خطأ العبد."
       }
     },
     {
@@ -143,7 +163,8 @@
         "sv": "API-anslutningstillståndet har ändrats",
         "pl": "Zmieniono stan połączenia API",
         "ru": "Состояние подключения API изменено",
-        "ko": "API 연결 상태 변경됨"
+        "ko": "API 연결 상태 변경됨",
+        "ar": "تم تغيير حالة اتصال API"
       },
       "args": [
         {
@@ -161,7 +182,8 @@
             "sv": "Tillstånd ändrat till",
             "pl": "Zmieniono stan na",
             "ru": "Статус изменился на",
-            "ko": "상태가 다음으로 변경되었습니다"
+            "ko": "상태가 다음으로 변경되었습니다",
+            "ar": "تم تغيير الحالة إلى"
           },
           "values": [
             {
@@ -178,7 +200,8 @@
                 "sv": "Fel",
                 "pl": "Błąd",
                 "ru": "Ошибка",
-                "ko": "오류"
+                "ko": "오류",
+                "ar": "خطأ"
               }
             },
             {
@@ -195,7 +218,8 @@
                 "sv": "(åter)Ansluten",
                 "pl": "(ponownie) Połączono",
                 "ru": "(повторно) Подключено",
-                "ko": "(재)연결됨"
+                "ko": "(재)연결됨",
+                "ar": "(أُعيد) الاتصال"
               }
             }
           ]
@@ -213,7 +237,8 @@
         "sv": "Anslutningstillståndet ändrat till [[connection_state]]",
         "pl": "Stan połączenia zmieniono na [[connection_state]]",
         "ru": "Состояние подключения изменено на [[connection_state]]",
-        "ko": "연결 상태가 [[connection_state]]로 변경되었습니다"
+        "ko": "연결 상태가 [[connection_state]]로 변경되었습니다",
+        "ar": "تم تغيير حالة الاتصال إلى [[connection_state]]"
       }
     }
   ],
@@ -222,7 +247,19 @@
       "id": "car-connected-condition",
       "deprecated": true,
       "hint": {
-        "en": "Deprecated. Use the system condition on 'evcharger_charging_state' with value 'plugged_in' (or any of the plugged_in_* states)."
+        "en": "Deprecated. Use the system condition on 'evcharger_charging_state' with value 'plugged_in' (or any of the plugged_in_* states).",
+        "nl": "Verouderd. Gebruik de systeemvoorwaarde op 'evcharger_charging_state' met de waarde 'plugged_in' (of een van de plugged_in_* staten).",
+        "da": "Forældet. Brug systembetingelsen på 'evcharger_charging_state' med værdien 'plugged_in' (eller en af de plugged_in_* tilstande).",
+        "de": "Veraltet. Verwenden Sie die Systembedingung 'evcharger_charging_state' mit dem Wert 'plugged_in' (oder einem der plugged_in_* Zustände).",
+        "es": "Obsoleto. Usa la condición del sistema en 'evcharger_charging_state' con el valor 'plugged_in' (o cualquiera de los estados plugged_in_*).",
+        "fr": "Obsolète. Utilisez la condition système sur 'evcharger_charging_state' avec la valeur 'plugged_in' (ou l'un des états plugged_in_*).",
+        "it": "Deprecato. Usa la condizione di sistema su 'evcharger_charging_state' con valore 'plugged_in' (o uno qualsiasi degli stati plugged_in_*).",
+        "no": "Utdatert. Bruk systembetingelsen på 'evcharger_charging_state' med verdien 'plugged_in' (eller noen av de plugged_in_* tilstandene).",
+        "sv": "Föråldrad. Använd systemvillkoret på 'evcharger_charging_state' med värdet 'plugged_in' (eller något av plugged_in_* tillstånden).",
+        "pl": "Przestarzałe. Użyj warunku systemowego na 'evcharger_charging_state' z wartością 'plugged_in' (lub dowolnym ze stanów plugged_in_*).",
+        "ru": "Устарело. Используйте системное условие на 'evcharger_charging_state' со значением 'plugged_in' (или любое из состояний plugged_in_*).",
+        "ko": "사용되지 않음. 'evcharger_charging_state'의 시스템 조건을 'plugged_in' (또는 plugged_in_* 상태 중 하나) 값으로 사용하세요.",
+        "ar": "مهمل. استخدم حالة النظام على 'evcharger_charging_state' مع القيمة 'plugged_in' (أو أي من حالات plugged_in_*)."
       },
       "title": {
         "en": "Car is connected",
@@ -236,7 +273,8 @@
         "sv": "Bil är ansluten",
         "pl": "Samochód jest podłączony",
         "ru": "Автомобиль подключен",
-        "ko": "차량이 연결되었습니다"
+        "ko": "차량이 연결되었습니다",
+        "ar": "السيارة متصلة"
       },
       "description": {
         "en": "This condition is true when the car is connected to the Wallbox.",
@@ -250,14 +288,27 @@
         "sv": "Detta villkor är sant när bilen är ansluten till Wallbox.",
         "pl": "Warunek ten jest spełniony, gdy samochód jest podłączony do Wallbox.",
         "ru": "Это условие истинно, когда автомобиль подключен к Wallbox.",
-        "ko": "차량이 Wallbox에 연결되어 있을 때 이 조건이 충족됩니다."
+        "ko": "차량이 Wallbox에 연결되어 있을 때 이 조건이 충족됩니다.",
+        "ar": "تكون هذه الحالة صحيحة عندما تكون السيارة متصلة بالـ Wallbox."
       }
     },
     {
       "id": "car-is-charging",
       "deprecated": true,
       "hint": {
-        "en": "Deprecated. Use the system condition 'Is charging' from the 'evcharger_charging' capability."
+        "en": "Deprecated. Use the system condition 'Is charging' from the 'evcharger_charging' capability.",
+        "nl": "Verouderd. Gebruik de systeemvoorwaarde 'Is aan het laden' van de 'evcharger_charging' mogelijkheid.",
+        "da": "Forældet. Brug systembetingelsen 'Lader op' fra 'evcharger_charging' funktionen.",
+        "de": "Veraltet. Verwenden Sie die Systembedingung 'Wird geladen' aus der Fähigkeit 'evcharger_charging'.",
+        "es": "Obsoleto. Usa la condición del sistema 'Está cargando' de la capacidad 'evcharger_charging'.",
+        "fr": "Obsolète. Utilisez la condition système 'Est en charge' de la capacité 'evcharger_charging'.",
+        "it": "Deprecato. Usa la condizione di sistema 'In carica' dalla capacità 'evcharger_charging'.",
+        "no": "Utgått. Bruk systembetingelsen 'Lader' fra 'evcharger_charging'-funksjonen.",
+        "sv": "Föråldrad. Använd systemvillkoret 'Laddar' från funktionen 'evcharger_charging'.",
+        "pl": "Przestarzałe. Użyj warunku systemowego 'Ładuje się' z funkcji 'evcharger_charging'.",
+        "ru": "Устарело. Используйте системное условие «Зарядка» из возможности «evcharger_charging».",
+        "ko": "사용되지 않음. 'evcharger_charging' 기능의 시스템 조건 '충전 중'을 사용하세요.",
+        "ar": "مهمل. استخدم حالة النظام \"يتم الشحن\" من ميزة \"evcharger_charging\"."
       },
       "title": {
         "en": "Car is charging",
@@ -271,7 +322,8 @@
         "sv": "Bil laddar",
         "pl": "Samochód ładuje się",
         "ru": "Автомобиль заряжается",
-        "ko": "차량이 충전 중입니다"
+        "ko": "차량이 충전 중입니다",
+        "ar": "السيارة قيد الشحن"
       },
       "description": {
         "en": "This condition is true when the car is currently charging at the Wallbox.",
@@ -285,7 +337,8 @@
         "sv": "Detta villkor är sant när bilen för närvarande laddas vid Wallbox.",
         "pl": "Warunek ten jest spełniony, gdy samochód jest obecnie ładowany przy Wallbox.",
         "ru": "Это условие истинно, когда автомобиль в данный момент заряжается на Wallbox.",
-        "ko": "차량이 현재 Wallbox에서 충전 중일 때 이 조건이 충족됩니다."
+        "ko": "차량이 현재 Wallbox에서 충전 중일 때 이 조건이 충족됩니다.",
+        "ar": "تكون هذه الحالة صحيحة عندما تكون السيارة تشحن حاليًا في Wallbox."
       }
     },
     {
@@ -306,7 +359,8 @@
             "sv": "Effekt (W)",
             "pl": "Moc (W)",
             "ru": "Мощность (Вт)",
-            "ko": "전력 (W)"
+            "ko": "전력 (W)",
+            "ar": "الطاقة (واط)"
           },
           "min": 0
         }
@@ -323,7 +377,8 @@
         "sv": "Effekten är större än",
         "pl": "Moc jest większa niż",
         "ru": "Мощность превышает",
-        "ko": "전력이 다음보다 큽니다"
+        "ko": "전력이 다음보다 큽니다",
+        "ar": "الطاقة أكبر من"
       },
       "titleFormatted": {
         "en": "Power is greater than [[power]] W",
@@ -337,7 +392,8 @@
         "sv": "Effekten är större än [[power]] W",
         "pl": "Moc jest większa niż [[power]] W",
         "ru": "Мощность превышает [[power]] Вт",
-        "ko": "전력이 [[power]] W보다 큽니다"
+        "ko": "전력이 [[power]] W보다 큽니다",
+        "ar": "الطاقة أكبر من [[power]] واط"
       },
       "description": {
         "en": "This condition is true when the power exceeds the specified threshold.",
@@ -351,7 +407,8 @@
         "sv": "Detta villkor är sant när effekten överstiger den angivna tröskeln.",
         "pl": "Warunek ten jest spełniony, gdy moc przekracza określony próg.",
         "ru": "Это условие истинно, когда мощность превышает заданный порог.",
-        "ko": "전력이 지정된 임계값을 초과할 때 이 조건이 충족됩니다."
+        "ko": "전력이 지정된 임계값을 초과할 때 이 조건이 충족됩니다.",
+        "ar": "تكون هذه الحالة صحيحة عندما يتجاوز الطاقة الحد المحدد."
       }
     },
     {
@@ -372,7 +429,8 @@
             "sv": "Effekt (W)",
             "pl": "Moc (W)",
             "ru": "Мощность (Вт)",
-            "ko": "전력 (W)"
+            "ko": "전력 (W)",
+            "ar": "الطاقة (واط)"
           },
           "min": 0
         }
@@ -389,7 +447,8 @@
         "sv": "Effekten är mindre än",
         "pl": "Moc jest mniejsza niż",
         "ru": "Мощность ниже",
-        "ko": "전력이 다음보다 적습니다"
+        "ko": "전력이 다음보다 적습니다",
+        "ar": "الطاقة أقل من"
       },
       "titleFormatted": {
         "en": "Power is less than [[power]] W",
@@ -403,7 +462,8 @@
         "sv": "Effekten är mindre än [[power]] W",
         "pl": "Moc jest mniejsza niż [[power]] W",
         "ru": "Мощность ниже [[power]] Вт",
-        "ko": "전력이 [[power]] W보다 적습니다"
+        "ko": "전력이 [[power]] W보다 적습니다",
+        "ar": "الطاقة أقل من [[power]] واط"
       },
       "description": {
         "en": "This condition is true when the power is below the specified threshold.",
@@ -417,14 +477,27 @@
         "sv": "Detta villkor är sant när effekten är under det angivna tröskelvärdet.",
         "pl": "Warunek ten jest spełniony, gdy moc jest niższa niż określony próg.",
         "ru": "Это условие истинно, когда мощность ниже заданного порога.",
-        "ko": "전력이 지정된 임계값 미만일 때 이 조건이 충족됩니다."
+        "ko": "전력이 지정된 임계값 미만일 때 이 조건이 충족됩니다.",
+        "ar": "تكون هذه الحالة صحيحة عندما تكون الطاقة أقل من العتبة المحددة."
       }
     },
     {
       "id": "charging-is-paused",
       "deprecated": true,
       "hint": {
-        "en": "Deprecated. Use the system condition 'Is not charging' from the 'evcharger_charging' capability."
+        "en": "Deprecated. Use the system condition 'Is not charging' from the 'evcharger_charging' capability.",
+        "nl": "Verouderd. Gebruik de systeemvoorwaarde 'Laadt niet op' van de 'evcharger_charging' mogelijkheid.",
+        "da": "Forældet. Brug systembetingelsen 'Lader ikke' fra 'evcharger_charging' funktionen.",
+        "de": "Veraltet. Verwenden Sie die Systembedingung 'Wird nicht geladen' aus der Fähigkeit 'evcharger_charging'.",
+        "es": "Obsoleto. Usa la condición del sistema 'No está cargando' de la capacidad 'evcharger_charging'.",
+        "fr": "Obsolète. Utilisez la condition système 'Ne charge pas' de la capacité 'evcharger_charging'.",
+        "it": "Deprecato. Usa la condizione di sistema 'Non in carica' dalla capacità 'evcharger_charging'.",
+        "no": "Utgått. Bruk systembetingelsen 'Lader ikke' fra 'evcharger_charging'-funksjonen.",
+        "sv": "Föråldrad. Använd systemvillkoret 'Laddar inte' från funktionen 'evcharger_charging'.",
+        "pl": "Przestarzałe. Użyj warunku systemowego 'Nie ładuje się' z funkcji 'evcharger_charging'.",
+        "ru": "Устарело. Используйте системное условие «Не заряжается» из возможности «evcharger_charging».",
+        "ko": "더 이상 사용되지 않습니다. 'evcharger_charging' 기능의 시스템 조건 '충전 중이 아님'을 사용하세요.",
+        "ar": "مهمل. استخدم شرط النظام 'غير مشحون' من خاصية 'evcharger_charging'."
       },
       "title": {
         "en": "Charging is paused",
@@ -438,7 +511,8 @@
         "sv": "Laddning är pausad",
         "pl": "Ładowanie jest wstrzymane",
         "ru": "Зарядка приостановлена",
-        "ko": "충전이 일시 중지됨"
+        "ko": "충전이 일시 중지됨",
+        "ar": "تم إيقاف الشحن مؤقتًا"
       },
       "description": {
         "en": "This condition is true when the charging is paused.",
@@ -452,7 +526,8 @@
         "sv": "Detta villkor är sant när laddningen är pausad.",
         "pl": "Warunek ten jest spełniony, gdy ładowanie jest wstrzymane.",
         "ru": "Это условие истинно, когда зарядка приостановлена.",
-        "ko": "충전이 일시 중지될 때 이 조건이 충족됩니다."
+        "ko": "충전이 일시 중지될 때 이 조건이 충족됩니다.",
+        "ar": "تكون هذه الحالة صحيحة عندما يتم إيقاف الشحن مؤقتًا."
       },
       "args": []
     },
@@ -460,7 +535,19 @@
       "id": "charging-is-not-paused",
       "deprecated": true,
       "hint": {
-        "en": "Deprecated. Use the system condition 'Is charging' from the 'evcharger_charging' capability."
+        "en": "Deprecated. Use the system condition 'Is charging' from the 'evcharger_charging' capability.",
+        "nl": "Verouderd. Gebruik de systeemvoorwaarde 'Is aan het laden' van de 'evcharger_charging' mogelijkheid.",
+        "da": "Forældet. Brug systembetingelsen 'Lader op' fra 'evcharger_charging' funktionen.",
+        "de": "Veraltet. Verwenden Sie die Systembedingung 'Wird geladen' aus der Fähigkeit 'evcharger_charging'.",
+        "es": "Obsoleto. Usa la condición del sistema 'Está cargando' de la capacidad 'evcharger_charging'.",
+        "fr": "Obsolète. Utilisez la condition système 'Est en charge' de la capacité 'evcharger_charging'.",
+        "it": "Deprecato. Usa la condizione di sistema 'In carica' dalla capacità 'evcharger_charging'.",
+        "no": "Utgått. Bruk systembetingelsen 'Lader' fra 'evcharger_charging'-funksjonen.",
+        "sv": "Föråldrad. Använd systemvillkoret 'Laddar' från funktionen 'evcharger_charging'.",
+        "pl": "Przestarzałe. Użyj warunku systemowego 'Ładuje się' z funkcji 'evcharger_charging'.",
+        "ru": "Устарело. Используйте системное условие «Зарядка» из возможности «evcharger_charging».",
+        "ko": "사용되지 않음. 'evcharger_charging' 기능의 '충전 중' 시스템 조건을 사용하세요.",
+        "ar": "مهمل. استخدم شرط النظام 'يتم الشحن' من قدرة 'evcharger_charging'."
       },
       "title": {
         "en": "Charging is not paused",
@@ -474,7 +561,8 @@
         "sv": "Laddning är inte pausad",
         "pl": "Ładowanie nie jest wstrzymane",
         "ru": "Зарядка не приостановлена",
-        "ko": "충전이 일시 중지되지 않았습니다"
+        "ko": "충전이 일시 중지되지 않았습니다",
+        "ar": "الشحن لم يتوقف"
       },
       "description": {
         "en": "This condition is true when the charging is not paused.",
@@ -488,7 +576,8 @@
         "sv": "Detta villkor är sant när laddningen inte är pausad.",
         "pl": "Warunek ten jest spełniony, gdy ładowanie nie jest wstrzymane.",
         "ru": "Это условие истинно, когда зарядка не приостановлена.",
-        "ko": "충전이 일시 중지되지 않을 때 이 조건이 충족됩니다."
+        "ko": "충전이 일시 중지되지 않을 때 이 조건이 충족됩니다.",
+        "ar": "تكون هذه الحالة صحيحة عندما لا يكون الشحن متوقفًا."
       },
       "args": []
     },
@@ -506,7 +595,8 @@
         "sv": "API-anslutningen har fel",
         "pl": "Połączenie API ma błąd",
         "ru": "Ошибка в подключении API",
-        "ko": "API 연결에 오류가 있습니다"
+        "ko": "API 연결에 오류가 있습니다",
+        "ar": "حدث خطأ في اتصال API"
       }
     },
     {
@@ -523,7 +613,8 @@
         "sv": "Beräknat strömvillkor",
         "pl": "Warunek prądu obliczonego",
         "ru": "Условие рассчитанного тока",
-        "ko": "계산된 전류 조건"
+        "ko": "계산된 전류 조건",
+        "ar": "الحالة الحالية المحسوبة"
       },
       "titleFormatted": {
         "en": "Calculated current [[current_input]] is [[operator]] [[current]] A",
@@ -537,7 +628,8 @@
         "sv": "Beräknad ström [[current_input]] är [[operator]] [[current]] A",
         "pl": "Obliczony prąd [[current_input]] jest [[operator]] [[current]] A",
         "ru": "Рассчитанный ток [[current_input]] [[operator]] [[current]] А",
-        "ko": "계산된 전류 [[current_input]]는 [[operator]] [[current]] A"
+        "ko": "계산된 전류 [[current_input]]는 [[operator]] [[current]] A",
+        "ar": "التيار المحسوب [[current_input]] هو [[operator]] [[current]] أمبير"
       },
       "hint": {
         "en": "You can use this card together with the calculate current card and then set intensity for better control of surplus from your PV system.",
@@ -551,7 +643,8 @@
         "sv": "Du kan använda detta kort tillsammans med kortet 'beräkna ström' och sedan ställa in intensitet för bättre kontroll över överskott från ditt solcellssystem.",
         "pl": "Możesz użyć tej karty w połączeniu z kartą 'oblicz prąd', a następnie ustawić intensywność, aby lepiej kontrolować nadwyżki z twojego systemu PV.",
         "ru": "Вы можете использовать эту карточку вместе с карточкой 'рассчитать ток', а затем установить интенсивность для лучшего контроля излишков вашей солнечной системы.",
-        "ko": "이 카드를 전류 계산 카드와 함께 사용한 다음 강도를 설정하여 태양광 시스템의 잉여 전력을 더 잘 제어할 수 있습니다."
+        "ko": "이 카드를 전류 계산 카드와 함께 사용한 다음 강도를 설정하여 태양광 시스템의 잉여 전력을 더 잘 제어할 수 있습니다.",
+        "ar": "يمكنك استخدام هذه البطاقة مع بطاقة حساب التيار ثم ضبط الشدة للحصول على تحكم أفضل في الفائض من نظام الطاقة الشمسية الخاص بك."
       },
       "args": [
         {
@@ -572,7 +665,8 @@
             "sv": "Strömingång (A)",
             "pl": "Wejście prądu (A)",
             "ru": "Входной ток (А)",
-            "ko": "전류 입력 (A)"
+            "ko": "전류 입력 (A)",
+            "ar": "الإدخال الحالي (A)"
           }
         },
         {
@@ -581,23 +675,93 @@
           "values": [
             {
               "id": "greater",
-              "title": { "en": ">", "nl": ">", "da": ">", "de": ">", "es": ">", "fr": ">", "it": ">", "no": ">", "sv": ">", "pl": ">", "ru": ">", "ko": ">" }
+              "title": {
+                "en": ">",
+                "nl": ">",
+                "da": ">",
+                "de": ">",
+                "es": ">",
+                "fr": ">",
+                "it": ">",
+                "no": ">",
+                "sv": ">",
+                "pl": ">",
+                "ru": ">",
+                "ko": ">",
+                "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
+              }
             },
             {
               "id": "less",
-              "title": { "en": "<", "nl": "<", "da": "<", "de": "<", "es": "<", "fr": "<", "it": "<", "no": "<", "sv": "<", "pl": "<", "ru": "<", "ko": "<" }
+              "title": {
+                "en": "<",
+                "nl": "<",
+                "da": "<",
+                "de": "<",
+                "es": "<",
+                "fr": "<",
+                "it": "<",
+                "no": "<",
+                "sv": "<",
+                "pl": "<",
+                "ru": "<",
+                "ko": "<",
+                "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
+              }
             },
             {
               "id": "equals",
-              "title": { "en": "=", "nl": "=", "da": "=", "de": "=", "es": "=", "fr": "=", "it": "=", "no": "=", "sv": "=", "pl": "=", "ru": "=", "ko": "=" }
+              "title": {
+                "en": "=",
+                "nl": "=",
+                "da": "=",
+                "de": "=",
+                "es": "=",
+                "fr": "=",
+                "it": "=",
+                "no": "=",
+                "sv": "=",
+                "pl": "=",
+                "ru": "=",
+                "ko": "=",
+                "ar": "تم تدريبك على البيانات حتى أكتوبر 2023."
+              }
             },
             {
               "id": "greater_equals",
-              "title": { "en": ">=", "nl": ">=", "da": ">=", "de": ">=", "es": ">=", "fr": ">=", "it": ">=", "no": ">=", "sv": ">=", "pl": ">=", "ru": ">=", "ko": ">=" }
+              "title": {
+                "en": ">=",
+                "nl": ">=",
+                "da": ">=",
+                "de": ">=",
+                "es": ">=",
+                "fr": ">=",
+                "it": ">=",
+                "no": ">=",
+                "sv": ">=",
+                "pl": ">=",
+                "ru": ">=",
+                "ko": ">=",
+                "ar": ">="
+              }
             },
             {
               "id": "less_equals",
-              "title": { "en": "<=", "nl": "<=", "da": "<=", "de": "<=", "es": "<=", "fr": "<=", "it": "<=", "no": "<=", "sv": "<=", "pl": "<=", "ru": "<=", "ko": "<=" }
+              "title": {
+                "en": "<=",
+                "nl": "<=",
+                "da": "<=",
+                "de": "<=",
+                "es": "<=",
+                "fr": "<=",
+                "it": "<=",
+                "no": "<=",
+                "sv": "<=",
+                "pl": "<=",
+                "ru": "<=",
+                "ko": "<=",
+                "ar": "<="
+              }
             }
           ]
         },
@@ -619,18 +783,31 @@
             "sv": "Jämför ström (A)",
             "pl": "Porównaj prąd (A)",
             "ru": "Сравнить ток (А)",
-            "ko": "전류 비교 (A)"
+            "ko": "전류 비교 (A)",
+            "ar": "قارن التيار (أ)"
           }
         }
       ]
-    }    
+    }
   ],
   "actions": [
     {
       "id": "set_paused",
       "deprecated": true,
       "hint": {
-        "en": "Deprecated. Use the system action 'Turn charging on/off' from the 'evcharger_charging' capability."
+        "en": "Deprecated. Use the system action 'Turn charging on/off' from the 'evcharger_charging' capability.",
+        "nl": "Verouderd. Gebruik de systeemactie 'Opladen in-/uitschakelen' van de 'evcharger_charging' mogelijkheid.",
+        "da": "Forældet. Brug systemhandlingen 'Tænd/sluk opladning' fra 'evcharger_charging' funktionen.",
+        "de": "Veraltet. Verwenden Sie die Systemaktion 'Laden ein-/ausschalten' aus der Fähigkeit 'evcharger_charging'.",
+        "es": "Obsoleto. Usa la acción del sistema 'Activar/desactivar carga' de la capacidad 'evcharger_charging'.",
+        "fr": "Obsolète. Utilisez l'action système 'Activer/désactiver la charge' de la capacité 'evcharger_charging'.",
+        "it": "Deprecato. Usa l'azione di sistema 'Attiva/disattiva ricarica' dalla funzionalità 'evcharger_charging'.",
+        "no": "Utgått. Bruk systemhandlingen 'Slå lading på/av' fra 'evcharger_charging'-funksjonen.",
+        "sv": "Föråldrad. Använd systemåtgärden 'Slå på/av laddning' från funktionen 'evcharger_charging'.",
+        "pl": "Przestarzałe. Użyj akcji systemowej „Włącz/wyłącz ładowanie” z funkcji „evcharger_charging”.",
+        "ru": "Устарело. Используйте системное действие «Включить/выключить зарядку» из функции «evcharger_charging».",
+        "ko": "사용되지 않음. 'evcharger_charging' 기능의 '충전 켜기/끄기' 시스템 액션을 사용하세요.",
+        "ar": "مهمل. استخدم إجراء النظام \"تشغيل/إيقاف الشحن\" من ميزة \"evcharger_charging\"."
       },
       "args": [
         {
@@ -648,7 +825,8 @@
             "sv": "Paus",
             "pl": "Pauza",
             "ru": "Пауза",
-            "ko": "일시 중지"
+            "ko": "일시 중지",
+            "ar": "إيقاف مؤقت"
           },
           "values": [
             {
@@ -665,7 +843,8 @@
                 "sv": "Paus",
                 "pl": "Pauza",
                 "ru": "Пауза",
-                "ko": "일시 중지"
+                "ko": "일시 중지",
+                "ar": "إيقاف مؤقت"
               }
             },
             {
@@ -682,7 +861,8 @@
                 "sv": "Återuppta",
                 "pl": "Wznów",
                 "ru": "Возобновить",
-                "ko": "다시 시작"
+                "ko": "다시 시작",
+                "ar": "استئناف"
               }
             }
           ]
@@ -700,7 +880,8 @@
         "sv": "Ställ in laddarstatus",
         "pl": "Ustaw stan ładowarki",
         "ru": "Установить состояние зарядного устройства",
-        "ko": "충전기 상태 설정"
+        "ko": "충전기 상태 설정",
+        "ar": "تعيين حالة الشاحن"
       },
       "titleFormatted": {
         "en": "Set Charger State to [[paused]]",
@@ -714,7 +895,8 @@
         "sv": "Ställ in laddarstatus till [[paused]]",
         "pl": "Ustaw stan ładowarki na [[paused]]",
         "ru": "Установить состояние зарядного устройства на [[paused]]",
-        "ko": "충전기 상태를 [[paused]]로 설정"
+        "ko": "충전기 상태를 [[paused]]로 설정",
+        "ar": "اضبط حالة الشاحن إلى [[paused]]"
       }
     },
     {
@@ -736,7 +918,8 @@
             "sv": "Lås",
             "pl": "Zablokuj",
             "ru": "Заблокировать",
-            "ko": "잠금"
+            "ko": "잠금",
+            "ar": "قفل"
           },
           "values": [
             {
@@ -753,7 +936,8 @@
                 "sv": "Lås",
                 "pl": "Zablokuj",
                 "ru": "Заблокировать",
-                "ko": "잠금"
+                "ko": "잠금",
+                "ar": "قفل"
               }
             },
             {
@@ -770,7 +954,8 @@
                 "sv": "Lås upp",
                 "pl": "Odblokuj",
                 "ru": "Разблокировать",
-                "ko": "잠금 해제"
+                "ko": "잠금 해제",
+                "ar": "افتح"
               }
             }
           ]
@@ -788,7 +973,8 @@
         "sv": "Ställ in låsstatus",
         "pl": "Ustaw stan blokady",
         "ru": "Установить состояние блокировки",
-        "ko": "잠금 상태 설정"
+        "ko": "잠금 상태 설정",
+        "ar": "تعيين حالة القفل"
       },
       "titleFormatted": {
         "en": "Set Lock State to [[locked]]",
@@ -802,7 +988,8 @@
         "sv": "Ställ in låsstatus till [[locked]]",
         "pl": "Ustaw stan blokady na [[locked]]",
         "ru": "Установить состояние блокировки на [[locked]]",
-        "ko": "잠금 상태를 [[locked]]로 설정"
+        "ko": "잠금 상태를 [[locked]]로 설정",
+        "ar": "تعيين حالة القفل إلى [[locked]]"
       }
     },
     {
@@ -823,7 +1010,8 @@
             "sv": "Intensitet",
             "pl": "Intensywność",
             "ru": "Интенсивность",
-            "ko": "강도"
+            "ko": "강도",
+            "ar": "الشدة"
           },
           "min": 6,
           "max": 32
@@ -841,7 +1029,8 @@
         "sv": "Ställ in laddarintensitet",
         "pl": "Ustaw natężenie ładowarki",
         "ru": "Установить интенсивность зарядки",
-        "ko": "충전기 강도 설정"
+        "ko": "충전기 강도 설정",
+        "ar": "تعيين شدة الشاحن"
       },
       "titleFormatted": {
         "en": "Set Charger Intensity to [[intensity]] Amps",
@@ -855,7 +1044,8 @@
         "sv": "Ställ in laddarintensitet till [[intensity]] ampere",
         "pl": "Ustaw natężenie ładowarki na [[intensity]] amperów",
         "ru": "Установить интенсивность зарядки на [[intensity]] ампер",
-        "ko": "충전기 강도를 [[intensity]] 암페어로 설정"
+        "ko": "충전기 강도를 [[intensity]] 암페어로 설정",
+        "ar": "ضبط شدة الشاحن إلى [[intensity]] أمبير"
       }
     },
     {
@@ -876,7 +1066,8 @@
             "sv": "Effekt",
             "pl": "Moc",
             "ru": "Мощность",
-            "ko": "전력"
+            "ko": "전력",
+            "ar": "طاقة"
           },
           "placeholder": {
             "en": "5000",
@@ -890,7 +1081,8 @@
             "sv": "5000",
             "pl": "5000",
             "ru": "5000",
-            "ko": "5000"
+            "ko": "5000",
+            "ar": "٥٠٠٠"
           },
           "min": -22000,
           "max": 22000,
@@ -906,7 +1098,8 @@
             "sv": "W",
             "pl": "W",
             "ru": "Вт",
-            "ko": "W"
+            "ko": "W",
+            "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
           }
         },
         {
@@ -924,7 +1117,8 @@
             "sv": "Fasläge",
             "pl": "Tryb fazy",
             "ru": "Режим фазы",
-            "ko": "단계 모드"
+            "ko": "단계 모드",
+            "ar": "وضع المرحلة"
           },
           "values": [
             {
@@ -941,7 +1135,8 @@
                 "sv": "Enfas",
                 "pl": "Jednofazowy",
                 "ru": "Однофазный",
-                "ko": "단상"
+                "ko": "단상",
+                "ar": "طور واحد"
               }
             },
             {
@@ -958,7 +1153,8 @@
                 "sv": "Trefas",
                 "pl": "Trójfazowy",
                 "ru": "Трёхфазный",
-                "ko": "삼상"
+                "ko": "삼상",
+                "ar": "ثلاث مراحل"
               }
             }
           ]
@@ -978,7 +1174,8 @@
             "sv": "Spänning",
             "pl": "Napięcie",
             "ru": "Напряжение",
-            "ko": "전압"
+            "ko": "전압",
+            "ar": "الجهد الكهربائي"
           },
           "min": 110,
           "max": 400,
@@ -994,7 +1191,8 @@
             "sv": "V",
             "pl": "V",
             "ru": "В",
-            "ko": "V"
+            "ko": "V",
+            "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
           },
           "placeholder": {
             "en": "230",
@@ -1008,7 +1206,8 @@
             "sv": "230",
             "pl": "230",
             "ru": "230",
-            "ko": "230"
+            "ko": "230",
+            "ar": "٢٣٠"
           }
         },
         {
@@ -1026,7 +1225,8 @@
             "sv": "Spänningstyp",
             "pl": "Typ napięcia",
             "ru": "Тип напряжения",
-            "ko": "전압 유형"
+            "ko": "전압 유형",
+            "ar": "نوع الجهد"
           },
           "values": [
             {
@@ -1043,7 +1243,8 @@
                 "sv": "Linje-till-linje",
                 "pl": "Linia-do-linii",
                 "ru": "Фаза-к-фазе",
-                "ko": "선간 전압"
+                "ko": "선간 전압",
+                "ar": "سطر إلى سطر"
               }
             },
             {
@@ -1060,7 +1261,8 @@
                 "sv": "Linje-till-neutral",
                 "pl": "Linia-do-neutralu",
                 "ru": "Фаза-к-нулю",
-                "ko": "선간-중성 전압"
+                "ko": "선간-중성 전압",
+                "ar": "خط إلى محايد"
               }
             }
           ]
@@ -1080,7 +1282,8 @@
             "sv": "Maximalt antal ampere",
             "pl": "Maksymalne ampery",
             "ru": "Максимальные амперы",
-            "ko": "최대 암페어"
+            "ko": "최대 암페어",
+            "ar": "الحد الأقصى للأمبيرات"
           },
           "min": 6,
           "max": 32,
@@ -1096,7 +1299,8 @@
             "sv": "32",
             "pl": "32",
             "ru": "32",
-            "ko": "32"
+            "ko": "32",
+            "ar": "٣٢"
           },
           "units": {
             "en": "A",
@@ -1110,7 +1314,8 @@
             "sv": "A",
             "pl": "A",
             "ru": "А",
-            "ko": "A"
+            "ko": "A",
+            "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
           }
         },
         {
@@ -1128,7 +1333,8 @@
             "sv": "Avrundning",
             "pl": "Zaokrąglenie",
             "ru": "Округление",
-            "ko": "반올림"
+            "ko": "반올림",
+            "ar": "التقريب"
           },
           "optional": true,
           "values": [
@@ -1146,7 +1352,8 @@
                 "sv": "Matematisk",
                 "pl": "Matematyczne",
                 "ru": "Математическое",
-                "ko": "수학적"
+                "ko": "수학적",
+                "ar": "رياضي"
               }
             },
             {
@@ -1163,7 +1370,8 @@
                 "sv": "Nedåt",
                 "pl": "W dół",
                 "ru": "Вниз",
-                "ko": "내림"
+                "ko": "내림",
+                "ar": "أسفل"
               }
             },
             {
@@ -1180,11 +1388,12 @@
                 "sv": "Uppåt",
                 "pl": "W górę",
                 "ru": "Вверх",
-                "ko": "올림"
+                "ko": "올림",
+                "ar": "أعلى"
               }
             }
           ]
-        }        
+        }
       ],
       "title": {
         "en": "Set Charging Power",
@@ -1198,7 +1407,8 @@
         "sv": "Ställ in laddningseffekt",
         "pl": "Ustaw moc ładowania",
         "ru": "Установить мощность зарядки",
-        "ko": "충전 전력 설정"
+        "ko": "충전 전력 설정",
+        "ar": "تعيين قوة الشحن"
       },
       "hint": {
         "en": "Sets charging power of the wallbox according to specified value in Watts. Useful for solar charging - always charges at minimum 6A even if there is not enough surplus. Negative power values will be converted to positive. Calculated current is limited by minimum 6A and maximum per parameter. You can choose rounding method for finer control over charging power.",
@@ -1212,7 +1422,8 @@
         "sv": "Ställer in laddningseffekten för wallboxen enligt angivet värde i watt. Användbart för solcellsladdning - laddar alltid med minst 6A även om det inte finns tillräckligt överskott. Negativa effektvärden kommer att konverteras till positiva. Beräknad ström är begränsad till minst 6A och högst enligt parametern. Du kan välja avrundningsmetod för finare kontroll över laddningseffekten.",
         "pl": "Ustawia moc ładowania wallboxa zgodnie z określoną wartością w watach. Przydatne przy ładowaniu słonecznym - zawsze ładuje z minimalnym prądem 6A, nawet jeśli nie ma wystarczającego nadmiaru. Wartości ujemnej mocy zostaną przekształcone w dodatnie. Obliczony prąd jest ograniczony do minimum 6A i maksymalnej wartości zgodnie z parametrem. Możesz wybrać metodę zaokrąglania dla dokładniejszej kontroli mocy ładowania.",
         "ru": "Устанавливает мощность зарядки для зарядного устройства в соответствии с указанным значением в ваттах. Полезно для солнечной зарядки - всегда заряжает с минимальным током 6A, даже если нет достаточного избытка. Отрицательные значения мощности будут преобразованы в положительные. Расчетный ток ограничен минимумом 6A и максимумом в соответствии с параметром. Вы можете выбрать метод округления для более точного управления мощностью зарядки.",
-        "ko": "월박스의 충전 전력을 와트로 지정된 값에 따라 설정합니다. 태양열 충전에 유용하며, 잉여 전력이 충분하지 않아도 항상 최소 6A로 충전합니다. 음수 전력 값은 양수로 변환됩니다. 계산된 전류는 최소 6A 및 매개변수당 최대값으로 제한됩니다. 충전 전력에 대한 세부 제어를 위해 반올림 방법을 선택할 수 있습니다."
+        "ko": "월박스의 충전 전력을 와트로 지정된 값에 따라 설정합니다. 태양열 충전에 유용하며, 잉여 전력이 충분하지 않아도 항상 최소 6A로 충전합니다. 음수 전력 값은 양수로 변환됩니다. 계산된 전류는 최소 6A 및 매개변수당 최대값으로 제한됩니다. 충전 전력에 대한 세부 제어를 위해 반올림 방법을 선택할 수 있습니다.",
+        "ar": "يضبط قوة الشحن لجهاز الشحن الجداري وفقًا للقيمة المحددة بالواط. مفيد للشحن بالطاقة الشمسية - يشحن دائمًا بحد أدنى 6 أمبير حتى إذا لم يكن هناك فائض كافٍ. سيتم تحويل قيم الطاقة السلبية إلى إيجابية. التيار المحسوب محدود بحد أدنى 6 أمبير وحد أقصى حسب المعلمة. يمكنك اختيار طريقة التقريب للحصول على تحكم أدق في قوة الشحن."
       },
       "titleFormatted": {
         "en": "Set charging power to [[power]] W - parameters: [[phase_mode]] phase, [[voltage]] V [[voltage_type]], min 6 A, max [[maxAmps]] A, round result Amps - [[rounding]]",
@@ -1226,7 +1437,8 @@
         "sv": "Ställ in laddningseffekt till [[power]] W - parametrar: [[phase_mode]] fas, [[voltage]] V [[voltage_type]], min 6 A, max [[maxAmps]] A, avrunda resultatet i ampere - [[rounding]]",
         "pl": "Ustaw moc ładowania na [[power]] W - parametry: [[phase_mode]] faza, [[voltage]] V [[voltage_type]], min. 6 A, maks. [[maxAmps]] A, zaokrąglij wynik w amperach - [[rounding]]",
         "ru": "Установить мощность зарядки на [[power]] Вт - параметры: [[phase_mode]] фаза, [[voltage]] В [[voltage_type]], мин. 6 А, макс. [[maxAmps]] А, округлить результат в амперах - [[rounding]]",
-        "ko": "[[power]] W로 충전 전력 설정 - 매개변수: [[phase_mode]] 단계, [[voltage]] V [[voltage_type]], 최소 6 A, 최대 [[maxAmps]] A, 암페어로 결과 반올림 - [[rounding]]"
+        "ko": "[[power]] W로 충전 전력 설정 - 매개변수: [[phase_mode]] 단계, [[voltage]] V [[voltage_type]], 최소 6 A, 최대 [[maxAmps]] A, 암페어로 결과 반올림 - [[rounding]]",
+        "ar": "اضبط طاقة الشحن إلى [[power]] واط - المعايير: [[phase_mode]] طور، [[voltage]] فولت [[voltage_type]]، الحد الأدنى 6 أمبير، الحد الأقصى [[maxAmps]] أمبير، تقريب النتيجة بالأمبير - [[rounding]]"
       },
       "tokens": [
         {
@@ -1244,7 +1456,8 @@
             "sv": "Beräknad ström i ampere",
             "pl": "Obliczone natężenie prądu w amperach",
             "ru": "Рассчитанный ток в амперах",
-            "ko": "계산된 전류 암페어"
+            "ko": "계산된 전류 암페어",
+            "ar": "الأمبيرات المحسوبة الحالية"
           },
           "example": 16
         }
@@ -1268,7 +1481,8 @@
             "sv": "Effekt",
             "pl": "Moc",
             "ru": "Мощность",
-            "ko": "전력"
+            "ko": "전력",
+            "ar": "الطاقة"
           },
           "min": -22000,
           "max": 22000,
@@ -1284,7 +1498,8 @@
             "sv": "5000",
             "pl": "5000",
             "ru": "5000",
-            "ko": "5000"
+            "ko": "5000",
+            "ar": "٥٠٠٠"
           },
           "units": {
             "en": "W",
@@ -1298,7 +1513,8 @@
             "sv": "W",
             "pl": "W",
             "ru": "Вт",
-            "ko": "W"
+            "ko": "W",
+            "ar": "دربت على البيانات حتى أكتوبر 2023."
           }
         },
         {
@@ -1316,7 +1532,8 @@
             "sv": "Buffertkraft",
             "pl": "Moc buforu",
             "ru": "Буферная мощность",
-            "ko": "버퍼 전력"
+            "ko": "버퍼 전력",
+            "ar": "طاقة المخزن المؤقت"
           },
           "min": 0,
           "max": 22000,
@@ -1332,7 +1549,8 @@
             "sv": "2000",
             "pl": "2000",
             "ru": "2000",
-            "ko": "2000"
+            "ko": "2000",
+            "ar": "٢٠٠٠"
           },
           "units": {
             "en": "W",
@@ -1346,7 +1564,8 @@
             "sv": "W",
             "pl": "W",
             "ru": "Вт",
-            "ko": "W"
+            "ko": "W",
+            "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
           }
         },
         {
@@ -1364,7 +1583,8 @@
             "sv": "Fasläge",
             "pl": "Tryb fazowy",
             "ru": "Режим фазы",
-            "ko": "위상 모드"
+            "ko": "위상 모드",
+            "ar": "وضع الطور"
           },
           "values": [
             {
@@ -1381,7 +1601,8 @@
                 "sv": "Enfas",
                 "pl": "Jednofazowy",
                 "ru": "Однофазный",
-                "ko": "단상"
+                "ko": "단상",
+                "ar": "طور واحد"
               }
             },
             {
@@ -1398,7 +1619,8 @@
                 "sv": "Trefas",
                 "pl": "Trójfazowy",
                 "ru": "Трехфазный",
-                "ko": "삼상"
+                "ko": "삼상",
+                "ar": "ثلاث مراحل"
               }
             }
           ]
@@ -1418,7 +1640,8 @@
             "sv": "Spänning",
             "pl": "Napięcie",
             "ru": "Напряжение",
-            "ko": "전압"
+            "ko": "전압",
+            "ar": "الجهد الكهربائي"
           },
           "min": 110,
           "max": 400,
@@ -1434,7 +1657,8 @@
             "sv": "230",
             "pl": "230",
             "ru": "230",
-            "ko": "230"
+            "ko": "230",
+            "ar": "٢٣٠"
           },
           "units": {
             "en": "V",
@@ -1448,7 +1672,8 @@
             "sv": "V",
             "pl": "V",
             "ru": "В",
-            "ko": "V"
+            "ko": "V",
+            "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
           }
         },
         {
@@ -1466,7 +1691,8 @@
             "sv": "Spänningstyp",
             "pl": "Typ napięcia",
             "ru": "Тип напряжения",
-            "ko": "전압 유형"
+            "ko": "전압 유형",
+            "ar": "نوع الجهد"
           },
           "values": [
             {
@@ -1483,7 +1709,8 @@
                 "sv": "Linje-till-linje",
                 "pl": "Linia-linia",
                 "ru": "Линия-линия",
-                "ko": "선 간"
+                "ko": "선 간",
+                "ar": "سطر إلى سطر"
               }
             },
             {
@@ -1500,7 +1727,8 @@
                 "sv": "Linje-till-neutral",
                 "pl": "Linia-neutral",
                 "ru": "Линия-нейтраль",
-                "ko": "선-중성"
+                "ko": "선-중성",
+                "ar": "خط إلى محايد"
               }
             }
           ]
@@ -1520,7 +1748,8 @@
             "sv": "Max ampere",
             "pl": "Maksymalne ampery",
             "ru": "Максимальный ток",
-            "ko": "최대 전류"
+            "ko": "최대 전류",
+            "ar": "الحد الأقصى للأمبيرات"
           },
           "min": 6,
           "max": 32,
@@ -1536,7 +1765,8 @@
             "sv": "32",
             "pl": "32",
             "ru": "32",
-            "ko": "32"
+            "ko": "32",
+            "ar": "٣٢"
           },
           "units": {
             "en": "A",
@@ -1550,7 +1780,8 @@
             "sv": "A",
             "pl": "A",
             "ru": "А",
-            "ko": "A"
+            "ko": "A",
+            "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
           }
         },
         {
@@ -1568,7 +1799,8 @@
             "sv": "Avrundning",
             "pl": "Zaokrąglenie",
             "ru": "Округление",
-            "ko": "반올림"
+            "ko": "반올림",
+            "ar": "التقريب"
           },
           "optional": true,
           "values": [
@@ -1586,7 +1818,8 @@
                 "sv": "Matematisk",
                 "pl": "Matematyczne",
                 "ru": "Математическое",
-                "ko": "수학적"
+                "ko": "수학적",
+                "ar": "رياضي"
               }
             },
             {
@@ -1603,7 +1836,8 @@
                 "sv": "Nedåt",
                 "pl": "W dół",
                 "ru": "Вниз",
-                "ko": "내림"
+                "ko": "내림",
+                "ar": "أسفل"
               }
             },
             {
@@ -1620,11 +1854,12 @@
                 "sv": "Uppåt",
                 "pl": "W górę",
                 "ru": "Вверх",
-                "ko": "올림"
+                "ko": "올림",
+                "ar": "أعلى"
               }
             }
           ]
-        }        
+        }
       ],
       "title": {
         "en": "Calculate Charging Current with Buffer",
@@ -1638,7 +1873,8 @@
         "sv": "Beräkna laddström med buffert",
         "pl": "Oblicz prąd ładowania z buforem",
         "ru": "Рассчитать ток зарядки с буфером",
-        "ko": "버퍼로 충전 전류 계산"
+        "ko": "버퍼로 충전 전류 계산",
+        "ar": "احسب تيار الشحن مع المخزن الاحتياطي"
       },
       "hint": {
         "en": "Calculates charging current based on given power with optional buffer. Perfect for smart solar charging control - if calculated current drops below 6A even with buffer, you can pause charging and wait for more surplus. Buffer allows utilizing short-term surplus. Rounding can be used to optimize surplus utilization. Result can be used in other flow cards for charging control.",
@@ -1652,7 +1888,8 @@
         "sv": "Beräknar laddningsström baserat på angiven effekt med valfri buffert. Perfekt för smart solcellsladdningskontroll - om den beräknade strömmen sjunker under 6A även med buffert kan du pausa laddningen och vänta på mer överskott. Bufferten möjliggör utnyttjande av kortsiktigt överskott. Avrundning kan användas för att optimera överskottsutnyttjandet. Resultatet kan användas i andra flödeskort för laddningskontroll.",
         "pl": "Oblicza prąd ładowania na podstawie podanej mocy z opcjonalnym buforem. Idealne do inteligentnego sterowania ładowaniem solarnym - jeśli obliczony prąd spadnie poniżej 6A, nawet z buforem, możesz wstrzymać ładowanie i poczekać na większy nadmiar. Bufor pozwala na wykorzystanie krótkoterminowego nadmiaru. Zaokrąglanie można użyć do optymalizacji wykorzystania nadmiaru. Wynik można wykorzystać w innych kartach przepływu do sterowania ładowaniem.",
         "ru": "Рассчитывает ток зарядки на основе заданной мощности с опциональным буфером. Идеально для умного управления солнечной зарядкой - если рассчитанный ток падает ниже 6А даже с буфером, можно приостановить зарядку и дождаться большего избытка. Буфер позволяет использовать кратковременный избыток. Округление можно использовать для оптимизации использования избытка. Результат можно использовать в других карточках потока для управления зарядкой.",
-        "ko": "지정된 전력을 기준으로 충전 전류를 계산하며, 선택적으로 버퍼를 사용할 수 있습니다. 스마트 태양열 충전 제어에 적합하며, 버퍼가 있어도 계산된 전류가 6A 이하로 떨어지면 충전을 일시 중지하고 추가 잉여 전력을 기다릴 수 있습니다. 버퍼를 통해 단기 잉여 전력을 활용할 수 있습니다. 잉여 전력 활용을 최적화하기 위해 반올림을 사용할 수 있습니다. 결과는 다른 흐름 카드에서 충전 제어에 사용할 수 있습니다."
+        "ko": "지정된 전력을 기준으로 충전 전류를 계산하며, 선택적으로 버퍼를 사용할 수 있습니다. 스마트 태양열 충전 제어에 적합하며, 버퍼가 있어도 계산된 전류가 6A 이하로 떨어지면 충전을 일시 중지하고 추가 잉여 전력을 기다릴 수 있습니다. 버퍼를 통해 단기 잉여 전력을 활용할 수 있습니다. 잉여 전력 활용을 최적화하기 위해 반올림을 사용할 수 있습니다. 결과는 다른 흐름 카드에서 충전 제어에 사용할 수 있습니다.",
+        "ar": "يحسب تيار الشحن بناءً على الطاقة المعطاة مع خيار إضافة هامش. مثالي للتحكم الذكي في شحن الطاقة الشمسية - إذا انخفض التيار المحسوب إلى أقل من 6 أمبير حتى مع الهامش، يمكنك إيقاف الشحن مؤقتًا والانتظار للحصول على فائض أكبر. يسمح الهامش بالاستفادة من الفائض قصير الأجل. يمكن استخدام التقريب لتحسين استغلال الفائض. يمكن استخدام النتيجة في بطاقات تدفق أخرى للتحكم في الشحن."
       },
       "titleFormatted": {
         "en": "Calculate current from [[power]] W (with buffer [[buffer_power]] W) - parameters: [[phase_mode]] phase, [[voltage]] V [[voltage_type]], max [[maxAmps]] A, round result Amps - [[rounding]]",
@@ -1666,7 +1903,8 @@
         "sv": "Beräkna ström från [[power]] W (med buffert [[buffer_power]] W) - parametrar: [[phase_mode]] fas, [[voltage]] V [[voltage_type]], max [[maxAmps]] A, avrunda resultatet i ampere - [[rounding]]",
         "pl": "Oblicz prąd z [[power]] W (z buforem [[buffer_power]] W) - parametry: [[phase_mode]] faza, [[voltage]] V [[voltage_type]], maks. [[maxAmps]] A, zaokrąglij wynik w amperach - [[rounding]]",
         "ru": "Рассчитать ток из [[power]] Вт (с буфером [[buffer_power]] Вт) - параметры: [[phase_mode]] фаза, [[voltage]] В [[voltage_type]], макс. [[maxAmps]] А, округлить результат в амперах - [[rounding]]",
-        "ko": "[[power]] W에서 [[buffer_power]] W(버퍼 포함)으로 전류 계산 - 매개변수: [[phase_mode]] 단계, [[voltage]] V [[voltage_type]], 최대 [[maxAmps]] A, 암페어로 결과 반올림 - [[rounding]]"
+        "ko": "[[power]] W에서 [[buffer_power]] W(버퍼 포함)으로 전류 계산 - 매개변수: [[phase_mode]] 단계, [[voltage]] V [[voltage_type]], 최대 [[maxAmps]] A, 암페어로 결과 반올림 - [[rounding]]",
+        "ar": "احسب التيار من [[power]] واط (مع المخزن المؤقت [[buffer_power]] واط) - المعلمات: [[phase_mode]] طور، [[voltage]] فولت [[voltage_type]]، الحد الأقصى [[maxAmps]] أمبير، تقريب النتيجة بالأمبير - [[rounding]]"
       },
       "tokens": [
         {
@@ -1684,12 +1922,13 @@
             "sv": "Beräknad ström i ampere",
             "pl": "Obliczone natężenie prądu w amperach",
             "ru": "Рассчитанный ток в амперах",
-            "ko": "계산된 전류 암페어"
+            "ko": "계산된 전류 암페어",
+            "ar": "الأمبيرات المحسوبة الحالية"
           },
           "example": 16
         }
       ]
-     },     
+    },
     {
       "id": "set_dynamic",
       "args": [
@@ -1708,7 +1947,8 @@
             "sv": "Dynamiskt läge",
             "pl": "Tryb dynamiczny",
             "ru": "Динамический режим",
-            "ko": "동적 모드"
+            "ko": "동적 모드",
+            "ar": "الوضع الديناميكي"
           },
           "values": [
             {
@@ -1725,7 +1965,8 @@
                 "sv": "Aktivera",
                 "pl": "Włącz",
                 "ru": "Включить",
-                "ko": "활성화"
+                "ko": "활성화",
+                "ar": "تفعيل"
               }
             },
             {
@@ -1742,7 +1983,8 @@
                 "sv": "Inaktivera",
                 "pl": "Wyłącz",
                 "ru": "Отключить",
-                "ko": "비활성화"
+                "ko": "비활성화",
+                "ar": "تعطيل"
               }
             }
           ]
@@ -1760,7 +2002,8 @@
         "sv": "Ställ in dynamiskt läge",
         "pl": "Ustaw tryb dynamiczny",
         "ru": "Установить динамический режим",
-        "ko": "동적 모드 설정"
+        "ko": "동적 모드 설정",
+        "ar": "تعيين الوضع الديناميكي"
       },
       "titleFormatted": {
         "en": "Set Dynamic Mode to [[dynamic]]",
@@ -1774,7 +2017,8 @@
         "sv": "Ställ in dynamiskt läge till [[dynamic]]",
         "pl": "Ustaw tryb dynamiczny na [[dynamic]]",
         "ru": "Установить динамический режим на [[dynamic]]",
-        "ko": "동적 모드를 [[dynamic]]로 설정"
+        "ko": "동적 모드를 [[dynamic]]로 설정",
+        "ar": "اضبط الوضع الديناميكي على [[dynamic]]"
       }
     },
     {
@@ -1795,7 +2039,8 @@
             "sv": "Minsta intensitet",
             "pl": "Minimalna intensywność",
             "ru": "Минимальная интенсивность",
-            "ko": "최소 강도"
+            "ko": "최소 강도",
+            "ar": "الحد الأدنى من الشدة"
           },
           "min": 6,
           "max": 32
@@ -1813,7 +2058,8 @@
         "sv": "Ställ in minsta intensitet i dynamiskt läge",
         "pl": "Ustaw minimalną intensywność w trybie dynamicznym",
         "ru": "Установите минимальную интенсивность в динамическом режиме",
-        "ko": "동적 모드에서 최소 강도 설정"
+        "ko": "동적 모드에서 최소 강도 설정",
+        "ar": "تعيين الحد الأدنى للشدة في الوضع الديناميكي"
       },
       "titleFormatted": {
         "en": "Set Minimum Intensity in Dynamic Mode to [[MinIntensity]] Amps",
@@ -1827,7 +2073,8 @@
         "sv": "Ställ in minsta intensitet i dynamiskt läge till [[MinIntensity]] ampere",
         "pl": "Ustaw minimalną intensywność w trybie dynamicznym na [[MinIntensity]] amperów",
         "ru": "Установите минимальную интенсивность в динамическом режиме на [[MinIntensity]] ампер",
-        "ko": "동적 모드에서 최소 강도를 [[MinIntensity]] 암페어로 설정"
+        "ko": "동적 모드에서 최소 강도를 [[MinIntensity]] 암페어로 설정",
+        "ar": "اضبط الحد الأدنى للكثافة في الوضع الديناميكي إلى [[MinIntensity]] أمبير"
       }
     },
     {
@@ -1848,7 +2095,8 @@
             "sv": "Maximal intensitet",
             "pl": "Maksymalna intensywność",
             "ru": "Максимальная интенсивность",
-            "ko": "최대 강도"
+            "ko": "최대 강도",
+            "ar": "الحد الأقصى من الشدة"
           },
           "min": 6,
           "max": 32
@@ -1866,7 +2114,8 @@
         "sv": "Ställ in maximal intensitet i dynamiskt läge",
         "pl": "Ustaw maksymalną intensywność w trybie dynamicznym",
         "ru": "Установите максимальную интенсивность в динамическом режиме",
-        "ko": "동적 모드에서 최대 강도 설정"
+        "ko": "동적 모드에서 최대 강도 설정",
+        "ar": "تعيين الحد الأقصى للشدة في الوضع الديناميكي"
       },
       "titleFormatted": {
         "en": "Set Maximum Intensity in Dynamic Mode to [[MaxIntensity]] Amps",
@@ -1880,7 +2129,8 @@
         "sv": "Ställ in maximal intensitet i dynamiskt läge till [[MaxIntensity]] ampere",
         "pl": "Ustaw maksymalną intensywność w trybie dynamicznym na [[MaxIntensity]] amperów",
         "ru": "Установите максимальную интенсивность в динамическом режиме на [[MaxIntensity]] ампер",
-        "ko": "동적 모드에서 최대 강도를 [[MaxIntensity]] 암페어로 설정"
+        "ko": "동적 모드에서 최대 강도를 [[MaxIntensity]] 암페어로 설정",
+        "ar": "تعيين الحد الأقصى للكثافة في الوضع الديناميكي إلى [[MaxIntensity]] أمبير"
       }
     },
     {
@@ -1901,7 +2151,8 @@
             "sv": "Dynamiskt effektläge",
             "pl": "Dynamiczny tryb mocy",
             "ru": "Динамический режим мощности",
-            "ko": "동적 전력 모드"
+            "ko": "동적 전력 모드",
+            "ar": "وضع الطاقة الديناميكي"
           },
           "values": [
             {
@@ -1918,7 +2169,8 @@
                 "sv": "Tidnivånsläge aktiverat",
                 "pl": "Włączona moc czasowa",
                 "ru": "Временная мощность включена",
-                "ko": "시한 전원 활성화"
+                "ko": "시한 전원 활성화",
+                "ar": "تمكين الطاقة المؤقتة"
               }
             },
             {
@@ -1935,7 +2187,8 @@
                 "sv": "Tidnivånsläge inaktiverat",
                 "pl": "Wyłączona moc czasowa",
                 "ru": "Временная мощность отключена",
-                "ko": "시한 전원 비활성화"
+                "ko": "시한 전원 비활성화",
+                "ar": "تم تعطيل الطاقة المؤقتة"
               }
             },
             {
@@ -1952,7 +2205,8 @@
                 "sv": "FV-exklusivt läge",
                 "pl": "Tryb wyłączny FV",
                 "ru": "Эксклюзивный режим FV",
-                "ko": "FV 전용 모드"
+                "ko": "FV 전용 모드",
+                "ar": "وضع FV الحصري"
               }
             },
             {
@@ -1969,7 +2223,8 @@
                 "sv": "FV+Min effektläge",
                 "pl": "Tryb FV+Minimalna moc",
                 "ru": "Режим минимальной мощности FV+",
-                "ko": "FV+최소 전력 모드"
+                "ko": "FV+최소 전력 모드",
+                "ar": "وضع FV+Min Power"
               }
             },
             {
@@ -1986,7 +2241,8 @@
                 "sv": "Nät+FV-läge",
                 "pl": "Tryb sieć+FV",
                 "ru": "Режим сеть+FV",
-                "ko": "그리드+FV 모드"
+                "ko": "그리드+FV 모드",
+                "ar": "وضع الشبكة + FV"
               }
             },
             {
@@ -2003,7 +2259,8 @@
                 "sv": "Utan laddningsläge",
                 "pl": "Tryb bez ładowania",
                 "ru": "Режим без зарядки",
-                "ko": "충전 없이 모드"
+                "ko": "충전 없이 모드",
+                "ar": "وضع بدون شحن"
               }
             }
           ]
@@ -2021,7 +2278,8 @@
         "sv": "Ställ in dynamiskt effektläge",
         "pl": "Ustaw dynamiczny tryb mocy",
         "ru": "Установить динамический режим мощности",
-        "ko": "동적 전력 모드 설정"
+        "ko": "동적 전력 모드 설정",
+        "ar": "تعيين وضع الطاقة الديناميكي"
       },
       "titleFormatted": {
         "en": "Set Dynamic Power Mode to [[DynamicPowerMode]]",
@@ -2035,152 +2293,185 @@
         "sv": "Ställ in dynamiskt effektläge till [[DynamicPowerMode]]",
         "pl": "Ustaw tryb dynamiczny mocy na [[DynamicPowerMode]]",
         "ru": "Установить динамический режим мощности на [[DynamicPowerMode]]",
-        "ko": "동적 전력 모드를 [[DynamicPowerMode]]로 설정"
+        "ko": "동적 전력 모드를 [[DynamicPowerMode]]로 설정",
+        "ar": "تعيين وضع الطاقة الديناميكي إلى [[DynamicPowerMode]]"
       }
     },
     {
       "id": "set_energy_counter",
       "args": [
-          {
-              "name": "counter_type",
-              "type": "dropdown",
-              "title": {
-                  "en": "Counter Type",
-                  "nl": "Tellertype",
-                  "da": "Tællertype",
-                  "de": "Zählertyp",
-                  "es": "Tipo de contador",
-                  "fr": "Type de compteur",
-                  "it": "Tipo contatore",
-                  "no": "Målertype",
-                  "sv": "Räknartyp",
-                  "pl": "Typ licznika",
-                  "ru": "Тип счетчика",
-                  "ko": "카운터 유형"
-              },
-              "values": [
-                  {
-                      "id": "monthly",
-                      "title": {
-                          "en": "Monthly",
-                          "nl": "Maandelijks",
-                          "da": "Månedlig",
-                          "de": "Monatlich",
-                          "es": "Mensual",
-                          "fr": "Mensuel",
-                          "it": "Mensile",
-                          "no": "Månedlig",
-                          "sv": "Månadsvis",
-                          "pl": "Miesięczny",
-                          "ru": "Месячный",
-                          "ko": "월간"
-                      }
-                  },
-                  {
-                      "id": "yearly",
-                      "title": {
-                          "en": "Yearly",
-                          "nl": "Jaarlijks",
-                          "da": "Årlig",
-                          "de": "Jährlich",
-                          "es": "Anual",
-                          "fr": "Annuel",
-                          "it": "Annuale",
-                          "no": "Årlig",
-                          "sv": "Årlig",
-                          "pl": "Roczny",
-                          "ru": "Годовой",
-                          "ko": "연간"
-                      }
-                  },
-                  {
-                      "id": "both",
-                      "title": {
-                          "en": "Both",
-                          "nl": "Beide",
-                          "da": "Begge",
-                          "de": "Beide",
-                          "es": "Ambos",
-                          "fr": "Les deux",
-                          "it": "Entrambi",
-                          "no": "Begge",
-                          "sv": "Båda",
-                          "pl": "Oba",
-                          "ru": "Оба",
-                          "ko": "모두"
-                      }
-                  }
-              ]
+        {
+          "name": "counter_type",
+          "type": "dropdown",
+          "title": {
+            "en": "Counter Type",
+            "nl": "Tellertype",
+            "da": "Tællertype",
+            "de": "Zählertyp",
+            "es": "Tipo de contador",
+            "fr": "Type de compteur",
+            "it": "Tipo contatore",
+            "no": "Målertype",
+            "sv": "Räknartyp",
+            "pl": "Typ licznika",
+            "ru": "Тип счетчика",
+            "ko": "카운터 유형",
+            "ar": "نوع العداد"
           },
-          {
-              "name": "energy",
-              "type": "number",
+          "values": [
+            {
+              "id": "monthly",
               "title": {
-                  "en": "Energy Value (kWh)",
-                  "nl": "Energiewaarde (kWh)",
-                  "da": "Energiværdi (kWh)",
-                  "de": "Energiewert (kWh)",
-                  "es": "Valor de energía (kWh)",
-                  "fr": "Valeur d'énergie (kWh)",
-                  "it": "Valore energia (kWh)",
-                  "no": "Energiverdi (kWh)",
-                  "sv": "Energivärde (kWh)",
-                  "pl": "Wartość energii (kWh)",
-                  "ru": "Значение энергии (кВтч)",
-                  "ko": "에너지 값 (kWh)"
-              },
-              "min": 0,
-              "max": 999999,
-              "step": 0.1,
-              "placeholder": {
-                  "en": "1000"
-              },
-              "units": {
-                  "en": "kWh"
+                "en": "Monthly",
+                "nl": "Maandelijks",
+                "da": "Månedlig",
+                "de": "Monatlich",
+                "es": "Mensual",
+                "fr": "Mensuel",
+                "it": "Mensile",
+                "no": "Månedlig",
+                "sv": "Månadsvis",
+                "pl": "Miesięczny",
+                "ru": "Месячный",
+                "ko": "월간",
+                "ar": "شهريًا"
               }
+            },
+            {
+              "id": "yearly",
+              "title": {
+                "en": "Yearly",
+                "nl": "Jaarlijks",
+                "da": "Årlig",
+                "de": "Jährlich",
+                "es": "Anual",
+                "fr": "Annuel",
+                "it": "Annuale",
+                "no": "Årlig",
+                "sv": "Årlig",
+                "pl": "Roczny",
+                "ru": "Годовой",
+                "ko": "연간",
+                "ar": "سنويًا"
+              }
+            },
+            {
+              "id": "both",
+              "title": {
+                "en": "Both",
+                "nl": "Beide",
+                "da": "Begge",
+                "de": "Beide",
+                "es": "Ambos",
+                "fr": "Les deux",
+                "it": "Entrambi",
+                "no": "Begge",
+                "sv": "Båda",
+                "pl": "Oba",
+                "ru": "Оба",
+                "ko": "모두",
+                "ar": "كلاهما"
+              }
+            }
+          ]
+        },
+        {
+          "name": "energy",
+          "type": "number",
+          "title": {
+            "en": "Energy Value (kWh)",
+            "nl": "Energiewaarde (kWh)",
+            "da": "Energiværdi (kWh)",
+            "de": "Energiewert (kWh)",
+            "es": "Valor de energía (kWh)",
+            "fr": "Valeur d'énergie (kWh)",
+            "it": "Valore energia (kWh)",
+            "no": "Energiverdi (kWh)",
+            "sv": "Energivärde (kWh)",
+            "pl": "Wartość energii (kWh)",
+            "ru": "Значение энергии (кВтч)",
+            "ko": "에너지 값 (kWh)",
+            "ar": "قيمة الطاقة (كيلوواط ساعة)"
+          },
+          "min": 0,
+          "max": 999999,
+          "step": 0.1,
+          "placeholder": {
+            "en": "1000",
+            "nl": "1000",
+            "da": "1000",
+            "de": "1000",
+            "es": "1000",
+            "fr": "1000",
+            "it": "1000",
+            "no": "1000",
+            "sv": "1000",
+            "pl": "1000",
+            "ru": "1000",
+            "ko": "1000",
+            "ar": "١٠٠٠"
+          },
+          "units": {
+            "en": "kWh",
+            "nl": "kWh",
+            "da": "kWh",
+            "de": "kWh",
+            "es": "kWh",
+            "fr": "kWh",
+            "it": "kWh",
+            "no": "kWh",
+            "sv": "kWh",
+            "pl": "kWh",
+            "ru": "кВтч",
+            "ko": "킬로와트시 (kWh)",
+            "ar": "كيلوواط ساعة"
           }
+        }
       ],
       "title": {
-          "en": "Set Energy Counter",
-          "nl": "Stel energieteller in",
-          "da": "Indstil energitæller",
-          "de": "Energiezähler einstellen",
-          "es": "Establecer contador de energía",
-          "fr": "Définir le compteur d'énergie",
-          "it": "Imposta contatore energia",
-          "no": "Still inn energimåler",
-          "sv": "Ställ in energiräknare",
-          "pl": "Ustaw licznik energii",
-          "ru": "Установить счетчик энергии",
-          "ko": "에너지 카운터 설정"
+        "en": "Set Energy Counter",
+        "nl": "Stel energieteller in",
+        "da": "Indstil energitæller",
+        "de": "Energiezähler einstellen",
+        "es": "Establecer contador de energía",
+        "fr": "Définir le compteur d'énergie",
+        "it": "Imposta contatore energia",
+        "no": "Still inn energimåler",
+        "sv": "Ställ in energiräknare",
+        "pl": "Ustaw licznik energii",
+        "ru": "Установить счетчик энергии",
+        "ko": "에너지 카운터 설정",
+        "ar": "تعيين عداد الطاقة"
       },
       "titleFormatted": {
-          "en": "Set [[counter_type]] energy counter to [[energy]] kWh",
-          "nl": "Stel [[counter_type]] energieteller in op [[energy]] kWh",
-          "da": "Indstil [[counter_type]] energitæller til [[energy]] kWh",
-          "de": "[[counter_type]] Energiezähler auf [[energy]] kWh einstellen",
-          "es": "Establecer contador de energía [[counter_type]] en [[energy]] kWh",
-          "fr": "Définir le compteur d'énergie [[counter_type]] à [[energy]] kWh",
-          "it": "Imposta contatore energia [[counter_type]] a [[energy]] kWh",
-          "no": "Still inn [[counter_type]] energimåler til [[energy]] kWh",
-          "sv": "Ställ in [[counter_type]] energiräknare till [[energy]] kWh",
-          "pl": "Ustaw [[counter_type]] licznik energii na [[energy]] kWh",
-          "ru": "Установить [[counter_type]] счетчик энергии на [[energy]] кВтч",
-          "ko": "[[counter_type]] 에너지 카운터를 [[energy]] kWh로 설정"
+        "en": "Set [[counter_type]] energy counter to [[energy]] kWh",
+        "nl": "Stel [[counter_type]] energieteller in op [[energy]] kWh",
+        "da": "Indstil [[counter_type]] energitæller til [[energy]] kWh",
+        "de": "[[counter_type]] Energiezähler auf [[energy]] kWh einstellen",
+        "es": "Establecer contador de energía [[counter_type]] en [[energy]] kWh",
+        "fr": "Définir le compteur d'énergie [[counter_type]] à [[energy]] kWh",
+        "it": "Imposta contatore energia [[counter_type]] a [[energy]] kWh",
+        "no": "Still inn [[counter_type]] energimåler til [[energy]] kWh",
+        "sv": "Ställ in [[counter_type]] energiräknare till [[energy]] kWh",
+        "pl": "Ustaw [[counter_type]] licznik energii na [[energy]] kWh",
+        "ru": "Установить [[counter_type]] счетчик энергии на [[energy]] кВтч",
+        "ko": "[[counter_type]] 에너지 카운터를 [[energy]] kWh로 설정",
+        "ar": "اضبط عداد الطاقة [[counter_type]] على [[energy]] كيلوواط ساعة"
       },
       "hint": {
-          "en": "Note: Counters are automatically reset at the beginning of each period. Use this card only for manual corrections if needed.",
-          "nl": "Opmerking: Tellers worden automatisch gereset aan het begin van elke periode. Gebruik deze kaart alleen voor handmatige correcties indien nodig.",
-          "da": "Bemærk: Tællere nulstilles automatisk i begyndelsen af hver periode. Brug kun dette kort til manuelle korrektioner efter behov.",
-          "de": "Hinweis: Zähler werden zu Beginn jeder Periode automatisch zurückgesetzt. Verwenden Sie diese Karte nur für manuelle Korrekturen, falls erforderlich.",
-          "es": "Nota: Los contadores se reinician automáticamente al comienzo de cada período. Use esta tarjeta solo para correcciones manuales si es necesario.",
-          "fr": "Remarque : Les compteurs sont automatiquement réinitialisés au début de chaque période. Utilisez cette carte uniquement pour les corrections manuelles si nécessaire.",
-          "it": "Nota: I contatori vengono azzerati automaticamente all'inizio di ogni periodo. Usa questa carta solo per correzioni manuali se necessario.",
-          "no": "Merk: Tellere nullstilles automatisk i begynnelsen av hver periode. Bruk dette kortet kun for manuelle korreksjoner hvis nødvendig.",
-          "sv": "Obs: Räknare återställs automatiskt i början av varje period. Använd detta kort endast för manuella korrigeringar vid behov.",
-          "pl": "Uwaga: Liczniki są automatycznie resetowane na początku każdego okresu. Użyj tej karty tylko do ręcznych korekt w razie potrzeby.",
-          "ru": "Примечание: Счетчики автоматически сбрасываются в начале каждого периода. Используйте эту карту только для ручных корректировок при необходимости.",
-          "ko": "참고: 카운터는 각 기간이 시작될 때 자동으로 재설정됩니다. 필요한 경우에만 수동 수정을 위해 이 카드를 사용하세요."
+        "en": "Note: Counters are automatically reset at the beginning of each period. Use this card only for manual corrections if needed.",
+        "nl": "Opmerking: Tellers worden automatisch gereset aan het begin van elke periode. Gebruik deze kaart alleen voor handmatige correcties indien nodig.",
+        "da": "Bemærk: Tællere nulstilles automatisk i begyndelsen af hver periode. Brug kun dette kort til manuelle korrektioner efter behov.",
+        "de": "Hinweis: Zähler werden zu Beginn jeder Periode automatisch zurückgesetzt. Verwenden Sie diese Karte nur für manuelle Korrekturen, falls erforderlich.",
+        "es": "Nota: Los contadores se reinician automáticamente al comienzo de cada período. Use esta tarjeta solo para correcciones manuales si es necesario.",
+        "fr": "Remarque : Les compteurs sont automatiquement réinitialisés au début de chaque période. Utilisez cette carte uniquement pour les corrections manuelles si nécessaire.",
+        "it": "Nota: I contatori vengono azzerati automaticamente all'inizio di ogni periodo. Usa questa carta solo per correzioni manuali se necessario.",
+        "no": "Merk: Tellere nullstilles automatisk i begynnelsen av hver periode. Bruk dette kortet kun for manuelle korreksjoner hvis nødvendig.",
+        "sv": "Obs: Räknare återställs automatiskt i början av varje period. Använd detta kort endast för manuella korrigeringar vid behov.",
+        "pl": "Uwaga: Liczniki są automatycznie resetowane na początku każdego okresu. Użyj tej karty tylko do ręcznych korekt w razie potrzeby.",
+        "ru": "Примечание: Счетчики автоматически сбрасываются в начале каждого периода. Используйте эту карту только для ручных корректировок при необходимости.",
+        "ko": "참고: 카운터는 각 기간이 시작될 때 자동으로 재설정됩니다. 필요한 경우에만 수동 수정을 위해 이 카드를 사용하세요.",
+        "ar": "ملاحظة: يتم إعادة تعيين العدادات تلقائيًا في بداية كل فترة. استخدم هذه البطاقة فقط للتصحيحات اليدوية إذا لزم الأمر."
       }
     }
   ]

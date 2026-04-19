@@ -12,7 +12,8 @@
     "sv": "Laddad energi under denna månad (kWh)",
     "pl": "Naładowana energia w tym miesiącu (kWh)",
     "ru": "Заряженная энергия за этот месяц (kWh)",
-    "ko": "이 달 동안 충전된 에너지 (kWh)"
+    "ko": "이 달 동안 충전된 에너지 (kWh)",
+    "ar": "الطاقة المشحونة خلال هذا الشهر (كيلوواط ساعة)"
   },
   "units": {
     "en": "kWh",
@@ -26,7 +27,8 @@
     "sv": "kWh",
     "pl": "kWh",
     "ru": "кВтч",
-    "ko": "kWh"
+    "ko": "kWh",
+    "ar": "كيلوواط ساعة"
   },
   "uiComponent": "sensor",
   "getable": true,

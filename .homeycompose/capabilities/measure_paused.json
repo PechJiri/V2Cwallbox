@@ -12,7 +12,8 @@
     "sv": "Pausad",
     "pl": "Wstrzymany",
     "ru": "На паузе",
-    "ko": "일시 중지됨"
+    "ko": "일시 중지됨",
+    "ar": "موقوف مؤقتًا"
   },
   "getable": true,
   "setable": true,
@@ -29,7 +30,8 @@
     "sv": "Laddaren har pausats",
     "pl": "Ładowarka została wstrzymana",
     "ru": "Зарядное устройство на паузе",
-    "ko": "충전기가 일시 중지되었습니다"
+    "ko": "충전기가 일시 중지되었습니다",
+    "ar": "تم إيقاف الشاحن مؤقتًا"
   },
   "insightsTitleFalse": {
     "en": "Charger has been resumed",
@@ -43,7 +45,8 @@
     "sv": "Laddaren har återupptagits",
     "pl": "Ładowarka została wznowiona",
     "ru": "Зарядка возобновлена",
-    "ko": "충전기가 재개되었습니다"
+    "ko": "충전기가 재개되었습니다",
+    "ar": "تم استئناف الشاحن"
   },
   "uiComponent": null,
   "icon": "/assets/paused.svg"

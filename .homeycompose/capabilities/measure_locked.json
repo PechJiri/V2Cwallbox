@@ -12,7 +12,8 @@
     "sv": "Låst",
     "pl": "Zablokowany",
     "ru": "Заблокировано",
-    "ko": "잠김"
+    "ko": "잠김",
+    "ar": "مقفل"
   },
   "getable": true,
   "setable": false,
@@ -29,7 +30,8 @@
     "sv": "Laddaren har låsts",
     "pl": "Ładowarka została zablokowana",
     "ru": "Зарядное устройство заблокировано",
-    "ko": "충전기가 잠겼습니다"
+    "ko": "충전기가 잠겼습니다",
+    "ar": "تم قفل الشاحن"
   },
   "insightsTitleFalse": {
     "en": "Charger has been unlocked",
@@ -43,7 +45,8 @@
     "sv": "Laddaren har låsts upp",
     "pl": "Ładowarka została odblokowana",
     "ru": "Зарядное устройство разблокировано",
-    "ko": "충전기가 잠금 해제되었습니다"
+    "ko": "충전기가 잠금 해제되었습니다",
+    "ar": "تم فتح الشاحن"
   },
   "uiComponent": null,
   "icon": "/assets/locked.svg"

@@ -88,13 +88,18 @@ class MyDevice extends Device {
     
             // Nastavení capabilities
             await this.initializeCapabilities();
-    
-            // Registrace listeneru pro změnu A
+
+            // Zúžení rozsahu systémové capability target_power podle phase_mode settingu
+            // (widest range je v driver.compose.json, zde ji konkretizujeme dle instalace).
+            await this._applyCapabilityOptionsForPhaseMode();
+
+            // Registrace listeneru pro změnu A (manuální ovládání V2C Intensity)
             this.registerSetIntensityListener()
 
-            // Registrace listeneru pro Homey SDK evcharger_charging
-            // (nahrazuje bývalou measure_paused; Homey Energy tab, Flow karty, Insights)
-            this.registerEvChargerChargingListener();
+            // Registrace listenerů pro target_power + target_power_mode + evcharger_charging (Homey Energy).
+            // Všechny tři jsou zpracovány jedním multi-callback listenerem dle doporučení docs,
+            // protože systémová flow karta "Set target power" je přepíná najednou.
+            this.registerTargetPowerListeners();
 
             // Registrace listeneru pro systémovou capability locked
             this.registerLockedListener();
@@ -183,20 +188,173 @@ class MyDevice extends Device {
         });
     }
 
-    registerEvChargerChargingListener() {
-        // Homey SDK systémová capability — mapuje na V2C Paused flag (invertovaně):
-        // true  = uživatel chce nabíjet   → Paused = 0
-        // false = uživatel pauzuje        → Paused = 1
-        this.registerCapabilityListener('evcharger_charging', async (value) => {
-            try {
-                this.logger.debug('Změna evcharger_charging', { novýStav: value });
-                await this.v2cApi.setParameter('Paused', value ? '0' : '1');
-                return true;
-            } catch (error) {
-                this.logger.error('Selhalo nastavení evcharger_charging', error);
-                throw new Error('Selhalo nastavení stavu nabíjení');
-            }
+    registerTargetPowerListeners() {
+        // Multi-capability listener dle Homey Energy docs. Systémová flow karta
+        // "Set target power" atomicky přepíná všechny tři capability:
+        //   - target_power_mode → 'homey'
+        //   - target_power → požadovaná hodnota
+        //   - evcharger_charging → true (pro power>0) / false (pro 0)
+        // Debounce 500 ms dle doporučení docs.
+        this.registerMultipleCapabilityListener(
+            ['target_power', 'target_power_mode', 'evcharger_charging'],
+            async (values) => {
+                const modeChanged = values.target_power_mode !== undefined;
+                const powerChanged = values.target_power !== undefined;
+                const chargingChanged = values.evcharger_charging !== undefined;
+
+                const mode = values.target_power_mode
+                    ?? this.getCapabilityValue('target_power_mode')
+                    ?? CONSTANTS.TARGET_POWER_MODES.HOMEY;
+                const power = values.target_power
+                    ?? this.getCapabilityValue('target_power')
+                    ?? 0;
+                const charging = values.evcharger_charging
+                    ?? this.getCapabilityValue('evcharger_charging')
+                    ?? true;
+
+                this.logger.debug('target_power/mode/charging listener', {
+                    values, effectiveMode: mode, effectivePower: power, effectiveCharging: charging
+                });
+
+                // 1) Přepnutí módu → Dynamic + (volitelně) DynamicPowerMode
+                if (modeChanged) {
+                    if (mode === CONSTANTS.TARGET_POWER_MODES.HOMEY) {
+                        await this.v2cApi.setDynamic('0');
+                    } else {
+                        const v2cMode = CONSTANTS.TARGET_MODE_TO_V2C[mode];
+                        if (!v2cMode) {
+                            throw new Error(`Neznámý target_power_mode: ${mode}`);
+                        }
+                        await this.v2cApi.setDynamic('1');
+                        await this.v2cApi.setDynamicPowerMode(v2cMode);
+                    }
+                }
+
+                // 2) evcharger_charging (samostatná změna — user pause/resume) se projevuje vždy
+                if (chargingChanged) {
+                    await this.v2cApi.setParameter('Paused', charging ? '0' : '1');
+                }
+
+                // 3) V 'device' režimu V2C ignoruje Intensity — target_power nepropagujeme
+                if (mode !== CONSTANTS.TARGET_POWER_MODES.HOMEY) {
+                    return;
+                }
+
+                // 4) Aplikace target_power (při změně hodnoty nebo při přepnutí do homey módu).
+                //    _applyTargetPower si sama řídí Paused flag (0 → pauza, >0 → nabíjet).
+                if (powerChanged || modeChanged) {
+                    await this._applyTargetPower(power);
+                }
+            },
+            500
+        );
+    }
+
+    async _applyTargetPower(watts) {
+        // target_power === 0 znamená idle — pauza nabíjení přes V2C Paused flag.
+        // evcharger_charging capability se aktualizuje až polling cyclem z V2C dat.
+        if (!watts || watts <= 0) {
+            this.logger.debug('target_power = 0 → pauza nabíjení');
+            await this.v2cApi.setParameter('Paused', '1');
+            return;
+        }
+
+        const phaseMode = this.getSetting('phase_mode') || '3';
+        const voltageType = this.getSetting('voltage_type') || 'line_to_neutral';
+        const voltage = this.getCapabilityValue('measure_voltage_installation') || 230;
+        // V2C má vlastní MaxIntensity (z API) i uživatelský setting max_intensity.
+        // Oba mohou být nižší než konstantní MAX 32A — bereme nejnižší.
+        const settingMax = this.getSetting('max_intensity') || CONSTANTS.DEVICE.INTENSITY.MAX;
+        const capMax = this.getCapabilityValue('max_intensity') || CONSTANTS.DEVICE.INTENSITY.MAX;
+        const maxIntensity = Math.min(settingMax, capMax, CONSTANTS.DEVICE.INTENSITY.MAX);
+
+        const intensity = PowerCalculator.calculateCurrent(
+            watts,
+            phaseMode,
+            voltage,
+            voltageType,
+            maxIntensity,
+            CONSTANTS.ROUNDING_TYPES.FLOOR
+        );
+
+        this.logger.debug('Aplikuji target_power', {
+            watts, phaseMode, voltage, maxIntensity, intensity
         });
+
+        await this.v2cApi.setParameter('Paused', '0');
+        await this.v2cApi.setIntensity(intensity);
+    }
+
+    async _applyCapabilityOptionsForPhaseMode() {
+        // Zúží rozsah target_power capability podle počtu fází.
+        // Používáme konstantní referenční napětí 230 V (kolísání V se neřeší,
+        // capabilitiesOptions je expensive operation dle docs).
+        const phaseMode = this.getSetting('phase_mode') || '3';
+        const V_REF = 230;
+        const phaseFactor = phaseMode === '1' ? 1 : 3;
+
+        const max = CONSTANTS.DEVICE.INTENSITY.MAX * V_REF * phaseFactor;
+        const excludeMax = CONSTANTS.DEVICE.INTENSITY.MIN * V_REF * phaseFactor;
+        const step = phaseMode === '1' ? 230 : 690;
+
+        try {
+            await this.setCapabilityOptions('target_power', {
+                min: 0,
+                max,
+                step,
+                excludeMin: 0,
+                excludeMax,
+                decimals: 0
+            });
+            this.logger.debug('target_power capability options aktualizovány', {
+                phaseMode, max, excludeMax, step
+            });
+        } catch (error) {
+            this.logger.warn('Nepodařilo se nastavit target_power capability options', {
+                error: error.message
+            });
+        }
+    }
+
+    _mapV2CToTargetMode(dynamic, dynamicPowerMode) {
+        if (!dynamic) {
+            return CONSTANTS.TARGET_POWER_MODES.HOMEY;
+        }
+        const mapped = CONSTANTS.V2C_TO_TARGET_MODE[dynamicPowerMode];
+        if (!mapped) {
+            // Neznámý DynamicPowerMode — fallback na nejběžnější V2C profil (timed on)
+            return CONSTANTS.TARGET_POWER_MODES.V2C_TIMED_ON;
+        }
+        return mapped;
+    }
+
+    _validatePhaseMode(measuredPower, intensity, voltage, phaseMode, voltageType, maxIntensity) {
+        // Přeskočíme validaci při nestabilních stavech:
+        //  - ramp-up fáze nabíjení (auta rozjíždějí 1f → 3f, chargePower postupně roste)
+        //  - nízké hodnoty (šum / zaokrouhlovací chyby)
+        if (intensity < CONSTANTS.DEVICE.INTENSITY.MIN || measuredPower < 3000 || voltage < 100) {
+            return;
+        }
+
+        // V2C reportuje `intensity` jako požadovanou hodnotu, ale fakticky nabíjí maximálně na MaxIntensity cap.
+        // Pro realistické srovnání s měřeným výkonem bereme capped hodnotu.
+        const cappedIntensity = maxIntensity ? Math.min(intensity, maxIntensity) : intensity;
+        const expected = PowerCalculator.calculatePower(cappedIntensity, phaseMode, voltage, voltageType);
+        if (expected <= 0) return;
+
+        const deviation = Math.abs(measuredPower - expected) / measuredPower;
+        if (deviation > 0.4) {
+            this.logger.warn('phase_mode / voltage_type setting pravděpodobně neodpovídá skutečné instalaci', {
+                phase_mode: phaseMode,
+                voltage_type: voltageType,
+                measured_power: measuredPower,
+                expected_power: expected,
+                intensity: cappedIntensity,
+                voltage,
+                deviation: `${(deviation * 100).toFixed(0)}%`,
+                hint: 'Zkontroluj nastavení "Installation Phase Count" a "Voltage Measurement Type"'
+            });
+        }
     }
 
     registerLockedListener() {
@@ -371,6 +529,20 @@ class MyDevice extends Device {
                 ? this.setCapabilityValue(cap, val)
                 : Promise.resolve();
 
+            // Homey systémové target_power* — mapování z V2C Dynamic + DynamicPowerMode
+            const targetMode = this._mapV2CToTargetMode(deviceData.dynamic, deviceData.dynamicPowerMode);
+            const phaseMode = this.getSetting('phase_mode') || '3';
+            const voltageType = this.getSetting('voltage_type') || 'line_to_neutral';
+            const targetPowerW = PowerCalculator.calculatePower(
+                deviceData.intensity,
+                phaseMode,
+                deviceData.voltageInstallation,
+                voltageType
+            );
+
+            // Fuzzy validace phase_mode settingu proti skutečně měřenému výkonu
+            this._validatePhaseMode(deviceData.chargePower, deviceData.intensity, deviceData.voltageInstallation, phaseMode, voltageType, deviceData.maxIntensity);
+
             await Promise.all([
                 this.setCapabilityValue('measure_charge_power', deviceData.chargePower),
                 this.setCapabilityValue('measure_power', deviceData.chargePower),
@@ -379,7 +551,8 @@ class MyDevice extends Device {
                 this.setCapabilityValue('measure_charge_time', Math.floor(deviceData.chargeTime / 60)),
                 this.setCapabilityValue('locked', deviceData.locked),
                 this.setCapabilityValue('measure_intensity', deviceData.intensity),
-                this.setCapabilityValue('measure_dynamic', deviceData.dynamic),
+                safeSet('target_power_mode', targetMode),
+                safeSet('target_power', targetPowerW),
                 this.setCapabilityValue('measure_charge_energy', chargeEnergy),
                 this.setCapabilityValue('meter_power', lifetimeEnergy),
                 // evcharger_charging = user intent (inverzní k V2C Paused flagu); nahrazuje bývalé measure_paused
@@ -509,6 +682,24 @@ class MyDevice extends Device {
                             await this.v2cApi.setDynamic('1');
                             await this.v2cApi.setDynamicPowerMode(newSettings.dynamic_power_mode);
                         }
+                        break;
+
+                    case 'phase_mode':
+                        if (newSettings.phase_mode !== '1' && newSettings.phase_mode !== '3') {
+                            throw new Error('phase_mode musí být "1" nebo "3"');
+                        }
+                        // Přenastavíme rozsah target_power (min/max/excludeMax) podle nové fáze.
+                        // Polling cycle pak přepočítá aktuální target_power z intensity × V × fáze.
+                        await this._applyCapabilityOptionsForPhaseMode();
+                        break;
+
+                    case 'voltage_type':
+                        if (newSettings.voltage_type !== 'line_to_neutral' && newSettings.voltage_type !== 'line_to_line') {
+                            throw new Error('voltage_type musí být "line_to_neutral" nebo "line_to_line"');
+                        }
+                        // Jen loggujeme — polling cycle přepočítá target_power s novým voltage_type.
+                        // Capability options (max/excludeMax) se v praxi neliší (22080W L-N vs 22170W L-L).
+                        this.logger.debug('voltage_type změněn', { nový: newSettings.voltage_type });
                         break;
                         
                     case 'v2c_ip': {

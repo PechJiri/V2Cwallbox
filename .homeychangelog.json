@@ -7,11 +7,5 @@
   },
   "1.5.5": {
     "en": "Widget height fix"
-  },
-  "1.6.0": {
-    "en": "Added full Homey Energy tab support: the wallbox now appears as an EV charger with evcharger_charging, evcharger_charging_state and meter_power.charged capabilities. Fixed cumulative charged energy — meter_power no longer resets to 0 when the car is disconnected."
-  },
-  "2.0.0": {
-    "en": "Major release — complete rewrite to align with Homey SDK v3 EV charger standards. BREAKING CHANGES: custom capabilities 'measure_paused', 'measure_locked', 'measure_charge_state' and 'car_connected' have been replaced by Homey's system capabilities 'evcharger_charging', 'locked' and 'evcharger_charging_state'. Auto-generated flow triggers referencing the old capability names (e.g. 'measure_paused_changed') will stop working — please re-wire them to the new system capabilities. Insights history for the removed capabilities is discarded. Existing device flow cards (Set Charger State, Car is connected, etc.) remain functional but are now deprecated and hidden from the picker. NEW: full Homey Energy tab integration (evCharger class), widget redesign with V2C branding and charging animation, exponential backoff on polling errors, IP address validation, per-widget wallbox selection, rotating log buffer, and fixed DataValidator precedence bugs. Device re-pairing is not required — migration runs automatically on first launch."
   }
 }

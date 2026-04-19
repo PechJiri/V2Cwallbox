@@ -5,10 +5,19 @@
       "check": "Check connection",
       "ip": "IP Address",
       "connection_ok": "Connection successful",
-      "connection_error": "Connection not possible"
+      "connection_error": "Connection not possible",
+      "invalid_ip": "Invalid IP address — only private network IPv4 addresses are allowed"
     }
   },
   "settings": {
     "title": "V2C Wallbox Settings"
+  },
+  "repair": {
+    "v2cwallbox": {
+      "title": "Update V2C Wallbox IP address",
+      "save": "Save",
+      "saved": "IP address saved successfully.",
+      "hint": "Change the IP if your wallbox moved to a different address on your network. The device history, settings and flows are preserved."
+    }
   }
 }
