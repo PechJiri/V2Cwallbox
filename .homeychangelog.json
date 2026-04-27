@@ -10,5 +10,8 @@
   },
   "2.0.0": {
     "en": "POSSIBLE BREAKING CHANGES — remove and re-add your V2C Wallbox after upgrading so Homey generates the new Energy flow cards and you can re-wire any flows from removed legacy capabilities. Full Homey Energy tab support with target_power in Watts (automatic W↔A conversion, new 'Phase Count' and 'Voltage Type' settings, target_power_mode exposing all V2C dynamic strategies and a 'Homey controls' option), evcharger_charging/state and meter_power for cumulative charged energy. Added Repair flow for IP changes, widget redesign, exponential polling backoff, IP validation, per-widget wallbox selection, rotating log buffer, and various stability fixes."
+  },
+  "2.0.1": {
+    "en": "bugfix of energy tab consumption"
   }
 }
