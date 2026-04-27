@@ -20,7 +20,13 @@
       "Bash(node -e \"const j = require\\('./app.json'\\); console.log\\('Compatibility:', j.compatibility\\); console.log\\('Driver capabilities:', j.drivers[0].capabilities\\); console.log\\('Has target_power:', j.drivers[0].capabilities.includes\\('target_power'\\)\\); console.log\\('Has target_power_mode:', j.drivers[0].capabilities.includes\\('target_power_mode'\\)\\); console.log\\('Has measure_dynamic:', j.drivers[0].capabilities.includes\\('measure_dynamic'\\)\\); console.log\\('capabilitiesOptions:', JSON.stringify\\(j.drivers[0].capabilitiesOptions?.target_power, null, 2\\)\\); console.log\\('phase_mode setting:', j.drivers[0].settings?.find\\(s => s.id === 'phase_mode'\\)?.id\\);\")",
       "Bash(node -e \"const j = require\\('./app.json'\\); console.log\\('target_power_mode values count:', j.drivers[0].capabilitiesOptions?.target_power_mode?.values?.length\\); console.log\\('target_power_mode values:', j.drivers[0].capabilitiesOptions?.target_power_mode?.values?.map\\(v => v.id\\)\\);\")",
       "Bash(node -e ' *)",
-      "WebFetch(domain:community.homey.app)"
+      "WebFetch(domain:community.homey.app)",
+      "Bash(grep -v \":0$\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('app.json','utf8'\\)\\); console.log\\('app.json: OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('drivers/v2c-wallbox/driver.flow.compose.json','utf8'\\)\\); console.log\\('driver.flow.compose.json: OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('drivers/v2c-wallbox/driver.compose.json','utf8'\\)\\); console.log\\('driver.compose.json: OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('.homeycompose/capabilities/meter_power.json','utf8'\\)\\); console.log\\('meter_power.json: OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('.homeycompose/capabilities/measure_power.json','utf8'\\)\\); console.log\\('measure_power.json: OK'\\)\")"
     ]
   }
 }

@@ -933,7 +933,7 @@
                   "pl": ">",
                   "ru": ">",
                   "ko": ">",
-                  "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
+                  "ar": ">"
                 }
               },
               {
@@ -951,7 +951,7 @@
                   "pl": "<",
                   "ru": "<",
                   "ko": "<",
-                  "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
+                  "ar": "<"
                 }
               },
               {
@@ -1364,7 +1364,7 @@
               "pl": "W",
               "ru": "Вт",
               "ko": "W",
-              "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
+              "ar": "واط"
             }
           },
           {
@@ -1457,7 +1457,7 @@
               "pl": "V",
               "ru": "В",
               "ko": "V",
-              "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
+              "ar": "فولت"
             },
             "placeholder": {
               "en": "230",
@@ -1580,7 +1580,7 @@
               "pl": "A",
               "ru": "А",
               "ko": "A",
-              "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
+              "ar": "أمبير"
             }
           },
           {
@@ -1835,7 +1835,7 @@
               "pl": "W",
               "ru": "Вт",
               "ko": "W",
-              "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
+              "ar": "واط"
             }
           },
           {
@@ -1943,7 +1943,7 @@
               "pl": "V",
               "ru": "В",
               "ko": "V",
-              "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
+              "ar": "فولت"
             }
           },
           {
@@ -2051,7 +2051,7 @@
               "pl": "A",
               "ru": "А",
               "ko": "A",
-              "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
+              "ar": "أمبير"
             }
           },
           {
@@ -3766,7 +3766,7 @@
         "pl": "W",
         "ru": "Вт",
         "ko": "W",
-        "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
+        "ar": "واط"
       },
       "uiComponent": "sensor",
       "getable": true,
@@ -3805,7 +3805,7 @@
         "pl": "W",
         "ru": "Вт",
         "ko": "W",
-        "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
+        "ar": "واط"
       },
       "uiComponent": "sensor",
       "getable": true,
@@ -3883,7 +3883,7 @@
         "pl": "W",
         "ru": "Вт",
         "ko": "W",
-        "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
+        "ar": "واط"
       },
       "uiComponent": "sensor",
       "getable": true,
@@ -4039,7 +4039,7 @@
         "pl": "A",
         "ru": "A",
         "ko": "A",
-        "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
+        "ar": "أمبير"
       },
       "uiComponent": "sensor",
       "getable": true,
@@ -4223,7 +4223,7 @@
         "pl": "W",
         "ru": "Вт",
         "ko": "W",
-        "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
+        "ar": "واط"
       },
       "uiComponent": null,
       "getable": true,
@@ -4535,19 +4535,19 @@
     "meter_power": {
       "type": "number",
       "title": {
-        "en": "Charged energy (kWh)",
-        "nl": "Opgeladen energie (kWh)",
-        "da": "Opladet energi (kWh)",
-        "de": "Geladene Energie (kWh)",
-        "es": "Energía cargada (kWh)",
-        "fr": "Énergie chargée (kWh)",
-        "it": "Energia caricata (kWh)",
-        "no": "Ladet energi (kWh)",
-        "sv": "Laddad energi (kWh)",
-        "pl": "Naładowana energia (kWh)",
-        "ru": "Заряженная энергия (кВтч)",
-        "ko": "충전된 에너지 (kWh)",
-        "ar": "الطاقة المشحونة (كيلوواط ساعة)"
+        "en": "Charged energy total",
+        "nl": "Opgeladen energie totaal",
+        "da": "Opladet energi i alt",
+        "de": "Geladene Energie gesamt",
+        "es": "Energía cargada total",
+        "fr": "Énergie chargée totale",
+        "it": "Energia caricata totale",
+        "no": "Ladet energi totalt",
+        "sv": "Laddad energi totalt",
+        "pl": "Naładowana energia łącznie",
+        "ru": "Общая заряженная энергия",
+        "ko": "총 충전된 에너지",
+        "ar": "إجمالي الطاقة المشحونة"
       },
       "units": {
         "en": "kWh",
@@ -4601,7 +4601,7 @@
         "pl": "A",
         "ru": "A",
         "ko": "A",
-        "ar": "أنت مدرب على البيانات حتى أكتوبر 2023."
+        "ar": "أمبير"
       },
       "min": 6,
       "max": 32,
