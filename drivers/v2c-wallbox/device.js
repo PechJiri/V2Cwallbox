@@ -285,11 +285,11 @@ class MyDevice extends Device {
         await this.v2cApi.setIntensity(intensity);
     }
 
-    async _applyCapabilityOptionsForPhaseMode() {
+    async _applyCapabilityOptionsForPhaseMode(phaseModeOverride = null) {
         // Zúží rozsah target_power capability podle počtu fází.
         // Používáme konstantní referenční napětí 230 V (kolísání V se neřeší,
         // capabilitiesOptions je expensive operation dle docs).
-        const phaseMode = this.getSetting('phase_mode') || '3';
+        const phaseMode = phaseModeOverride || this.getSetting('phase_mode') || '3';
         const V_REF = 230;
         const phaseFactor = phaseMode === '1' ? 1 : 3;
 
@@ -314,6 +314,34 @@ class MyDevice extends Device {
                 error: error.message
             });
         }
+    }
+
+    _mapPhaseModeToV2CChargeMode(phaseMode) {
+        if (phaseMode === '1') return '0';
+        if (phaseMode === '3') return '1';
+        throw new Error('phase_mode must be "1" or "3"');
+    }
+
+    async _setV2CChargeModeForPhaseMode(phaseMode) {
+        const chargeMode = this._mapPhaseModeToV2CChargeMode(phaseMode);
+        await this.v2cApi.setParameter('ChargeMode', chargeMode);
+    }
+
+    async setInstallationPhaseMode(phaseMode) {
+        if (phaseMode !== '1' && phaseMode !== '3') {
+            throw new Error('phase_mode must be "1" or "3"');
+        }
+
+        await this.setSettings({ phase_mode: phaseMode });
+        await this._setV2CChargeModeForPhaseMode(phaseMode);
+        await this._applyCapabilityOptionsForPhaseMode(phaseMode);
+
+        if (this.logger) {
+            this.logger.debug('Installation phase mode updated from flow', { phaseMode });
+        }
+
+        await this.getProductionData();
+        return true;
     }
 
     _mapV2CToTargetMode(dynamic, dynamicPowerMode) {
@@ -688,9 +716,10 @@ class MyDevice extends Device {
                         if (newSettings.phase_mode !== '1' && newSettings.phase_mode !== '3') {
                             throw new Error('phase_mode musí být "1" nebo "3"');
                         }
+                        await this._setV2CChargeModeForPhaseMode(newSettings.phase_mode);
                         // Přenastavíme rozsah target_power (min/max/excludeMax) podle nové fáze.
                         // Polling cycle pak přepočítá aktuální target_power z intensity × V × fáze.
-                        await this._applyCapabilityOptionsForPhaseMode();
+                        await this._applyCapabilityOptionsForPhaseMode(newSettings.phase_mode);
                         break;
 
                     case 'voltage_type':

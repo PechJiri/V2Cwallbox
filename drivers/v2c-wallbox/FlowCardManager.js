@@ -326,6 +326,49 @@ class FlowCardManager {
                     }
                 },
                 {
+                    id: 'set_phase_mode',
+                    handler: async (args) => {
+                        const wasCharging = await this._isDeviceActivelyCharging();
+
+                        if (!wasCharging) {
+                            return await this.device.setInstallationPhaseMode(args.phase_mode);
+                        }
+
+                        await this._setChargingPaused(true);
+                        try {
+                            return await this.device.setInstallationPhaseMode(args.phase_mode);
+                        } finally {
+                            await this._setChargingPaused(false);
+                        }
+                    }
+                },
+                {
+                    id: 'set_led_brightness',
+                    handler: async (args) => {
+                        const brightness = Number(args.brightness);
+                        if (!Number.isFinite(brightness) || brightness < 0 || brightness > 100) {
+                            throw new Error('brightness must be between 0 and 100');
+                        }
+
+                        switch (args.led_target) {
+                            case 'display':
+                                await this.device.v2cApi.setParameter('LightLED', brightness);
+                                break;
+                            case 'logo':
+                                await this.device.v2cApi.setParameter('LogoLED', brightness);
+                                break;
+                            case 'both':
+                                await this.device.v2cApi.setParameter('LightLED', brightness);
+                                await this.device.v2cApi.setParameter('LogoLED', brightness);
+                                break;
+                            default:
+                                throw new Error('led_target must be "display", "logo", or "both"');
+                        }
+
+                        return true;
+                    }
+                },
+                {
                     id: 'set_power',
                     handler: async (args) => {
                         const { power, phase_mode, voltage, voltage_type, maxAmps, rounding = 'math' } = args;
@@ -451,6 +494,32 @@ class FlowCardManager {
                 this.logger.error('Chyba při inicializaci akcí:', error);
             }
             throw error;
+        }
+    }
+
+    async _isDeviceActivelyCharging() {
+        if (!this.device || typeof this.device.getInternalChargeState !== 'function') {
+            return false;
+        }
+
+        const chargeState = this.device.getInternalChargeState();
+        if (chargeState !== CONSTANTS.CHARGE_STATES.CHARGING) {
+            return false;
+        }
+
+        if (typeof this.device.getCapabilityValue !== 'function') {
+            return true;
+        }
+
+        const chargingIntent = await this.device.getCapabilityValue('evcharger_charging');
+        return chargingIntent !== false;
+    }
+
+    async _setChargingPaused(paused) {
+        await this.device.v2cApi.setParameter('Paused', paused ? '1' : '0');
+
+        if (typeof this.device.setCapabilityValue === 'function') {
+            await this.device.setCapabilityValue('evcharger_charging', !paused);
         }
     }
 

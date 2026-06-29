@@ -2134,6 +2134,106 @@
       }
     },
     {
+      "id": "set_phase_mode",
+      "args": [
+        {
+          "name": "phase_mode",
+          "type": "dropdown",
+          "title": {
+            "en": "Installation phase count",
+            "cs": "Počet fází instalace"
+          },
+          "values": [
+            {
+              "id": "1",
+              "label": {
+                "en": "1 Phase (L1)",
+                "cs": "1 fáze (L1)"
+              }
+            },
+            {
+              "id": "3",
+              "label": {
+                "en": "3 Phase",
+                "cs": "3 fáze"
+              }
+            }
+          ]
+        }
+      ],
+      "title": {
+        "en": "Set installation phase count",
+        "cs": "Nastavit počet fází instalace"
+      },
+      "titleFormatted": {
+        "en": "Set installation phase count to [[phase_mode]]",
+        "cs": "Nastavit počet fází instalace na [[phase_mode]]"
+      },
+      "hint": {
+        "en": "1 Phase uses L1 for charging. This setting is used by Homey Energy to convert target power between watts and V2C intensity. If charging is active, this card temporarily pauses charging, changes the phase mode, and resumes charging.",
+        "cs": "1 fáze používá pro nabíjení L1. Toto nastavení Homey Energy používá pro převod target power mezi watty a V2C intenzitou. Pokud nabíjení právě běží, karta ho dočasně pozastaví, změní počet fází a znovu spustí."
+      }
+    },
+    {
+      "id": "set_led_brightness",
+      "args": [
+        {
+          "name": "led_target",
+          "type": "dropdown",
+          "title": {
+            "en": "LED target",
+            "cs": "Cíl LED"
+          },
+          "values": [
+            {
+              "id": "display",
+              "label": {
+                "en": "Display",
+                "cs": "Displej"
+              }
+            },
+            {
+              "id": "logo",
+              "label": {
+                "en": "Logo",
+                "cs": "Logo"
+              }
+            },
+            {
+              "id": "both",
+              "label": {
+                "en": "Display and Logo",
+                "cs": "Displej a logo"
+              }
+            }
+          ]
+        },
+        {
+          "name": "brightness",
+          "type": "number",
+          "title": {
+            "en": "Brightness",
+            "cs": "Jas"
+          },
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "units": {
+            "en": "%",
+            "cs": "%"
+          }
+        }
+      ],
+      "title": {
+        "en": "Set LED brightness",
+        "cs": "Nastavit jas LED"
+      },
+      "titleFormatted": {
+        "en": "Set [[led_target]] brightness to [[brightness]]%",
+        "cs": "Nastavit jas [[led_target]] na [[brightness]]%"
+      }
+    },
+    {
       "id": "set_dynamic_power_mode",
       "args": [
         {
