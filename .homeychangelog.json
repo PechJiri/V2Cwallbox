@@ -13,5 +13,8 @@
   },
   "2.0.1": {
     "en": "bugfix of energy tab consumption"
+  },
+  "2.0.2": {
+    "en": "Added a new Flow action to switch the V2C charger between single-phase and three-phase operation. When charging is already active, the app temporarily pauses charging, applies the phase change, and resumes charging so the change takes effect immediately."
   }
 }
