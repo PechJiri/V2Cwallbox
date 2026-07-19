@@ -2472,6 +2472,24 @@
                 "ko": "모두",
                 "ar": "كلاهما"
               }
+            },
+            {
+              "id": "lifetime",
+              "title": {
+                "en": "Lifetime",
+                "nl": "Levensduur",
+                "da": "Levetid",
+                "de": "Gesamt",
+                "es": "Total",
+                "fr": "Total",
+                "it": "Totale",
+                "no": "Levetid",
+                "sv": "Livstid",
+                "pl": "Całkowity",
+                "ru": "За всё время",
+                "ko": "전체 기간",
+                "ar": "مدى الحياة"
+              }
             }
           ]
         },

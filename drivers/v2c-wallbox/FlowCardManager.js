@@ -451,6 +451,8 @@ class FlowCardManager {
                                 await args.device.setMonthlyEnergy(energy);
                                 await args.device.setYearlyEnergy(energy);
                                 return true;
+                            case 'lifetime':
+                                return await args.device.setLifetimeEnergy(energy);
                             default:
                                 throw new Error('Neplatný typ počítadla');
                         }

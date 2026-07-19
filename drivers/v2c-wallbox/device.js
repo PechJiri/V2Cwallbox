@@ -674,6 +674,10 @@ class MyDevice extends Device {
         return await this.energyManager.setYearlyEnergy(value);
     }
 
+    async setLifetimeEnergy(value) {
+        return await this.energyManager.setLifetimeEnergy(value);
+    }
+
     async handleStateChanges(currentState, previousState, deviceData) {
         await this.setStoreValue('previousChargeState', currentState);
     

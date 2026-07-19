@@ -501,6 +501,38 @@ test('EnergyManager initializes meter_power to stored lifetime energy or zero', 
     }
 });
 
+test('set_energy_counter keeps existing arguments and adds lifetime correction', async () => {
+    const flowManifest = JSON.parse(fs.readFileSync(
+        path.join(__dirname, '../drivers/v2c-wallbox/driver.flow.compose.json'),
+        'utf8'
+    ));
+    const action = flowManifest.actions.find(({ id }) => id === 'set_energy_counter');
+    assert.deepEqual(action.args.map(({ name }) => name), ['counter_type', 'energy']);
+    assert.deepEqual(
+        action.args[0].values.map(({ id }) => id),
+        ['monthly', 'yearly', 'both', 'lifetime']
+    );
+
+    const { homey, listeners } = createFlowCardManagerHarness();
+    const calls = [];
+    const manager = new FlowCardManager(homey, {});
+    await manager.initialize();
+
+    const result = await listeners.get('set_energy_counter')({
+        counter_type: 'lifetime',
+        energy: 42.5,
+        device: {
+            setLifetimeEnergy: async (energy) => {
+                calls.push(energy);
+                return true;
+            }
+        }
+    });
+
+    assert.equal(result, true);
+    assert.deepEqual(calls, [42.5]);
+});
+
 test('set_installation_voltage is absent from the Flow manifest', () => {
     const flowManifest = JSON.parse(fs.readFileSync(
         path.join(__dirname, '../drivers/v2c-wallbox/driver.flow.compose.json'),
