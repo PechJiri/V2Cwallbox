@@ -19,5 +19,8 @@
   },
   "2.0.3": {
     "en": "Added per-phase voltage/current monitoring, configurable installation voltage, improved Homey Energy integration with lifetime consumption tracking, and enhanced Home quick actions. Energy accounting is now reliable across pauses, disconnects, restarts, and app upgrades, with automatic migration for existing devices."
+  },
+  "2.0.4": {
+    "en": "small fix"
   }
 }
