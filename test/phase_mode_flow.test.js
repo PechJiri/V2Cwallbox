@@ -531,6 +531,23 @@ test('set_energy_counter keeps existing arguments and adds lifetime correction',
 
     assert.equal(result, true);
     assert.deepEqual(calls, [42.5]);
+
+    for (const invalidEnergy of [-1, Number.POSITIVE_INFINITY]) {
+        await assert.rejects(
+            () => listeners.get('set_energy_counter')({
+                counter_type: 'lifetime',
+                energy: invalidEnergy,
+                device: {
+                    setLifetimeEnergy: async (energy) => {
+                        calls.push(energy);
+                        return true;
+                    }
+                }
+            }),
+            /energie/
+        );
+    }
+    assert.deepEqual(calls, [42.5]);
 });
 
 test('set_installation_voltage is absent from the Flow manifest', () => {
