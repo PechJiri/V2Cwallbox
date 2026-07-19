@@ -343,10 +343,6 @@ class FlowCardManager {
                     }
                 },
                 {
-                    id: 'set_installation_voltage',
-                    handler: async (args) => this.device.setInstallationVoltage(args.voltage)
-                },
-                {
                     id: 'set_led_brightness',
                     handler: async (args) => {
                         const brightness = Number(args.brightness);

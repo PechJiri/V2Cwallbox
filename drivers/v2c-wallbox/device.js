@@ -356,10 +356,9 @@ class MyDevice extends Device {
         }
 
         await this.v2cApi.setParameter('VoltageInstallation', parsedVoltage);
-        await this.getProductionData();
 
         if (this.logger) {
-            this.logger.debug('Installation voltage updated from flow', { voltage: parsedVoltage });
+            this.logger.debug('Installation voltage updated', { voltage: parsedVoltage });
         }
 
         return true;
@@ -715,6 +714,8 @@ class MyDevice extends Device {
         });
     
         try {
+            let productionDataRefreshed = false;
+
             for (const key of changedKeys) {
                 switch (key) {
                     case 'min_intensity':
@@ -760,6 +761,19 @@ class MyDevice extends Device {
                         // Capability options (max/excludeMax) se v praxi neliší (22080W L-N vs 22170W L-L).
                         this.logger.debug('voltage_type změněn', { nový: newSettings.voltage_type });
                         break;
+
+                    case 'installation_voltage': {
+                        await this.setInstallationVoltage(newSettings.installation_voltage);
+                        const voltageType = CONSTANTS.DEVICE.INSTALLATION_VOLTAGE.LINE_TO_LINE_VALUES.includes(
+                            Number(newSettings.installation_voltage)
+                        ) ? 'line_to_line' : 'line_to_neutral';
+                        await this.setSettings({ voltage_type: voltageType });
+                        this.lastResponse = null;
+                        this.lastResponseTime = null;
+                        await this.getProductionData();
+                        productionDataRefreshed = true;
+                        break;
+                    }
                         
                     case 'v2c_ip': {
                         const ipCheck = validateWallboxIP(newSettings.v2c_ip);
@@ -779,7 +793,9 @@ class MyDevice extends Device {
                 this.homey.settings.set(key, newSettings[key]);
             }
     
-            await this.getProductionData();
+            if (!productionDataRefreshed) {
+                await this.getProductionData();
+            }
     
         } catch (error) {
             this.logger.error('Chyba při ukládání nastavení', error);

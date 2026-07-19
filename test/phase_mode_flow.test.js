@@ -290,44 +290,93 @@ test('keeps per-phase telemetry unset when an older V2C firmware does not report
     assert.equal(result.voltageL3, null);
 });
 
-test('set_installation_voltage flow action delegates a European installation voltage to the device', async () => {
+test('set_installation_voltage flow action is not registered at runtime', async () => {
     const { homey, listeners } = createFlowCardManagerHarness();
-    const calls = [];
-    const manager = new FlowCardManager(homey, {
-        setInstallationVoltage: async (voltage) => {
-            calls.push(voltage);
-            return true;
-        }
-    });
+    const manager = new FlowCardManager(homey, {});
 
     await manager.initialize();
 
-    const result = await listeners.get('set_installation_voltage')({ voltage: 400 });
-
-    assert.equal(result, true);
-    assert.deepEqual(calls, [400]);
+    assert.equal(listeners.has('set_installation_voltage'), false);
 });
 
-test('setInstallationVoltage writes a supported European nominal voltage and refreshes state', async () => {
+test('installation_voltage settings changes write once, align voltage_type, clear cache, and refresh once', async () => {
     const MyDevice = loadDeviceWithHomeyStub();
     const calls = [];
     const device = Object.create(MyDevice.prototype);
-    device.v2cApi = {
-        setParameter: async (parameter, value) => calls.push([parameter, value])
+    device.logger = {
+        debug: () => {},
+        error: () => {}
     };
-    device.getProductionData = async () => calls.push(['getProductionData']);
-    device.logger = { debug: () => {} };
+    device.homey = {
+        settings: {
+            set: (key, value) => calls.push(['homey.settings.set', key, value])
+        }
+    };
+    device.lastResponse = { VoltageInstallation: 230 };
+    device.lastResponseTime = 12345;
+    device.v2cApi = {
+        setParameter: async (parameter, value) => calls.push(['setParameter', parameter, value])
+    };
+    device.setSettings = async (settings) => {
+        calls.push(['setSettings', settings]);
+    };
+    device.getProductionData = async () => {
+        calls.push(['getProductionData', device.lastResponse, device.lastResponseTime]);
+    };
 
-    const result = await device.setInstallationVoltage(400);
+    await device.onSettings({
+        oldSettings: { installation_voltage: '230', voltage_type: 'line_to_neutral' },
+        newSettings: { installation_voltage: '400', voltage_type: 'line_to_neutral' },
+        changedKeys: ['installation_voltage']
+    });
 
-    assert.equal(result, true);
     assert.deepEqual(calls, [
-        ['VoltageInstallation', 400],
-        ['getProductionData']
+        ['setParameter', 'VoltageInstallation', 400],
+        ['setSettings', { voltage_type: 'line_to_line' }],
+        ['getProductionData', null, null],
+        ['homey.settings.set', 'installation_voltage', '400']
     ]);
+    assert.equal(device.lastResponse, null);
+    assert.equal(device.lastResponseTime, null);
+});
 
-    await assert.rejects(() => device.setInstallationVoltage(300), /one of/);
-    await assert.rejects(() => device.setInstallationVoltage(480.5), /integer/);
+test('installation_voltage settings changes align line-to-neutral voltages', async () => {
+    const MyDevice = loadDeviceWithHomeyStub();
+    const calls = [];
+    const device = Object.create(MyDevice.prototype);
+    device.logger = { debug: () => {}, error: () => {} };
+    device.homey = { settings: { set: () => {} } };
+    device.lastResponse = {};
+    device.lastResponseTime = 1;
+    device.v2cApi = { setParameter: async () => {} };
+    device.setSettings = async (settings) => calls.push(settings);
+    device.getProductionData = async () => {};
+
+    await device.onSettings({
+        oldSettings: { installation_voltage: '400', voltage_type: 'line_to_line' },
+        newSettings: { installation_voltage: '230', voltage_type: 'line_to_line' },
+        changedKeys: ['installation_voltage']
+    });
+
+    assert.deepEqual(calls, [{ voltage_type: 'line_to_neutral' }]);
+});
+
+test('installation_voltage settings changes reject unsupported nominal voltages', async () => {
+    const MyDevice = loadDeviceWithHomeyStub();
+    const device = Object.create(MyDevice.prototype);
+    device.logger = { debug: () => {}, error: () => {} };
+    device.homey = { settings: { set: () => {} } };
+    device.v2cApi = { setParameter: async () => {} };
+    device.getProductionData = async () => {};
+
+    await assert.rejects(
+        () => device.onSettings({
+            oldSettings: { installation_voltage: '230' },
+            newSettings: { installation_voltage: '300' },
+            changedKeys: ['installation_voltage']
+        }),
+        /one of/
+    );
 });
 
 test('uses standard Homey phase metrics and the system meter_power capability for Energy', () => {
@@ -351,16 +400,30 @@ test('uses standard Homey phase metrics and the system meter_power capability fo
     assert.equal(driverManifest.capabilities.includes('locked'), true);
 });
 
-test('set_installation_voltage flow only presents supported European nominal voltages', () => {
+test('set_installation_voltage is absent from the Flow manifest', () => {
     const flowManifest = JSON.parse(fs.readFileSync(
         path.join(__dirname, '../drivers/v2c-wallbox/driver.flow.compose.json'),
         'utf8'
     ));
     const action = flowManifest.actions.find(({ id }) => id === 'set_installation_voltage');
-    const voltage = action.args.find(({ name }) => name === 'voltage');
 
-    assert.equal(voltage.type, 'dropdown');
-    assert.deepEqual(voltage.values.map(({ id }) => id), ['220', '230', '240', '380', '400', '415']);
+    assert.equal(action, undefined);
+});
+
+test('installation_voltage advanced setting follows voltage_type with six supported values', () => {
+    const settingsManifest = JSON.parse(fs.readFileSync(
+        path.join(__dirname, '../drivers/v2c-wallbox/driver.settings.compose.json'),
+        'utf8'
+    ));
+    const voltageTypeIndex = settingsManifest.findIndex(({ id }) => id === 'voltage_type');
+    const installationVoltageIndex = settingsManifest.findIndex(({ id }) => id === 'installation_voltage');
+
+    assert.equal(installationVoltageIndex, voltageTypeIndex + 1);
+    const setting = settingsManifest[installationVoltageIndex];
+    assert.equal(setting.type, 'dropdown');
+    assert.deepEqual(setting.values.map(({ id }) => id), ['220', '230', '240', '380', '400', '415']);
+    assert.deepEqual(CONSTANTS.DEVICE.INSTALLATION_VOLTAGE.VALUES, [220, 230, 240, 380, 400, 415]);
+    assert.deepEqual(CONSTANTS.DEVICE.INSTALLATION_VOLTAGE.LINE_TO_LINE_VALUES, [380, 400, 415]);
 });
 
 function loadDeviceWithHomeyStub() {
