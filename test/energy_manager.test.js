@@ -150,6 +150,101 @@ test('concurrent disconnected polls claim and settle pending energy only once', 
     assert.equal(harness.store.get('lifetimeEnergyData').energy, 8);
 });
 
+test('serializes connected pending writes before a concurrent disconnect claim', async () => {
+    const harness = createHarness();
+    const manager = await createInitializedManager(harness);
+    const originalSetStoreValue = harness.device.setStoreValue;
+    let releasePendingWrite;
+    let pendingWriteStarted;
+    const pendingWriteGate = new Promise((resolve) => {
+        releasePendingWrite = resolve;
+    });
+    const pendingWriteEntered = new Promise((resolve) => {
+        pendingWriteStarted = resolve;
+    });
+    harness.device.setStoreValue = async (key, value) => {
+        if (key === 'pendingSessionEnergy' && value === 8) {
+            pendingWriteStarted();
+            await pendingWriteGate;
+        }
+        return await originalSetStoreValue(key, value);
+    };
+
+    const connected = manager.processEnergyData(
+        { chargeEnergy: 8 },
+        CONSTANTS.CHARGE_STATES.DISCONNECTED,
+        CONSTANTS.CHARGE_STATES.CONNECTED
+    );
+    await pendingWriteEntered;
+    const disconnected = manager.processEnergyData(
+        { chargeEnergy: 0 },
+        CONSTANTS.CHARGE_STATES.CONNECTED,
+        CONSTANTS.CHARGE_STATES.DISCONNECTED
+    );
+
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(harness.store.get('lifetimeEnergyData').energy, 0);
+    releasePendingWrite();
+    await Promise.all([connected, disconnected]);
+
+    assert.equal(harness.store.get('pendingSessionEnergy'), 0);
+    assert.equal(harness.store.get('lifetimeEnergyData').energy, 8);
+
+    const restartedManager = await createInitializedManager(harness);
+    await restartedManager.processEnergyData(
+        { chargeEnergy: 0 },
+        CONSTANTS.CHARGE_STATES.DISCONNECTED,
+        CONSTANTS.CHARGE_STATES.DISCONNECTED
+    );
+    assert.equal(harness.store.get('lifetimeEnergyData').energy, 8);
+});
+
+test('connected transition waits for an in-flight disconnect claim', async () => {
+    const harness = createHarness({ pendingSessionEnergy: 8 });
+    const manager = await createInitializedManager(harness);
+    const originalSetStoreValue = harness.device.setStoreValue;
+    let releaseClaim;
+    let claimStarted;
+    const claimGate = new Promise((resolve) => {
+        releaseClaim = resolve;
+    });
+    const claimEntered = new Promise((resolve) => {
+        claimStarted = resolve;
+    });
+    let delayClaim = true;
+    harness.device.setStoreValue = async (key, value) => {
+        if (delayClaim && key === 'pendingSessionEnergy' && value === 0) {
+            claimStarted();
+            await claimGate;
+            delayClaim = false;
+        }
+        return await originalSetStoreValue(key, value);
+    };
+
+    const disconnected = manager.processEnergyData(
+        { chargeEnergy: 0 },
+        CONSTANTS.CHARGE_STATES.CONNECTED,
+        CONSTANTS.CHARGE_STATES.DISCONNECTED
+    );
+    await claimEntered;
+    let connectedCompleted = false;
+    const connected = manager.processEnergyData(
+        { chargeEnergy: 0 },
+        CONSTANTS.CHARGE_STATES.DISCONNECTED,
+        CONSTANTS.CHARGE_STATES.CONNECTED
+    ).then((result) => {
+        connectedCompleted = true;
+        return result;
+    });
+
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(connectedCompleted, false);
+    releaseClaim();
+    assert.deepEqual(await Promise.all([disconnected, connected]), [0, 0]);
+    assert.equal(harness.store.get('pendingSessionEnergy'), 0);
+    assert.equal(harness.store.get('lifetimeEnergyData').energy, 8);
+});
+
 test('failed settlement after statistics write leaves pending claimed and cannot add twice', async () => {
     const harness = createHarness({ pendingSessionEnergy: 8 });
     const manager = await createInitializedManager(harness);
@@ -181,6 +276,40 @@ test('failed settlement after statistics write leaves pending claimed and cannot
     assert.equal(harness.store.get('lifetimeEnergyData').energy, 8);
 });
 
+test('failed durable claim preserves in-memory pending energy for retry', async () => {
+    const harness = createHarness({ pendingSessionEnergy: 8 });
+    const manager = await createInitializedManager(harness);
+    const originalSetStoreValue = harness.device.setStoreValue;
+    let rejectFirstClaim = true;
+    harness.device.setStoreValue = async (key, value) => {
+        if (rejectFirstClaim && key === 'pendingSessionEnergy' && value === 0) {
+            rejectFirstClaim = false;
+            throw new Error('simulated claim failure');
+        }
+        return await originalSetStoreValue(key, value);
+    };
+
+    await assert.rejects(
+        () => manager.processEnergyData(
+            { chargeEnergy: 0 },
+            CONSTANTS.CHARGE_STATES.CONNECTED,
+            CONSTANTS.CHARGE_STATES.DISCONNECTED
+        ),
+        /claim failure/
+    );
+    assert.equal(manager.pendingSessionEnergy, 8);
+    assert.equal(harness.store.get('pendingSessionEnergy'), 8);
+    assert.equal(harness.store.get('lifetimeEnergyData').energy, 0);
+
+    assert.equal(await manager.processEnergyData(
+        { chargeEnergy: 0 },
+        CONSTANTS.CHARGE_STATES.CONNECTED,
+        CONSTANTS.CHARGE_STATES.DISCONNECTED
+    ), 0);
+    assert.equal(harness.store.get('pendingSessionEnergy'), 0);
+    assert.equal(harness.store.get('lifetimeEnergyData').energy, 8);
+});
+
 test('pending session energy survives restart and settles when first observed state is disconnected', async () => {
     const harness = createHarness();
     const firstManager = await createInitializedManager(harness);
@@ -205,12 +334,11 @@ test('pending session energy survives restart and settles when first observed st
     assert.equal(harness.store.get('lifetimeEnergyData').energy, 4.5);
 });
 
-test('initialize repairs corrupt or excessive pending energy without settling it', async () => {
+test('initialize repairs negative or non-finite pending energy without settling it', async () => {
     for (const invalidPending of [
         -1,
         Number.NaN,
-        Number.POSITIVE_INFINITY,
-        CONSTANTS.DEVICE.MAX_ENERGY_DELTA + 0.1
+        Number.POSITIVE_INFINITY
     ]) {
         const harness = createHarness({ pendingSessionEnergy: invalidPending });
         const manager = await createInitializedManager(harness);
@@ -223,6 +351,21 @@ test('initialize repairs corrupt or excessive pending energy without settling it
         ), 0);
         assert.equal(harness.store.get('lifetimeEnergyData').energy, 0);
     }
+});
+
+test('restart restores and settles a valid session total above the per-reading delta guard', async () => {
+    const harness = createHarness({ pendingSessionEnergy: 120 });
+    const manager = await createInitializedManager(harness);
+
+    assert.equal(await manager.processEnergyData(
+        { chargeEnergy: 0 },
+        CONSTANTS.CHARGE_STATES.CONNECTED,
+        CONSTANTS.CHARGE_STATES.DISCONNECTED
+    ), 0);
+    assert.equal(harness.store.get('pendingSessionEnergy'), 0);
+    assert.equal(harness.store.get('monthlyEnergyData').energy, 120);
+    assert.equal(harness.store.get('yearlyEnergyData').energy, 120);
+    assert.equal(harness.store.get('lifetimeEnergyData').energy, 120);
 });
 
 test('invalid negative and excessive session readings do not replace the displayed or pending value', async () => {
