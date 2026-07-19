@@ -13,6 +13,16 @@ const { validateWallboxIP } = require('../../lib/ip_validator');
 const INSTALLATION_VOLTAGE_MIGRATION_VERSION = 1;
 const INSTALLATION_VOLTAGE_MIGRATION_KEY = 'installationVoltageSettingMigrationVersion';
 const INSTALLATION_VOLTAGE_NOTIFICATION_KEY = 'installationVoltageMigrationNotificationSent';
+const PHASE_CAPABILITY_TITLES_MIGRATION_VERSION = 1;
+const PHASE_CAPABILITY_TITLES_MIGRATION_KEY = 'phaseCapabilityTitlesMigrationVersion';
+const PHASE_CAPABILITY_TITLES = Object.freeze({
+    'measure_current.l1': { en: 'Current L1', cs: 'Proud L1' },
+    'measure_current.l2': { en: 'Current L2', cs: 'Proud L2' },
+    'measure_current.l3': { en: 'Current L3', cs: 'Proud L3' },
+    'measure_voltage.l1': { en: 'Voltage L1', cs: 'Napětí L1' },
+    'measure_voltage.l2': { en: 'Voltage L2', cs: 'Napětí L2' },
+    'measure_voltage.l3': { en: 'Voltage L3', cs: 'Napětí L3' }
+});
 
 class MyDevice extends Device {
     _isProcessing = false;
@@ -61,6 +71,10 @@ class MyDevice extends Device {
 
             // System capabilities must exist before EnergyManager seeds meter_power.
             await this.initializeCapabilities();
+
+            // Capability options are stored on paired devices, so apply the distinct phase
+            // labels once for users upgrading from the first per-phase telemetry release.
+            await this.initializePhaseCapabilityTitles();
 
             // Existing paired devices do not reliably receive a newly introduced setting value.
             // Seed it locally from their previous voltage_type and last known voltage telemetry.
@@ -232,6 +246,30 @@ class MyDevice extends Device {
                 error: error.message
             });
             await this.notifyInstallationVoltageMigrationFailure();
+        }
+    }
+
+    async initializePhaseCapabilityTitles() {
+        try {
+            const migratedVersion = await this.getStoreValue(PHASE_CAPABILITY_TITLES_MIGRATION_KEY);
+            if (migratedVersion >= PHASE_CAPABILITY_TITLES_MIGRATION_VERSION) {
+                return;
+            }
+
+            for (const [capability, title] of Object.entries(PHASE_CAPABILITY_TITLES)) {
+                await this.setCapabilityOptions(capability, { title });
+            }
+
+            await this.setStoreValue(
+                PHASE_CAPABILITY_TITLES_MIGRATION_KEY,
+                PHASE_CAPABILITY_TITLES_MIGRATION_VERSION
+            );
+            this.logger.debug('Per-phase capability titles migrated');
+        } catch (error) {
+            // Cosmetic migration: keep the device operational and retry on the next init.
+            this.logger.warn('Per-phase capability title migration failed', {
+                error: error.message
+            });
         }
     }
 

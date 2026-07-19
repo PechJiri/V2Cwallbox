@@ -39,8 +39,8 @@ PDF metadata visible in the document:
 | `LogoLED` | Yes | Write via flow | Flow action can set logo brightness from 0-100%. |
 | `DynamicPowerMode` | Yes | Read and write | Mapped to `target_power_mode`, settings, and flow action. |
 | `ContractedPower` | Yes | Not used | Candidate for grid contract/current limit configuration in watts. Relevant to dynamic power management. |
-| `IntensityMeasure_L1`–`L3` | No | Read and mapped | Exposed as read-only `measure_current.l1`–`l3` when recent firmware provides the values. |
-| `VoltageMeasure_L1`–`L3` | No | Read and mapped | Exposed as read-only `measure_voltage.l1`–`l3` when recent firmware provides the values. |
+| `IntensityMeasure_L1`–`L3` | No | Read and mapped | Exposed as read-only `measure_current.l1`–`l3` with distinct Current L1/L2/L3 titles when recent firmware provides the values. |
+| `VoltageMeasure_L1`–`L3` | No | Read and mapped | Exposed as read-only `measure_voltage.l1`–`l3` with distinct Voltage L1/L2/L3 titles when recent firmware provides the values. |
 
 The PDF response example also includes `ID`, `SSID`, `IP`, and `SignalStatus`. The current app uses `ID`/`IP` during pairing and exposes `SignalStatus`; `SSID` is not exposed.
 

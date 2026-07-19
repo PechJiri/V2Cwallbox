@@ -56,6 +56,24 @@
     "evcharger_charging_state"
   ],
   "capabilitiesOptions": {
+    "measure_current.l1": {
+      "title": { "en": "Current L1", "cs": "Proud L1" }
+    },
+    "measure_current.l2": {
+      "title": { "en": "Current L2", "cs": "Proud L2" }
+    },
+    "measure_current.l3": {
+      "title": { "en": "Current L3", "cs": "Proud L3" }
+    },
+    "measure_voltage.l1": {
+      "title": { "en": "Voltage L1", "cs": "Napětí L1" }
+    },
+    "measure_voltage.l2": {
+      "title": { "en": "Voltage L2", "cs": "Napětí L2" }
+    },
+    "measure_voltage.l3": {
+      "title": { "en": "Voltage L3", "cs": "Napětí L3" }
+    },
     "target_power": {
       "min": 0,
       "max": 22080,

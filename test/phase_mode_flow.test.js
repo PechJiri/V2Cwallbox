@@ -548,6 +548,17 @@ test('uses standard Homey phase metrics and the system meter_power capability fo
         assert.equal(driverManifest.capabilities.includes(capability), true);
     }
 
+    for (const [capability, title] of Object.entries({
+        'measure_current.l1': 'Current L1',
+        'measure_current.l2': 'Current L2',
+        'measure_current.l3': 'Current L3',
+        'measure_voltage.l1': 'Voltage L1',
+        'measure_voltage.l2': 'Voltage L2',
+        'measure_voltage.l3': 'Voltage L3'
+    })) {
+        assert.equal(driverManifest.capabilitiesOptions[capability].title.en, title);
+    }
+
     assert.equal(driverManifest.energy.evCharger, true);
     assert.equal(driverManifest.energy.meterPowerImportedCapability, 'meter_power');
     assert.equal(fs.existsSync(path.join(__dirname, '../.homeycompose/capabilities/measure_power.json')), false);
@@ -562,14 +573,76 @@ test('migrates system capabilities before EnergyManager initialization', () => {
         'utf8'
     );
     const capabilityMigration = deviceSource.indexOf('await this.initializeCapabilities();');
+    const phaseTitleMigration = deviceSource.indexOf('await this.initializePhaseCapabilityTitles();');
     const voltageSettingMigration = deviceSource.indexOf('await this.initializeInstallationVoltageSetting();');
     const energyInitialization = deviceSource.indexOf('await this.energyManager.initialize();');
 
     assert.notEqual(capabilityMigration, -1);
+    assert.notEqual(phaseTitleMigration, -1);
     assert.notEqual(voltageSettingMigration, -1);
     assert.notEqual(energyInitialization, -1);
-    assert.equal(capabilityMigration < voltageSettingMigration, true);
+    assert.equal(capabilityMigration < phaseTitleMigration, true);
+    assert.equal(phaseTitleMigration < voltageSettingMigration, true);
     assert.equal(voltageSettingMigration < energyInitialization, true);
+});
+
+test('existing devices receive distinct L1-L3 phase capability titles once', async () => {
+    const MyDevice = loadDeviceWithHomeyStub();
+    const store = new Map();
+    const calls = [];
+    const device = Object.create(MyDevice.prototype);
+    device.logger = { debug: () => {}, warn: () => {} };
+    device.getStoreValue = async (key) => store.get(key);
+    device.setStoreValue = async (key, value) => store.set(key, value);
+    device.setCapabilityOptions = async (capability, options) => calls.push([capability, options]);
+
+    await device.initializePhaseCapabilityTitles();
+    await device.initializePhaseCapabilityTitles();
+
+    assert.deepEqual(calls.map(([capability, options]) => [capability, options.title.en]), [
+        ['measure_current.l1', 'Current L1'],
+        ['measure_current.l2', 'Current L2'],
+        ['measure_current.l3', 'Current L3'],
+        ['measure_voltage.l1', 'Voltage L1'],
+        ['measure_voltage.l2', 'Voltage L2'],
+        ['measure_voltage.l3', 'Voltage L3']
+    ]);
+    assert.equal(store.get('phaseCapabilityTitlesMigrationVersion'), 1);
+});
+
+test('phase capability title migration retries after a non-fatal partial failure', async () => {
+    const MyDevice = loadDeviceWithHomeyStub();
+    const store = new Map();
+    const calls = [];
+    let failL2Once = true;
+    const device = Object.create(MyDevice.prototype);
+    device.logger = { debug: () => {}, warn: () => {} };
+    device.getStoreValue = async (key) => store.get(key);
+    device.setStoreValue = async (key, value) => store.set(key, value);
+    device.setCapabilityOptions = async (capability) => {
+        calls.push(capability);
+        if (capability === 'measure_current.l2' && failL2Once) {
+            failL2Once = false;
+            throw new Error('temporary capability options failure');
+        }
+    };
+
+    await device.initializePhaseCapabilityTitles();
+    assert.equal(store.has('phaseCapabilityTitlesMigrationVersion'), false);
+
+    await device.initializePhaseCapabilityTitles();
+
+    assert.deepEqual(calls, [
+        'measure_current.l1',
+        'measure_current.l2',
+        'measure_current.l1',
+        'measure_current.l2',
+        'measure_current.l3',
+        'measure_voltage.l1',
+        'measure_voltage.l2',
+        'measure_voltage.l3'
+    ]);
+    assert.equal(store.get('phaseCapabilityTitlesMigrationVersion'), 1);
 });
 
 test('EnergyManager initializes meter_power to stored lifetime energy or zero', async () => {
