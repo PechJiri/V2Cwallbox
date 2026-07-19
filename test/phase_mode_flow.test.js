@@ -562,11 +562,14 @@ test('migrates system capabilities before EnergyManager initialization', () => {
         'utf8'
     );
     const capabilityMigration = deviceSource.indexOf('await this.initializeCapabilities();');
+    const voltageSettingMigration = deviceSource.indexOf('await this.initializeInstallationVoltageSetting();');
     const energyInitialization = deviceSource.indexOf('await this.energyManager.initialize();');
 
     assert.notEqual(capabilityMigration, -1);
+    assert.notEqual(voltageSettingMigration, -1);
     assert.notEqual(energyInitialization, -1);
-    assert.equal(capabilityMigration < energyInitialization, true);
+    assert.equal(capabilityMigration < voltageSettingMigration, true);
+    assert.equal(voltageSettingMigration < energyInitialization, true);
 });
 
 test('EnergyManager initializes meter_power to stored lifetime energy or zero', async () => {
@@ -743,6 +746,100 @@ test('installation_voltage advanced setting follows voltage_type with six suppor
     assert.deepEqual(setting.values.map(({ id }) => id), ['220', '230', '240', '380', '400', '415']);
     assert.deepEqual(CONSTANTS.DEVICE.INSTALLATION_VOLTAGE.VALUES, [220, 230, 240, 380, 400, 415]);
     assert.deepEqual(CONSTANTS.DEVICE.INSTALLATION_VOLTAGE.LINE_TO_LINE_VALUES, [380, 400, 415]);
+});
+
+test('upgrade migration derives installation voltage from the existing voltage type and telemetry', async () => {
+    const MyDevice = loadDeviceWithHomeyStub();
+
+    for (const scenario of [
+        { voltageType: 'line_to_neutral', measuredVoltage: 239, expected: '240' },
+        { voltageType: 'line_to_line', measuredVoltage: 402, expected: '400' },
+        { voltageType: 'line_to_line', measuredVoltage: null, expected: '400' }
+    ]) {
+        const store = new Map();
+        const calls = [];
+        const device = Object.create(MyDevice.prototype);
+        device.logger = { debug: () => {}, warn: () => {} };
+        device.getSetting = (key) => key === 'voltage_type' ? scenario.voltageType : undefined;
+        device.getCapabilityValue = () => scenario.measuredVoltage;
+        device.getStoreValue = async (key) => store.get(key);
+        device.setStoreValue = async (key, value) => store.set(key, value);
+        device.setSettings = async (settings) => calls.push(settings);
+
+        await device.initializeInstallationVoltageSetting();
+
+        assert.deepEqual(calls, [{ installation_voltage: scenario.expected }]);
+        assert.equal(store.get('installationVoltageSettingMigrationVersion'), 1);
+    }
+});
+
+test('upgrade migration is one-time and never writes the inferred voltage to V2C', async () => {
+    const MyDevice = loadDeviceWithHomeyStub();
+    const calls = [];
+    const device = Object.create(MyDevice.prototype);
+    device.logger = { debug: () => {}, warn: () => {} };
+    device.getStoreValue = async () => 1;
+    device.setStoreValue = async (...args) => calls.push(['store', ...args]);
+    device.setSettings = async (...args) => calls.push(['settings', ...args]);
+    device.v2cApi = { setParameter: async (...args) => calls.push(['api', ...args]) };
+
+    await device.initializeInstallationVoltageSetting();
+
+    assert.deepEqual(calls, []);
+});
+
+test('failed upgrade migration creates one English Timeline notification', async () => {
+    const MyDevice = loadDeviceWithHomeyStub();
+    const store = new Map();
+    const notifications = [];
+    const device = Object.create(MyDevice.prototype);
+    device.logger = { debug: () => {}, warn: () => {} };
+    device.getName = () => 'Garage Wallbox';
+    device.getSetting = (key) => key === 'voltage_type' ? 'line_to_neutral' : undefined;
+    device.getCapabilityValue = () => 230;
+    device.getStoreValue = async (key) => store.get(key);
+    device.setStoreValue = async (key, value) => store.set(key, value);
+    device.setSettings = async () => { throw new Error('settings unavailable'); };
+    device.homey = {
+        notifications: {
+            createNotification: async (notification) => notifications.push(notification)
+        }
+    };
+
+    await device.initializeInstallationVoltageSetting();
+    await device.initializeInstallationVoltageSetting();
+
+    assert.equal(notifications.length, 1);
+    assert.match(notifications[0].excerpt, /Garage Wallbox/);
+    assert.match(notifications[0].excerpt, /Advanced Settings/);
+    assert.equal(store.get('installationVoltageMigrationNotificationSent'), true);
+});
+
+test('Timeline migration notification is not duplicated if final marker persistence fails', async () => {
+    const MyDevice = loadDeviceWithHomeyStub();
+    const store = new Map();
+    const notifications = [];
+    const device = Object.create(MyDevice.prototype);
+    device.logger = { warn: () => {} };
+    device.getName = () => 'Garage Wallbox';
+    device.getStoreValue = async (key) => store.get(key);
+    device.setStoreValue = async (key, value) => {
+        if (key === 'installationVoltageMigrationNotificationSent' && value === true) {
+            throw new Error('final marker write failed');
+        }
+        store.set(key, value);
+    };
+    device.homey = {
+        notifications: {
+            createNotification: async (notification) => notifications.push(notification)
+        }
+    };
+
+    await device.notifyInstallationVoltageMigrationFailure();
+    await device.notifyInstallationVoltageMigrationFailure();
+
+    assert.equal(notifications.length, 1);
+    assert.equal(store.get('installationVoltageMigrationNotificationSent'), 'sending');
 });
 
 function loadDeviceWithHomeyStub(V2cApiStub) {

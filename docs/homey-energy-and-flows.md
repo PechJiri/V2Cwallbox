@@ -44,6 +44,8 @@ Advanced Settings contain two adjacent voltage controls:
 
 `installation_voltage` accepts only 220, 230, 240, 380, 400, or 415 V. One selection sends exactly one `VoltageInstallation` request, aligns the local `voltage_type` to line-to-neutral for 220/230/240 V or line-to-line for 380/400/415 V, clears the cached response, and refreshes telemetry so `measure_voltage_installation` can show the wallbox response. Installation voltage is intentionally not exposed as a Flow action.
 
+On the first start after upgrading an already-paired device, the app seeds the new setting locally without writing to V2C. It keeps the existing `voltage_type` category and selects the closest supported nominal value from the last `measure_voltage_installation` reading. If no usable reading exists, it uses 230 V for line-to-neutral or 400 V for line-to-line. The migration is versioned and runs once. Only if the local settings migration fails does the app create a single English Timeline notification asking the user to verify Installation Voltage in Advanced Settings.
+
 ## V2C Dynamic Modes
 
 When `target_power_mode` is not `homey`, the app treats V2C as the controller. It writes:

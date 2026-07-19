@@ -10,6 +10,10 @@ const EnergyManager = require('../../lib/EnergyManager');
 const CONSTANTS = require('../../lib/constants');
 const { validateWallboxIP } = require('../../lib/ip_validator');
 
+const INSTALLATION_VOLTAGE_MIGRATION_VERSION = 1;
+const INSTALLATION_VOLTAGE_MIGRATION_KEY = 'installationVoltageSettingMigrationVersion';
+const INSTALLATION_VOLTAGE_NOTIFICATION_KEY = 'installationVoltageMigrationNotificationSent';
+
 class MyDevice extends Device {
     _isProcessing = false;
     dataFetchInterval = null;
@@ -57,6 +61,10 @@ class MyDevice extends Device {
 
             // System capabilities must exist before EnergyManager seeds meter_power.
             await this.initializeCapabilities();
+
+            // Existing paired devices do not reliably receive a newly introduced setting value.
+            // Seed it locally from their previous voltage_type and last known voltage telemetry.
+            await this.initializeInstallationVoltageSetting();
 
             this.energyManager = new EnergyManager(this, this.logger);
             await this.energyManager.initialize();
@@ -170,6 +178,96 @@ class MyDevice extends Device {
             failedCount: failed.length,
             failed
         });
+    }
+
+    async initializeInstallationVoltageSetting() {
+        try {
+            const migratedVersion = await this.getStoreValue(INSTALLATION_VOLTAGE_MIGRATION_KEY);
+            if (migratedVersion >= INSTALLATION_VOLTAGE_MIGRATION_VERSION) {
+                return;
+            }
+
+            const rawMeasuredVoltage = this.getCapabilityValue('measure_voltage_installation');
+            const measuredVoltage = rawMeasuredVoltage === null || rawMeasuredVoltage === undefined ||
+                rawMeasuredVoltage === '' ? null : Number(rawMeasuredVoltage);
+            const configuredVoltageType = this.getSetting('voltage_type');
+            const voltageType = configuredVoltageType === 'line_to_line' || configuredVoltageType === 'line_to_neutral'
+                ? configuredVoltageType
+                : Number.isFinite(measuredVoltage) && measuredVoltage >= 300
+                    ? 'line_to_line'
+                    : 'line_to_neutral';
+
+            const lineToLine = voltageType === 'line_to_line';
+            const candidates = lineToLine
+                ? CONSTANTS.DEVICE.INSTALLATION_VOLTAGE.LINE_TO_LINE_VALUES
+                : CONSTANTS.DEVICE.INSTALLATION_VOLTAGE.VALUES.filter(
+                    (value) => !CONSTANTS.DEVICE.INSTALLATION_VOLTAGE.LINE_TO_LINE_VALUES.includes(value)
+                );
+            const fallbackVoltage = lineToLine ? 400 : 230;
+            const telemetryMatchesType = Number.isFinite(measuredVoltage) &&
+                (lineToLine ? measuredVoltage >= 300 && measuredVoltage <= 500
+                    : measuredVoltage >= 180 && measuredVoltage < 300);
+            const installationVoltage = telemetryMatchesType
+                ? candidates.reduce((nearest, candidate) =>
+                    Math.abs(candidate - measuredVoltage) < Math.abs(nearest - measuredVoltage)
+                        ? candidate
+                        : nearest)
+                : fallbackVoltage;
+
+            // This is deliberately local-only: Device#setSettings() does not invoke onSettings(),
+            // so migration cannot accidentally write VoltageInstallation to the wallbox.
+            await this.setSettings({ installation_voltage: String(installationVoltage) });
+            await this.setStoreValue(
+                INSTALLATION_VOLTAGE_MIGRATION_KEY,
+                INSTALLATION_VOLTAGE_MIGRATION_VERSION
+            );
+
+            this.logger.debug('Installation voltage setting migrated', {
+                voltageType,
+                measuredVoltage,
+                installationVoltage
+            });
+        } catch (error) {
+            this.logger.warn('Installation voltage setting migration failed', {
+                error: error.message
+            });
+            await this.notifyInstallationVoltageMigrationFailure();
+        }
+    }
+
+    async notifyInstallationVoltageMigrationFailure() {
+        try {
+            if (await this.getStoreValue(INSTALLATION_VOLTAGE_NOTIFICATION_KEY)) {
+                return;
+            }
+
+            // Claim notification delivery before creating it. If Homey stops after creation but
+            // before the final marker write, the durable "sending" value still prevents spam.
+            await this.setStoreValue(INSTALLATION_VOLTAGE_NOTIFICATION_KEY, 'sending');
+            let notificationCreated = false;
+            try {
+                await this.homey.notifications.createNotification({
+                    excerpt: `V2C Wallbox: Please open Advanced Settings for ${this.getName()} and verify Installation Voltage.`
+                });
+                notificationCreated = true;
+                await this.setStoreValue(INSTALLATION_VOLTAGE_NOTIFICATION_KEY, true);
+            } catch (error) {
+                if (!notificationCreated) {
+                    try {
+                        await this.setStoreValue(INSTALLATION_VOLTAGE_NOTIFICATION_KEY, false);
+                    } catch (clearError) {
+                        this.logger.warn('Could not release installation voltage notification marker', {
+                            error: clearError.message
+                        });
+                    }
+                }
+                throw error;
+            }
+        } catch (error) {
+            this.logger.warn('Could not create installation voltage migration notification', {
+                error: error.message
+            });
+        }
     }
 
     registerSetIntensityListener() {
