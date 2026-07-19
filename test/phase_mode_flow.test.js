@@ -456,6 +456,45 @@ test('production polling tolerates API failures by default but strict refresh re
     );
 });
 
+test('local-only voltage and logging settings use one tolerant refresh while offline', async () => {
+    const MyDevice = loadDeviceWithHomeyStub();
+    const calls = [];
+    const device = Object.create(MyDevice.prototype);
+    device.logger = {
+        debug: () => {},
+        error: () => {},
+        setEnabled: (value) => calls.push(['logger', value])
+    };
+    device.homey = {
+        settings: {
+            set: (key, value) => calls.push(['settings', key, value])
+        }
+    };
+    device.v2cApi = {
+        setLoggingEnabled: (value) => calls.push(['apiLogging', value])
+    };
+    device.getProductionData = async (options) => {
+        calls.push(['refresh', options]);
+        if (options?.throwOnError) {
+            throw new Error('wallbox offline');
+        }
+    };
+
+    await assert.doesNotReject(() => device.onSettings({
+        oldSettings: { voltage_type: 'line_to_neutral', enable_logging: false },
+        newSettings: { voltage_type: 'line_to_line', enable_logging: true },
+        changedKeys: ['voltage_type', 'enable_logging']
+    }));
+
+    assert.deepEqual(calls, [
+        ['settings', 'voltage_type', 'line_to_line'],
+        ['logger', true],
+        ['apiLogging', true],
+        ['settings', 'enable_logging', true],
+        ['refresh', undefined]
+    ]);
+});
+
 test('installation_voltage settings changes align line-to-neutral voltages', async () => {
     const MyDevice = loadDeviceWithHomeyStub();
     const calls = [];

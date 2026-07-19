@@ -20,4 +20,11 @@ Fresh verification:
 - `homey app validate --level publish`: passed.
 - `git diff --check`: passed (only checkout line-ending warnings).
 
-Residual tradeoff intentionally preserved: disconnect settlement durably clears pending energy before updating counters, favoring at-most-once accounting. A crash/failure after the claim and before all counter writes can lose that session energy; no transactional redesign was included in this scoped fix.
+The at-most-once settlement tradeoff was outside the initial scoped fix and was subsequently addressed by the replay-safe settlement commits on this branch.
+
+Follow-up settings fix:
+
+- Limited strict refresh to saves containing `installation_voltage`. Local-only `voltage_type` and `enable_logging` saves retain tolerant polling behavior and therefore do not fail solely because the wallbox is offline.
+- Mixed saves containing `installation_voltage` still perform one strict refresh after all changes and retain new-IP-first ordering.
+- Added a RED/GREEN regression covering an offline combined local-only save and asserting exactly one tolerant refresh.
+- Follow-up verification: `node --test` passed 48/48; Homey build and publish validation passed; `git diff --check` passed.

@@ -815,7 +815,11 @@ class MyDevice extends Device {
                 this.lastResponse = null;
                 this.lastResponseTime = null;
             }
-            await this.getProductionData({ throwOnError: true });
+            if (changedKeys.includes('installation_voltage')) {
+                await this.getProductionData({ throwOnError: true });
+            } else {
+                await this.getProductionData();
+            }
     
         } catch (error) {
             this.logger.error('Chyba při ukládání nastavení', error);
