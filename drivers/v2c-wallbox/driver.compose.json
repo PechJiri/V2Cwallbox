@@ -45,6 +45,12 @@
     "measure_connection_error",
     "measure_power",
     "meter_power",
+    "measure_current.l1",
+    "measure_current.l2",
+    "measure_current.l3",
+    "measure_voltage.l1",
+    "measure_voltage.l2",
+    "measure_voltage.l3",
     "set_intensity",
     "evcharger_charging",
     "evcharger_charging_state"

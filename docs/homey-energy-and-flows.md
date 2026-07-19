@@ -11,6 +11,10 @@ The app uses Homey's EV charger capabilities as the primary integration surface:
 - `evcharger_charging` is the user's charge/pause intent. In V2C terms it maps inversely to the `Paused` parameter.
 - `evcharger_charging_state` represents physical EV state derived from V2C `ChargeState` and `Paused`.
 
+## Home quick action
+
+The driver exposes Homey's standard, writable `evcharger_charging` and `locked` capabilities. Their listeners write the matching V2C `Paused` and `Locked` parameters, so Homey's device settings can offer either charging on/off or lock/unlock as the quick action. The selection itself belongs to Homey's UI; the app does not override the user's choice.
+
 When Homey controls charging, `device.js` converts `target_power` watts to V2C `Intensity` amps using:
 
 - `phase_mode` setting (`1` or `3`);
@@ -54,6 +58,7 @@ Current action cards include:
 - enable/disable V2C dynamic mode;
 - set min/max dynamic intensity;
 - set installation phase count for Homey Energy conversion;
+- set installation voltage (one of 220/230/240/380/400/415 V);
 - set display/logo LED brightness;
 - set V2C dynamic power mode;
 - manually correct monthly/yearly Homey energy counters.

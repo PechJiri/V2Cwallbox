@@ -2465,6 +2465,80 @@
         }
       },
       {
+        "id": "set_installation_voltage",
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=v2c-wallbox"
+          },
+          {
+            "name": "voltage",
+            "type": "dropdown",
+            "title": {
+              "en": "Installation voltage",
+              "cs": "Napětí instalace"
+            },
+            "values": [
+              {
+                "id": "220",
+                "label": {
+                  "en": "220 V",
+                  "cs": "220 V"
+                }
+              },
+              {
+                "id": "230",
+                "label": {
+                  "en": "230 V",
+                  "cs": "230 V"
+                }
+              },
+              {
+                "id": "240",
+                "label": {
+                  "en": "240 V",
+                  "cs": "240 V"
+                }
+              },
+              {
+                "id": "380",
+                "label": {
+                  "en": "380 V",
+                  "cs": "380 V"
+                }
+              },
+              {
+                "id": "400",
+                "label": {
+                  "en": "400 V",
+                  "cs": "400 V"
+                }
+              },
+              {
+                "id": "415",
+                "label": {
+                  "en": "415 V",
+                  "cs": "415 V"
+                }
+              }
+            ]
+          }
+        ],
+        "title": {
+          "en": "Set installation voltage",
+          "cs": "Nastavit napětí instalace"
+        },
+        "titleFormatted": {
+          "en": "Set installation voltage to [[voltage]] V",
+          "cs": "Nastavit napětí instalace na [[voltage]] V"
+        },
+        "hint": {
+          "en": "Writes V2C's VoltageInstallation parameter. Select the installation's nominal voltage: 220/230/240 V line-to-neutral or 380/400/415 V line-to-line.",
+          "cs": "Zapíše parametr V2C VoltageInstallation. Vyberte jmenovité napětí instalace: 220/230/240 V mezi fází a nulou, nebo 380/400/415 V mezi fázemi."
+        }
+      },
+      {
         "id": "set_led_brightness",
         "args": [
           {
@@ -2929,6 +3003,12 @@
         "measure_connection_error",
         "measure_power",
         "meter_power",
+        "measure_current.l1",
+        "measure_current.l2",
+        "measure_current.l3",
+        "measure_voltage.l1",
+        "measure_voltage.l2",
+        "measure_voltage.l3",
         "set_intensity",
         "evcharger_charging",
         "evcharger_charging_state"
@@ -4640,45 +4720,6 @@
       "setable": false,
       "decimals": 1,
       "insights": true,
-      "icon": "/assets/charge_energy.svg"
-    },
-    "meter_power": {
-      "type": "number",
-      "title": {
-        "en": "Charged energy total",
-        "nl": "Opgeladen energie totaal",
-        "da": "Opladet energi i alt",
-        "de": "Geladene Energie gesamt",
-        "es": "Energía cargada total",
-        "fr": "Énergie chargée totale",
-        "it": "Energia caricata totale",
-        "no": "Ladet energi totalt",
-        "sv": "Laddad energi totalt",
-        "pl": "Naładowana energia łącznie",
-        "ru": "Общая заряженная энергия",
-        "ko": "총 충전된 에너지",
-        "ar": "إجمالي الطاقة المشحونة"
-      },
-      "units": {
-        "en": "kWh",
-        "nl": "kWh",
-        "da": "kWh",
-        "de": "kWh",
-        "es": "kWh",
-        "fr": "kWh",
-        "it": "kWh",
-        "no": "kWh",
-        "sv": "kWh",
-        "pl": "kWh",
-        "ru": "кВтч",
-        "ko": "kWh",
-        "ar": "كيلوواط ساعة"
-      },
-      "uiComponent": null,
-      "getable": true,
-      "setable": false,
-      "decimals": 1,
-      "insights": false,
       "icon": "/assets/charge_energy.svg"
     },
     "min_intensity": {

@@ -344,6 +344,27 @@ class MyDevice extends Device {
         return true;
     }
 
+    async setInstallationVoltage(voltage) {
+        const parsedVoltage = Number(voltage);
+        const { VALUES } = CONSTANTS.DEVICE.INSTALLATION_VOLTAGE;
+
+        if (!Number.isInteger(parsedVoltage)) {
+            throw new Error('Installation voltage must be an integer');
+        }
+        if (!VALUES.includes(parsedVoltage)) {
+            throw new Error(`Installation voltage must be one of: ${VALUES.join(', ')} V`);
+        }
+
+        await this.v2cApi.setParameter('VoltageInstallation', parsedVoltage);
+        await this.getProductionData();
+
+        if (this.logger) {
+            this.logger.debug('Installation voltage updated from flow', { voltage: parsedVoltage });
+        }
+
+        return true;
+    }
+
     _mapV2CToTargetMode(dynamic, dynamicPowerMode) {
         if (!dynamic) {
             return CONSTANTS.TARGET_POWER_MODES.HOMEY;
@@ -556,6 +577,9 @@ class MyDevice extends Device {
             const safeSet = (cap, val) => this.hasCapability(cap)
                 ? this.setCapabilityValue(cap, val)
                 : Promise.resolve();
+            const safeSetMeasurement = (cap, val) => Number.isFinite(val)
+                ? safeSet(cap, val)
+                : Promise.resolve();
 
             // Homey systémové target_power* — mapování z V2C Dynamic + DynamicPowerMode
             const targetMode = this._mapV2CToTargetMode(deviceData.dynamic, deviceData.dynamicPowerMode);
@@ -575,6 +599,12 @@ class MyDevice extends Device {
                 this.setCapabilityValue('measure_charge_power', deviceData.chargePower),
                 this.setCapabilityValue('measure_power', deviceData.chargePower),
                 this.setCapabilityValue('measure_voltage_installation', deviceData.voltageInstallation),
+                safeSetMeasurement('measure_current.l1', deviceData.intensityL1),
+                safeSetMeasurement('measure_current.l2', deviceData.intensityL2),
+                safeSetMeasurement('measure_current.l3', deviceData.intensityL3),
+                safeSetMeasurement('measure_voltage.l1', deviceData.voltageL1),
+                safeSetMeasurement('measure_voltage.l2', deviceData.voltageL2),
+                safeSetMeasurement('measure_voltage.l3', deviceData.voltageL3),
                 this.setCapabilityValue('measure_slave_error', deviceData.slaveError),
                 this.setCapabilityValue('measure_charge_time', Math.floor(deviceData.chargeTime / 60)),
                 this.setCapabilityValue('locked', deviceData.locked),

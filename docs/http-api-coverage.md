@@ -20,7 +20,7 @@ PDF metadata visible in the document:
 | --- | --- | --- | --- |
 | `ChargeState` | No | Read and mapped | Drives internal charge state, `evcharger_charging_state`, polling interval, and compatibility flow triggers. |
 | `ChargePower` | No | Read and mapped | Exposed as `measure_charge_power` and `measure_power`. |
-| `VoltageInstallation` | Yes | Read only | Exposed as `measure_voltage_installation`; used for W/A conversion. Writing it may be a calibration-style operation and needs device validation before exposing. |
+| `VoltageInstallation` | Yes | Read and write | Exposed as `measure_voltage_installation`; used for W/A conversion. The Flow action only accepts the standard European nominal values 220/230/240/380/400/415 V, writes the value, and refreshes telemetry. |
 | `ChargeEnergy` | No | Read and mapped | Used for session/month/year/lifetime energy accounting. |
 | `ChargeMode` | Yes | Partially written | Written when local Homey `phase_mode` changes: `1` maps to `0` monophasic and `3` maps to `1` threephasic. `2` mixed is not exposed. |
 | `SlaveError` | No | Read and mapped | Exposed as `measure_slave_error`; triggers `slave_error_changed`. |
@@ -39,6 +39,8 @@ PDF metadata visible in the document:
 | `LogoLED` | Yes | Write via flow | Flow action can set logo brightness from 0-100%. |
 | `DynamicPowerMode` | Yes | Read and write | Mapped to `target_power_mode`, settings, and flow action. |
 | `ContractedPower` | Yes | Not used | Candidate for grid contract/current limit configuration in watts. Relevant to dynamic power management. |
+| `IntensityMeasure_L1`–`L3` | No | Read and mapped | Exposed as read-only `measure_current.l1`–`l3` when recent firmware provides the values. |
+| `VoltageMeasure_L1`–`L3` | No | Read and mapped | Exposed as read-only `measure_voltage.l1`–`l3` when recent firmware provides the values. |
 
 The PDF response example also includes `ID`, `SSID`, `IP`, and `SignalStatus`. The current app uses `ID`/`IP` during pairing and exposes `SignalStatus`; `SSID` is not exposed.
 
@@ -91,13 +93,7 @@ Possible surfaces:
 
 This should be handled carefully because a wrong value can affect dynamic charging behavior. Use conservative validation, clear labels, and avoid silently changing it as part of unrelated flows.
 
-### 5. Voltage Installation Write
-
-The PDF marks `VoltageInstallation` as writable, while the app treats it as measured telemetry. Writing it may be a calibration/manual override feature rather than a normal control.
-
-Recommendation: do not expose this until confirmed with V2C documentation or a real device test. If exposed, make it an advanced setting with strict limits and clear warning text.
-
-### 6. Diagnostic Information
+### 5. Diagnostic Information
 
 The app could expose or log more read-only diagnostics from the response:
 

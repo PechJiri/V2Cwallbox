@@ -1,10 +1,14 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const Module = require('node:module');
 const test = require('node:test');
 
 const FlowCardManager = require('../drivers/v2c-wallbox/FlowCardManager');
+const DataValidator = require('../lib/DataValidator');
+const CONSTANTS = require('../lib/constants');
 
 function createFlowCardManagerHarness() {
     const listeners = new Map();
@@ -230,6 +234,133 @@ test('setInstallationPhaseMode rejects unsupported phase modes', async () => {
         () => device.setInstallationPhaseMode('mixed'),
         /phase_mode/
     );
+});
+
+test('maps V2C per-phase current and voltage telemetry when available', () => {
+    const validator = new DataValidator();
+
+    const result = validator.validateAndProcessData({
+        ChargeState: 2,
+        ChargePower: 7100,
+        ChargeEnergy: 12.3,
+        Intensity: 16,
+        FirmwareVersion: '2.5.0',
+        VoltageInstallation: 230,
+        SlaveError: 0,
+        Paused: 0,
+        Locked: 0,
+        Dynamic: 0,
+        DynamicPowerMode: 0,
+        SignalStatus: 2,
+        IntensityMeasure_L1: 15.9,
+        IntensityMeasure_L2: 16.1,
+        IntensityMeasure_L3: 16.0,
+        VoltageMeasure_L1: 231.2,
+        VoltageMeasure_L2: 229.8,
+        VoltageMeasure_L3: 230.6
+    });
+
+    assert.equal(result.intensityL1, 15.9);
+    assert.equal(result.intensityL2, 16.1);
+    assert.equal(result.intensityL3, 16.0);
+    assert.equal(result.voltageL1, 231.2);
+    assert.equal(result.voltageL2, 229.8);
+    assert.equal(result.voltageL3, 230.6);
+});
+
+test('keeps per-phase telemetry unset when an older V2C firmware does not report it', () => {
+    const validator = new DataValidator();
+
+    const result = validator.validateAndProcessData({
+        ChargeState: 1,
+        ChargePower: 0,
+        ChargeEnergy: 0,
+        Intensity: 6,
+        FirmwareVersion: '2.4.0',
+        VoltageInstallation: 230,
+        SlaveError: 0,
+        Paused: 0,
+        Locked: 0,
+        Dynamic: 0,
+        DynamicPowerMode: 0,
+        SignalStatus: 2
+    });
+
+    assert.equal(result.intensityL1, null);
+    assert.equal(result.voltageL3, null);
+});
+
+test('set_installation_voltage flow action delegates a European installation voltage to the device', async () => {
+    const { homey, listeners } = createFlowCardManagerHarness();
+    const calls = [];
+    const manager = new FlowCardManager(homey, {
+        setInstallationVoltage: async (voltage) => {
+            calls.push(voltage);
+            return true;
+        }
+    });
+
+    await manager.initialize();
+
+    const result = await listeners.get('set_installation_voltage')({ voltage: 400 });
+
+    assert.equal(result, true);
+    assert.deepEqual(calls, [400]);
+});
+
+test('setInstallationVoltage writes a supported European nominal voltage and refreshes state', async () => {
+    const MyDevice = loadDeviceWithHomeyStub();
+    const calls = [];
+    const device = Object.create(MyDevice.prototype);
+    device.v2cApi = {
+        setParameter: async (parameter, value) => calls.push([parameter, value])
+    };
+    device.getProductionData = async () => calls.push(['getProductionData']);
+    device.logger = { debug: () => {} };
+
+    const result = await device.setInstallationVoltage(400);
+
+    assert.equal(result, true);
+    assert.deepEqual(calls, [
+        ['VoltageInstallation', 400],
+        ['getProductionData']
+    ]);
+
+    await assert.rejects(() => device.setInstallationVoltage(300), /one of/);
+    await assert.rejects(() => device.setInstallationVoltage(480.5), /integer/);
+});
+
+test('uses standard Homey phase metrics and the system meter_power capability for Energy', () => {
+    const driverManifest = JSON.parse(fs.readFileSync(
+        path.join(__dirname, '../drivers/v2c-wallbox/driver.compose.json'),
+        'utf8'
+    ));
+
+    for (const capability of [
+        'measure_current.l1', 'measure_current.l2', 'measure_current.l3',
+        'measure_voltage.l1', 'measure_voltage.l2', 'measure_voltage.l3'
+    ]) {
+        assert.equal(CONSTANTS.DEVICE_CAPABILITIES.includes(capability), true);
+        assert.equal(driverManifest.capabilities.includes(capability), true);
+    }
+
+    assert.equal(driverManifest.energy.evCharger, true);
+    assert.equal(driverManifest.energy.meterPowerImportedCapability, 'meter_power');
+    assert.equal(fs.existsSync(path.join(__dirname, '../.homeycompose/capabilities/meter_power.json')), false);
+    assert.equal(driverManifest.capabilities.includes('evcharger_charging'), true);
+    assert.equal(driverManifest.capabilities.includes('locked'), true);
+});
+
+test('set_installation_voltage flow only presents supported European nominal voltages', () => {
+    const flowManifest = JSON.parse(fs.readFileSync(
+        path.join(__dirname, '../drivers/v2c-wallbox/driver.flow.compose.json'),
+        'utf8'
+    ));
+    const action = flowManifest.actions.find(({ id }) => id === 'set_installation_voltage');
+    const voltage = action.args.find(({ name }) => name === 'voltage');
+
+    assert.equal(voltage.type, 'dropdown');
+    assert.deepEqual(voltage.values.map(({ id }) => id), ['220', '230', '240', '380', '400', '415']);
 });
 
 function loadDeviceWithHomeyStub() {

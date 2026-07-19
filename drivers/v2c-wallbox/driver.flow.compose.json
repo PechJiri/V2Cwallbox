@@ -2175,6 +2175,39 @@
       }
     },
     {
+      "id": "set_installation_voltage",
+      "args": [
+        {
+          "name": "voltage",
+          "type": "dropdown",
+          "title": {
+            "en": "Installation voltage",
+            "cs": "Napětí instalace"
+          },
+          "values": [
+            { "id": "220", "label": { "en": "220 V", "cs": "220 V" } },
+            { "id": "230", "label": { "en": "230 V", "cs": "230 V" } },
+            { "id": "240", "label": { "en": "240 V", "cs": "240 V" } },
+            { "id": "380", "label": { "en": "380 V", "cs": "380 V" } },
+            { "id": "400", "label": { "en": "400 V", "cs": "400 V" } },
+            { "id": "415", "label": { "en": "415 V", "cs": "415 V" } }
+          ]
+        }
+      ],
+      "title": {
+        "en": "Set installation voltage",
+        "cs": "Nastavit napětí instalace"
+      },
+      "titleFormatted": {
+        "en": "Set installation voltage to [[voltage]] V",
+        "cs": "Nastavit napětí instalace na [[voltage]] V"
+      },
+      "hint": {
+        "en": "Writes V2C's VoltageInstallation parameter. Select the installation's nominal voltage: 220/230/240 V line-to-neutral or 380/400/415 V line-to-line.",
+        "cs": "Zapíše parametr V2C VoltageInstallation. Vyberte jmenovité napětí instalace: 220/230/240 V mezi fází a nulou, nebo 380/400/415 V mezi fázemi."
+      }
+    },
+    {
       "id": "set_led_brightness",
       "args": [
         {
