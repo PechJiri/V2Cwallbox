@@ -2465,80 +2465,6 @@
         }
       },
       {
-        "id": "set_installation_voltage",
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=v2c-wallbox"
-          },
-          {
-            "name": "voltage",
-            "type": "dropdown",
-            "title": {
-              "en": "Installation voltage",
-              "cs": "Napětí instalace"
-            },
-            "values": [
-              {
-                "id": "220",
-                "label": {
-                  "en": "220 V",
-                  "cs": "220 V"
-                }
-              },
-              {
-                "id": "230",
-                "label": {
-                  "en": "230 V",
-                  "cs": "230 V"
-                }
-              },
-              {
-                "id": "240",
-                "label": {
-                  "en": "240 V",
-                  "cs": "240 V"
-                }
-              },
-              {
-                "id": "380",
-                "label": {
-                  "en": "380 V",
-                  "cs": "380 V"
-                }
-              },
-              {
-                "id": "400",
-                "label": {
-                  "en": "400 V",
-                  "cs": "400 V"
-                }
-              },
-              {
-                "id": "415",
-                "label": {
-                  "en": "415 V",
-                  "cs": "415 V"
-                }
-              }
-            ]
-          }
-        ],
-        "title": {
-          "en": "Set installation voltage",
-          "cs": "Nastavit napětí instalace"
-        },
-        "titleFormatted": {
-          "en": "Set installation voltage to [[voltage]] V",
-          "cs": "Nastavit napětí instalace na [[voltage]] V"
-        },
-        "hint": {
-          "en": "Writes V2C's VoltageInstallation parameter. Select the installation's nominal voltage: 220/230/240 V line-to-neutral or 380/400/415 V line-to-line.",
-          "cs": "Zapíše parametr V2C VoltageInstallation. Vyberte jmenovité napětí instalace: 220/230/240 V mezi fází a nulou, nebo 380/400/415 V mezi fázemi."
-        }
-      },
-      {
         "id": "set_led_brightness",
         "args": [
           {
@@ -2850,6 +2776,24 @@
                   "ru": "Оба",
                   "ko": "모두",
                   "ar": "كلاهما"
+                }
+              },
+              {
+                "id": "lifetime",
+                "title": {
+                  "en": "Lifetime",
+                  "nl": "Levensduur",
+                  "da": "Levetid",
+                  "de": "Gesamt",
+                  "es": "Total",
+                  "fr": "Total",
+                  "it": "Totale",
+                  "no": "Levetid",
+                  "sv": "Livstid",
+                  "pl": "Całkowity",
+                  "ru": "За всё время",
+                  "ko": "전체 기간",
+                  "ar": "مدى الحياة"
                 }
               }
             ]
@@ -3402,6 +3346,63 @@
                 "ko": "선-선 (~400V)",
                 "ar": "خط إلى خط (~400 فولت)",
                 "cs": "Fáze-fáze (~400V)"
+              }
+            }
+          ]
+        },
+        {
+          "id": "installation_voltage",
+          "type": "dropdown",
+          "label": {
+            "en": "Installation Voltage",
+            "cs": "Napětí instalace"
+          },
+          "hint": {
+            "en": "Nominal installation voltage reported by V2C. Select 220/230/240 V for line-to-neutral or 380/400/415 V for line-to-line.",
+            "cs": "Jmenovité napětí instalace hlášené V2C. Vyberte 220/230/240 V pro napětí mezi fází a nulou nebo 380/400/415 V pro napětí mezi fázemi."
+          },
+          "value": "230",
+          "values": [
+            {
+              "id": "220",
+              "label": {
+                "en": "220 V",
+                "cs": "220 V"
+              }
+            },
+            {
+              "id": "230",
+              "label": {
+                "en": "230 V",
+                "cs": "230 V"
+              }
+            },
+            {
+              "id": "240",
+              "label": {
+                "en": "240 V",
+                "cs": "240 V"
+              }
+            },
+            {
+              "id": "380",
+              "label": {
+                "en": "380 V",
+                "cs": "380 V"
+              }
+            },
+            {
+              "id": "400",
+              "label": {
+                "en": "400 V",
+                "cs": "400 V"
+              }
+            },
+            {
+              "id": "415",
+              "label": {
+                "en": "415 V",
+                "cs": "415 V"
               }
             }
           ]
@@ -4382,45 +4383,6 @@
       },
       "uiComponent": null,
       "icon": "/assets/paused.svg"
-    },
-    "measure_power": {
-      "type": "number",
-      "title": {
-        "en": "Current charging power (W)",
-        "nl": "Huidig laadvermogen (W)",
-        "da": "Aktuel opladningseffekt (W)",
-        "de": "Aktuelle Ladeleistung (W)",
-        "es": "Potencia de carga actual (W)",
-        "fr": "Puissance de charge actuelle (W)",
-        "it": "Potenza di carica attuale (W)",
-        "no": "Nåværende ladekraft (W)",
-        "sv": "Nuvarande laddningseffekt (W)",
-        "pl": "Bieżąca moc ładowania (W)",
-        "ru": "Текущая мощность зарядки (Вт)",
-        "ko": "현재 충전 전력 (W)",
-        "ar": "القدرة الحالية للشحن (واط)"
-      },
-      "units": {
-        "en": "W",
-        "nl": "W",
-        "da": "W",
-        "de": "W",
-        "es": "W",
-        "fr": "W",
-        "it": "W",
-        "no": "W",
-        "sv": "W",
-        "pl": "W",
-        "ru": "Вт",
-        "ko": "W",
-        "ar": "واط"
-      },
-      "uiComponent": null,
-      "getable": true,
-      "setable": false,
-      "decimals": 0,
-      "insights": false,
-      "icon": "/assets/charge_power.svg"
     },
     "measure_slave_error": {
       "type": "enum",

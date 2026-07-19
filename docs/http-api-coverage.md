@@ -19,9 +19,9 @@ PDF metadata visible in the document:
 | API keyword | Write enabled in PDF | Current app coverage | Notes |
 | --- | --- | --- | --- |
 | `ChargeState` | No | Read and mapped | Drives internal charge state, `evcharger_charging_state`, polling interval, and compatibility flow triggers. |
-| `ChargePower` | No | Read and mapped | Exposed as `measure_charge_power` and `measure_power`. |
-| `VoltageInstallation` | Yes | Read and write | Exposed as `measure_voltage_installation`; used for W/A conversion. The Flow action only accepts the standard European nominal values 220/230/240/380/400/415 V, writes the value, and refreshes telemetry. |
-| `ChargeEnergy` | No | Read and mapped | Used for session/month/year/lifetime energy accounting. |
+| `ChargePower` | No | Read and mapped | Exposed as `measure_charge_power` and Homey's system `measure_power` capability. The positive value is used as live EV charging consumption. |
+| `VoltageInstallation` | Yes | Read and write | Exposed as `measure_voltage_installation` and configured in Advanced Settings. The dropdown accepts 220/230/240/380/400/415 V; one change sends exactly one write, aligns local `voltage_type` to line-to-neutral or line-to-line, clears cached response data, and refreshes telemetry. There is no voltage Flow action. |
+| `ChargeEnergy` | No | Read and mapped | Exposed as current-session energy. Its highest valid connected-session reading is persisted and settled into monthly, yearly, and Homey's system lifetime `meter_power` counter only after physical disconnection; pause/resume does not settle it. |
 | `ChargeMode` | Yes | Partially written | Written when local Homey `phase_mode` changes: `1` maps to `0` monophasic and `3` maps to `1` threephasic. `2` mixed is not exposed. |
 | `SlaveError` | No | Read and mapped | Exposed as `measure_slave_error`; triggers `slave_error_changed`. |
 | `ChargeTime` | No | Read and mapped | Exposed as `measure_charge_time` in minutes. |
@@ -45,6 +45,12 @@ PDF metadata visible in the document:
 The PDF response example also includes `ID`, `SSID`, `IP`, and `SignalStatus`. The current app uses `ID`/`IP` during pairing and exposes `SignalStatus`; `SSID` is not exposed.
 
 The code also handles `FirmwareVersion` and `BatteryPower`, which are not clearly listed in the extracted PDF table but are present in the current implementation and/or V2C responses seen by the app.
+
+## Energy Accounting Notes
+
+The driver remains an `evcharger` and declares both `energy.evCharger = true` and `energy.meterPowerImportedCapability = "meter_power"`. `measure_power` and `meter_power` use Homey's system capability definitions. The lifetime meter is visible in Homey's device UI and Insights, and initialization writes its stored numeric value or `0`.
+
+Disconnect settlement uses a persisted high-water mark and at-most-once claiming. Clearing the pending session before updating totals prevents the same session from being counted twice after a restart. The tradeoff is that a storage or capability failure after the claim can omit that session from the totals. Users can correct monthly, yearly, both-period, or lifetime energy through the existing `set_energy_counter` Flow action; monthly and yearly corrections do not automatically change lifetime energy.
 
 ## Candidate Future Features
 
