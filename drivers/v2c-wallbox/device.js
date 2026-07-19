@@ -684,6 +684,10 @@ class MyDevice extends Device {
         return await this.energyManager.setYearlyEnergy(value);
     }
 
+    async setMonthlyAndYearlyEnergy(value) {
+        return await this.energyManager.setMonthlyAndYearlyEnergy(value);
+    }
+
     async setLifetimeEnergy(value) {
         return await this.energyManager.setLifetimeEnergy(value);
     }

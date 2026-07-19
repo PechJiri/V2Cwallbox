@@ -448,9 +448,7 @@ class FlowCardManager {
                             case 'yearly':
                                 return await args.device.setYearlyEnergy(energy);
                             case 'both':
-                                await args.device.setMonthlyEnergy(energy);
-                                await args.device.setYearlyEnergy(energy);
-                                return true;
+                                return await args.device.setMonthlyAndYearlyEnergy(energy);
                             case 'lifetime':
                                 if (!Number.isFinite(energy) || energy < 0) {
                                     throw new Error('Neplatná hodnota energie');

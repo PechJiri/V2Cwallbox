@@ -50,7 +50,7 @@ The code also handles `FirmwareVersion` and `BatteryPower`, which are not clearl
 
 The driver remains an `evcharger` and declares both `energy.evCharger = true` and `energy.meterPowerImportedCapability = "meter_power"`. `measure_power` and `meter_power` use Homey's system capability definitions. The lifetime meter is visible in Homey's device UI and Insights, and initialization writes its stored numeric value or `0`.
 
-Disconnect settlement uses a persisted high-water mark and an idempotent transaction with absolute monthly, yearly, and lifetime targets. Partial storage or capability failures leave the transaction available for replay during initialization or the next serialized energy operation, without adding the session twice. Pending session energy and the transaction are cleared only after all targets succeed. Users can correct monthly, yearly, both-period, or lifetime energy through the existing `set_energy_counter` Flow action; monthly and yearly corrections do not automatically change lifetime energy.
+Disconnect settlement uses a persisted high-water mark and an idempotent transaction with validated baselines and absolute monthly, yearly, and lifetime targets. Partial storage or capability failures leave the transaction available for replay during initialization or the next serialized energy operation, without adding the session twice. Pending session energy and the transaction are cleared only after all targets succeed; malformed transactions fail closed without clearing pending data. Users can correct monthly, yearly, both-period, or lifetime energy through the existing serialized `set_energy_counter` Flow action; monthly and yearly corrections do not automatically change lifetime energy.
 
 ## Candidate Future Features
 

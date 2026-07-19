@@ -657,6 +657,29 @@ test('set_energy_counter keeps existing arguments and adds lifetime correction',
     assert.deepEqual(calls, [42.5]);
 });
 
+test('set_energy_counter both uses one atomic device operation', async () => {
+    const { homey, listeners } = createFlowCardManagerHarness();
+    const calls = [];
+    const manager = new FlowCardManager(homey, {});
+    await manager.initialize();
+
+    const result = await listeners.get('set_energy_counter')({
+        counter_type: 'both',
+        energy: 25,
+        device: {
+            setMonthlyEnergy: async () => calls.push('monthly'),
+            setYearlyEnergy: async () => calls.push('yearly'),
+            setMonthlyAndYearlyEnergy: async (energy) => {
+                calls.push(['both', energy]);
+                return true;
+            }
+        }
+    });
+
+    assert.equal(result, true);
+    assert.deepEqual(calls, [['both', 25]]);
+});
+
 test('set_installation_voltage is absent from the Flow manifest', () => {
     const flowManifest = JSON.parse(fs.readFileSync(
         path.join(__dirname, '../drivers/v2c-wallbox/driver.flow.compose.json'),
