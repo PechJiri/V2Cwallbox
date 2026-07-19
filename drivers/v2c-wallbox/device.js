@@ -714,7 +714,7 @@ class MyDevice extends Device {
         });
     
         try {
-            let productionDataRefreshed = false;
+            let clearResponseCache = false;
 
             for (const key of changedKeys) {
                 switch (key) {
@@ -768,10 +768,7 @@ class MyDevice extends Device {
                             Number(newSettings.installation_voltage)
                         ) ? 'line_to_line' : 'line_to_neutral';
                         await this.setSettings({ voltage_type: voltageType });
-                        this.lastResponse = null;
-                        this.lastResponseTime = null;
-                        await this.getProductionData();
-                        productionDataRefreshed = true;
+                        clearResponseCache = true;
                         break;
                     }
                         
@@ -793,9 +790,11 @@ class MyDevice extends Device {
                 this.homey.settings.set(key, newSettings[key]);
             }
     
-            if (!productionDataRefreshed) {
-                await this.getProductionData();
+            if (clearResponseCache) {
+                this.lastResponse = null;
+                this.lastResponseTime = null;
             }
+            await this.getProductionData();
     
         } catch (error) {
             this.logger.error('Chyba při ukládání nastavení', error);

@@ -333,11 +333,60 @@ test('installation_voltage settings changes write once, align voltage_type, clea
     assert.deepEqual(calls, [
         ['setParameter', 'VoltageInstallation', 400],
         ['setSettings', { voltage_type: 'line_to_line' }],
-        ['getProductionData', null, null],
-        ['homey.settings.set', 'installation_voltage', '400']
+        ['homey.settings.set', 'installation_voltage', '400'],
+        ['getProductionData', null, null]
     ]);
     assert.equal(device.lastResponse, null);
     assert.equal(device.lastResponseTime, null);
+});
+
+test('multi-setting voltage saves refresh once after switching to the new V2C API', async () => {
+    const MyDevice = loadDeviceWithHomeyStub();
+    const calls = [];
+    const device = Object.create(MyDevice.prototype);
+    device.logger = {
+        debug: () => {},
+        error: () => {}
+    };
+    device.homey = {
+        settings: {
+            set: (key, value) => calls.push(['homey.settings.set', key, value])
+        }
+    };
+    device.lastResponse = { VoltageInstallation: 230 };
+    device.lastResponseTime = 12345;
+    device.v2cApi = {
+        ip: '192.168.1.10',
+        setParameter: async (parameter, value) => calls.push(['setParameter', parameter, value])
+    };
+    device.setSettings = async (settings) => {
+        calls.push(['setSettings', settings]);
+    };
+    device.getProductionData = async () => {
+        calls.push(['getProductionData', device.v2cApi.ip, device.lastResponse, device.lastResponseTime]);
+    };
+
+    await device.onSettings({
+        oldSettings: {
+            installation_voltage: '230',
+            voltage_type: 'line_to_neutral',
+            v2c_ip: '192.168.1.10'
+        },
+        newSettings: {
+            installation_voltage: '400',
+            voltage_type: 'line_to_neutral',
+            v2c_ip: '192.168.1.20'
+        },
+        changedKeys: ['installation_voltage', 'v2c_ip']
+    });
+
+    assert.deepEqual(calls, [
+        ['setParameter', 'VoltageInstallation', 400],
+        ['setSettings', { voltage_type: 'line_to_line' }],
+        ['homey.settings.set', 'installation_voltage', '400'],
+        ['homey.settings.set', 'v2c_ip', '192.168.1.20'],
+        ['getProductionData', '192.168.1.20', null, null]
+    ]);
 });
 
 test('installation_voltage settings changes align line-to-neutral voltages', async () => {
