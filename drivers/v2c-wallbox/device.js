@@ -483,7 +483,7 @@ class MyDevice extends Device {
         return Math.min(backoff, CONSTANTS.INTERVALS.BACKOFF_MAX);
     }
     
-    async getProductionData() {
+    async getProductionData({ throwOnError = false } = {}) {
         try {
             const now = Date.now();
             if (this.lastResponse && this.lastResponseTime && (now - this.lastResponseTime < CONSTANTS.API.TIMEOUT)) {
@@ -557,9 +557,15 @@ class MyDevice extends Device {
                         this.logger.debug('Použita poslední známá data kvůli chybě API');
                     }
                 }
+                if (throwOnError) {
+                    throw error;
+                }
             }
         } catch (error) {
             this.logger.error('Kritická chyba při zpracování dat', error);
+            if (throwOnError) {
+                throw error;
+            }
         }
     }
 
@@ -594,9 +600,13 @@ class MyDevice extends Device {
             // Fuzzy validace phase_mode settingu proti skutečně měřenému výkonu
             this._validatePhaseMode(deviceData.chargePower, deviceData.intensity, deviceData.voltageInstallation, phaseMode, voltageType, deviceData.maxIntensity);
 
+            const importedChargePower = Number.isFinite(deviceData.chargePower)
+                ? Math.max(0, deviceData.chargePower)
+                : 0;
+
             await Promise.all([
                 this.setCapabilityValue('measure_charge_power', deviceData.chargePower),
-                this.setCapabilityValue('measure_power', deviceData.chargePower),
+                this.setCapabilityValue('measure_power', importedChargePower),
                 this.setCapabilityValue('measure_voltage_installation', deviceData.voltageInstallation),
                 safeSetMeasurement('measure_current.l1', deviceData.intensityL1),
                 safeSetMeasurement('measure_current.l2', deviceData.intensityL2),
@@ -720,6 +730,14 @@ class MyDevice extends Device {
         try {
             let clearResponseCache = false;
 
+            if (changedKeys.includes('v2c_ip')) {
+                const ipCheck = validateWallboxIP(newSettings.v2c_ip);
+                if (!ipCheck.valid) {
+                    throw new Error(`Invalid IP address (${ipCheck.reason}) - only private network IPv4 addresses are allowed`);
+                }
+                this.v2cApi = new v2cAPI(this.homey, newSettings.v2c_ip);
+            }
+
             for (const key of changedKeys) {
                 switch (key) {
                     case 'min_intensity':
@@ -777,11 +795,6 @@ class MyDevice extends Device {
                     }
                         
                     case 'v2c_ip': {
-                        const ipCheck = validateWallboxIP(newSettings.v2c_ip);
-                        if (!ipCheck.valid) {
-                            throw new Error(`Invalid IP address (${ipCheck.reason}) — only private network IPv4 addresses are allowed`);
-                        }
-                        this.v2cApi = new v2cAPI(this.homey, newSettings.v2c_ip);
                         break;
                     }
                         
@@ -798,7 +811,7 @@ class MyDevice extends Device {
                 this.lastResponse = null;
                 this.lastResponseTime = null;
             }
-            await this.getProductionData();
+            await this.getProductionData({ throwOnError: true });
     
         } catch (error) {
             this.logger.error('Chyba při ukládání nastavení', error);

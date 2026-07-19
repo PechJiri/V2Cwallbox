@@ -321,8 +321,8 @@ test('installation_voltage settings changes write once, align voltage_type, clea
     device.setSettings = async (settings) => {
         calls.push(['setSettings', settings]);
     };
-    device.getProductionData = async () => {
-        calls.push(['getProductionData', device.lastResponse, device.lastResponseTime]);
+    device.getProductionData = async (options) => {
+        calls.push(['getProductionData', options, device.lastResponse, device.lastResponseTime]);
     };
 
     await device.onSettings({
@@ -335,15 +335,25 @@ test('installation_voltage settings changes write once, align voltage_type, clea
         ['setParameter', 'VoltageInstallation', 400],
         ['setSettings', { voltage_type: 'line_to_line' }],
         ['homey.settings.set', 'installation_voltage', '400'],
-        ['getProductionData', null, null]
+        ['getProductionData', { throwOnError: true }, null, null]
     ]);
     assert.equal(device.lastResponse, null);
     assert.equal(device.lastResponseTime, null);
 });
 
 test('multi-setting voltage saves refresh once after switching to the new V2C API', async () => {
-    const MyDevice = loadDeviceWithHomeyStub();
     const calls = [];
+    class ApiStub {
+        constructor(homey, ip) {
+            this.ip = ip;
+            calls.push(['constructApi', ip]);
+        }
+
+        async setParameter(parameter, value) {
+            calls.push(['setParameter', this.ip, parameter, value]);
+        }
+    }
+    const MyDevice = loadDeviceWithHomeyStub(ApiStub);
     const device = Object.create(MyDevice.prototype);
     device.logger = {
         debug: () => {},
@@ -358,13 +368,13 @@ test('multi-setting voltage saves refresh once after switching to the new V2C AP
     device.lastResponseTime = 12345;
     device.v2cApi = {
         ip: '192.168.1.10',
-        setParameter: async (parameter, value) => calls.push(['setParameter', parameter, value])
+        setParameter: async (parameter, value) => calls.push(['setParameter', '192.168.1.10', parameter, value])
     };
     device.setSettings = async (settings) => {
         calls.push(['setSettings', settings]);
     };
-    device.getProductionData = async () => {
-        calls.push(['getProductionData', device.v2cApi.ip, device.lastResponse, device.lastResponseTime]);
+    device.getProductionData = async (options) => {
+        calls.push(['getProductionData', options, device.v2cApi.ip, device.lastResponse, device.lastResponseTime]);
     };
 
     await device.onSettings({
@@ -382,12 +392,68 @@ test('multi-setting voltage saves refresh once after switching to the new V2C AP
     });
 
     assert.deepEqual(calls, [
-        ['setParameter', 'VoltageInstallation', 400],
+        ['constructApi', '192.168.1.20'],
+        ['setParameter', '192.168.1.20', 'VoltageInstallation', 400],
         ['setSettings', { voltage_type: 'line_to_line' }],
         ['homey.settings.set', 'installation_voltage', '400'],
         ['homey.settings.set', 'v2c_ip', '192.168.1.20'],
-        ['getProductionData', '192.168.1.20', null, null]
+        ['getProductionData', { throwOnError: true }, '192.168.1.20', null, null]
     ]);
+});
+
+test('installation_voltage settings reject when the forced refresh fails after one write and cache clear', async () => {
+    const MyDevice = loadDeviceWithHomeyStub();
+    const calls = [];
+    const device = Object.create(MyDevice.prototype);
+    device.logger = { debug: () => {}, error: () => {} };
+    device.homey = { settings: { set: (key, value) => calls.push(['settings', key, value]) } };
+    device.lastResponse = { VoltageInstallation: 230 };
+    device.lastResponseTime = 12345;
+    device.v2cApi = {
+        setParameter: async (parameter, value) => calls.push(['write', parameter, value])
+    };
+    device.setSettings = async (settings) => calls.push(['setSettings', settings]);
+    device.getProductionData = async (options) => {
+        calls.push(['refresh', options, device.lastResponse, device.lastResponseTime]);
+        throw new Error('forced refresh failed');
+    };
+
+    await assert.rejects(
+        () => device.onSettings({
+            oldSettings: { installation_voltage: '230', voltage_type: 'line_to_neutral' },
+            newSettings: { installation_voltage: '400', voltage_type: 'line_to_neutral' },
+            changedKeys: ['installation_voltage']
+        }),
+        /forced refresh failed/
+    );
+
+    assert.deepEqual(calls, [
+        ['write', 'VoltageInstallation', 400],
+        ['setSettings', { voltage_type: 'line_to_line' }],
+        ['settings', 'installation_voltage', '400'],
+        ['refresh', { throwOnError: true }, null, null]
+    ]);
+});
+
+test('production polling tolerates API failures by default but strict refresh rejects them', async () => {
+    const MyDevice = loadDeviceWithHomeyStub();
+    const device = Object.create(MyDevice.prototype);
+    device.logger = { debug: () => {}, error: () => {} };
+    device.lastResponse = null;
+    device.lastResponseTime = null;
+    device._consecutivePollErrors = 0;
+    device.energyManager = { resetMonthlyAndYearlyDataIfNeeded: async () => {} };
+    device.v2cApi = {
+        getData: async () => { throw new Error('wallbox unavailable'); },
+        getErrorCount: () => 1,
+        isInErrorState: () => false
+    };
+
+    await assert.doesNotReject(() => device.getProductionData());
+    await assert.rejects(
+        () => device.getProductionData({ throwOnError: true }),
+        /wallbox unavailable/
+    );
 });
 
 test('installation_voltage settings changes align line-to-neutral voltages', async () => {
@@ -474,7 +540,8 @@ test('EnergyManager initializes meter_power to stored lifetime energy or zero', 
             yearlyEnergy: 8,
             lastYearEnergy: 3,
             expected: 0
-        }
+        },
+        { storedLifetime: { energy: -4, since: '2026-01-01T00:00:00.000Z' }, expected: 0 }
     ]) {
         const capabilityWrites = [];
         const store = new Map();
@@ -499,6 +566,46 @@ test('EnergyManager initializes meter_power to stored lifetime energy or zero', 
         assert.equal(Number.isFinite(capabilityWrites[0][1]), true);
         assert.equal(store.get('lifetimeEnergyData').energy, expected);
     }
+});
+
+test('system measure_power clamps negative charging telemetry while custom telemetry remains raw', async () => {
+    const MyDevice = loadDeviceWithHomeyStub();
+    const capabilityWrites = new Map();
+    const device = Object.create(MyDevice.prototype);
+    device.logger = { debug: () => {}, warn: () => {}, error: () => {} };
+    device.energyManager = { getLifetimeEnergy: () => 0 };
+    device.getSetting = (key) => ({ phase_mode: '3', voltage_type: 'line_to_neutral' })[key];
+    device.hasCapability = () => true;
+    device.setCapabilityValue = async (capabilityId, value) => capabilityWrites.set(capabilityId, value);
+
+    await device.updateCapabilities({
+        chargePower: -250,
+        voltageInstallation: 230,
+        intensityL1: 0,
+        intensityL2: 0,
+        intensityL3: 0,
+        voltageL1: 230,
+        voltageL2: 230,
+        voltageL3: 230,
+        slaveError: 0,
+        chargeTime: 0,
+        locked: false,
+        intensity: 0,
+        dynamic: false,
+        dynamicPowerMode: '0',
+        paused: false,
+        housePower: 0,
+        fvPower: 0,
+        batteryPower: 0,
+        minIntensity: 6,
+        maxIntensity: 32,
+        firmwareVersion: 'test',
+        signalStatus: 0,
+        timer_state: false
+    }, CONSTANTS.CHARGE_STATES.DISCONNECTED, 0);
+
+    assert.equal(capabilityWrites.get('measure_charge_power'), -250);
+    assert.equal(capabilityWrites.get('measure_power'), 0);
 });
 
 test('set_energy_counter keeps existing arguments and adds lifetime correction', async () => {
@@ -576,11 +683,14 @@ test('installation_voltage advanced setting follows voltage_type with six suppor
     assert.deepEqual(CONSTANTS.DEVICE.INSTALLATION_VOLTAGE.LINE_TO_LINE_VALUES, [380, 400, 415]);
 });
 
-function loadDeviceWithHomeyStub() {
+function loadDeviceWithHomeyStub(V2cApiStub) {
     const originalLoad = Module._load;
     Module._load = function patchedLoad(request, parent, isMain) {
         if (request === 'homey') {
             return { Device: class Device {} };
+        }
+        if (request === './api' && V2cApiStub) {
+            return { v2cAPI: V2cApiStub };
         }
         return originalLoad.call(this, request, parent, isMain);
     };

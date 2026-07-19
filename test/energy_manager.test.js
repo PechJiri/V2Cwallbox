@@ -433,3 +433,45 @@ test('setLifetimeEnergy rejects non-finite and negative values without changing 
         assert.equal(harness.capabilityWrites.length, writesBefore);
     }
 });
+
+test('lifetime correction invoked during disconnect settlement runs afterward without a lost update', async () => {
+    const harness = createHarness({
+        pendingSessionEnergy: 8,
+        lifetimeEnergyData: {
+            energy: 10,
+            since: '2026-01-01T00:00:00.000Z'
+        }
+    });
+    const manager = await createInitializedManager(harness);
+    const originalSetStoreValue = harness.device.setStoreValue;
+    let releaseClaim;
+    let claimStarted;
+    const claimGate = new Promise((resolve) => { releaseClaim = resolve; });
+    const claimEntered = new Promise((resolve) => { claimStarted = resolve; });
+    harness.device.setStoreValue = async (key, value) => {
+        if (key === 'pendingSessionEnergy' && value === 0) {
+            claimStarted();
+            await claimGate;
+        }
+        return await originalSetStoreValue(key, value);
+    };
+
+    const disconnect = manager.processEnergyData(
+        { chargeEnergy: 0 },
+        CONSTANTS.CHARGE_STATES.CONNECTED,
+        CONSTANTS.CHARGE_STATES.DISCONNECTED
+    );
+    await claimEntered;
+    let correctionCompleted = false;
+    const correction = manager.setLifetimeEnergy(100).then((result) => {
+        correctionCompleted = true;
+        return result;
+    });
+
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(correctionCompleted, false);
+    releaseClaim();
+    assert.deepEqual(await Promise.all([disconnect, correction]), [0, true]);
+    assert.equal(harness.store.get('lifetimeEnergyData').energy, 100);
+    assert.equal(harness.capabilities.get('meter_power'), 100);
+});
