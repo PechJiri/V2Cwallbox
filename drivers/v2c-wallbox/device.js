@@ -55,6 +55,9 @@ class MyDevice extends Device {
     
             this.powerCalculator = PowerCalculator;
 
+            // System capabilities must exist before EnergyManager seeds meter_power.
+            await this.initializeCapabilities();
+
             this.energyManager = new EnergyManager(this, this.logger);
             await this.energyManager.initialize();
     
@@ -86,9 +89,6 @@ class MyDevice extends Device {
                 return this.setUnavailable('Chyba při inicializaci API');
             }
     
-            // Nastavení capabilities
-            await this.initializeCapabilities();
-
             // Zúžení rozsahu systémové capability target_power podle phase_mode settingu
             // (widest range je v driver.compose.json, zde ji konkretizujeme dle instalace).
             await this._applyCapabilityOptionsForPhaseMode();

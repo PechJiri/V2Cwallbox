@@ -8,6 +8,7 @@ const test = require('node:test');
 
 const FlowCardManager = require('../drivers/v2c-wallbox/FlowCardManager');
 const DataValidator = require('../lib/DataValidator');
+const EnergyManager = require('../lib/EnergyManager');
 const CONSTANTS = require('../lib/constants');
 
 function createFlowCardManagerHarness() {
@@ -444,9 +445,49 @@ test('uses standard Homey phase metrics and the system meter_power capability fo
 
     assert.equal(driverManifest.energy.evCharger, true);
     assert.equal(driverManifest.energy.meterPowerImportedCapability, 'meter_power');
+    assert.equal(fs.existsSync(path.join(__dirname, '../.homeycompose/capabilities/measure_power.json')), false);
     assert.equal(fs.existsSync(path.join(__dirname, '../.homeycompose/capabilities/meter_power.json')), false);
     assert.equal(driverManifest.capabilities.includes('evcharger_charging'), true);
     assert.equal(driverManifest.capabilities.includes('locked'), true);
+});
+
+test('migrates system capabilities before EnergyManager initialization', () => {
+    const deviceSource = fs.readFileSync(
+        path.join(__dirname, '../drivers/v2c-wallbox/device.js'),
+        'utf8'
+    );
+    const capabilityMigration = deviceSource.indexOf('await this.initializeCapabilities();');
+    const energyInitialization = deviceSource.indexOf('await this.energyManager.initialize();');
+
+    assert.notEqual(capabilityMigration, -1);
+    assert.notEqual(energyInitialization, -1);
+    assert.equal(capabilityMigration < energyInitialization, true);
+});
+
+test('EnergyManager initializes meter_power to stored lifetime energy or zero', async () => {
+    for (const [storedLifetime, expected] of [
+        [{ energy: 17.5, since: '2026-01-01T00:00:00.000Z' }, 17.5],
+        [null, 0],
+        [{ energy: Number.NaN, since: '2026-01-01T00:00:00.000Z' }, 0]
+    ]) {
+        const capabilityWrites = [];
+        const store = new Map();
+        if (storedLifetime) store.set('lifetimeEnergyData', storedLifetime);
+        const device = {
+            getStoreValue: async (key) => store.get(key),
+            setStoreValue: async (key, value) => store.set(key, value),
+            setCapabilityValue: async (capabilityId, value) => {
+                capabilityWrites.push([capabilityId, value]);
+            }
+        };
+        const logger = { debug: () => {} };
+        const manager = new EnergyManager(device, logger);
+
+        await manager.initialize();
+
+        assert.deepEqual(capabilityWrites, [['meter_power', expected]]);
+        assert.equal(Number.isFinite(capabilityWrites[0][1]), true);
+    }
 });
 
 test('set_installation_voltage is absent from the Flow manifest', () => {
