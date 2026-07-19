@@ -20,7 +20,7 @@ Both capabilities use Homey's built-in definitions; there are no custom `measure
 
 V2C `ChargeEnergy` is a current-session counter. While the car is connected or charging, the app persists the highest valid reading as `pendingSessionEnergy`. Pausing and resuming does not settle or clear that value. On the first transition to physically disconnected, the pending value is claimed, added once to the monthly, yearly, and lifetime totals, and the displayed session energy returns to `0`. Repeated disconnected polls do not add it again, and the persisted pending value survives an app restart during a session.
 
-Settlement deliberately uses at-most-once semantics: the pending value is cleared before the period and lifetime totals are updated. This avoids double-accounting after a restart, but a storage or capability failure after that claim can leave the just-finished session absent from the totals. The `set_energy_counter` Flow action can correct the monthly, yearly, both-period, or lifetime counter; changing monthly or yearly totals does not rewrite lifetime energy.
+Settlement uses a persisted transaction containing absolute monthly, yearly, and lifetime targets. A partial storage or capability failure leaves that transaction available for an idempotent retry during initialization or the next serialized energy operation. Replaying the same absolute targets cannot add the session twice; pending session energy and the transaction are cleared only after all target writes succeed. The `set_energy_counter` Flow action can correct the monthly, yearly, both-period, or lifetime counter; changing monthly or yearly totals does not rewrite lifetime energy.
 
 ## Home quick action
 

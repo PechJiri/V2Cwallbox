@@ -44,6 +44,34 @@ async function processAndDisplay(manager, harness, chargeEnergy, previousState, 
     return displayedEnergy;
 }
 
+function createSettlementTransaction({
+    sessionEnergy = 8,
+    monthlyEnergy = 10,
+    yearlyEnergy = 11,
+    lifetimeEnergy = 18
+} = {}) {
+    const now = new Date();
+    return {
+        version: 1,
+        sessionEnergy,
+        createdAt: now.toISOString(),
+        targets: {
+            monthlyData: {
+                month: now.getMonth() + 1,
+                energy: monthlyEnergy
+            },
+            yearlyData: {
+                year: now.getFullYear(),
+                energy: yearlyEnergy
+            },
+            lifetimeData: {
+                energy: lifetimeEnergy,
+                since: '2026-01-01T00:00:00.000Z'
+            }
+        }
+    };
+}
+
 test('pause and resume retain the highest pending session energy without settlement', async () => {
     const harness = createHarness();
     const manager = await createInitializedManager(harness);
@@ -276,7 +304,7 @@ test('failed settlement after statistics write leaves pending claimed and cannot
     assert.equal(harness.store.get('lifetimeEnergyData').energy, 8);
 });
 
-test('failed durable claim preserves in-memory pending energy for retry', async () => {
+test('failed pending clear preserves transaction and in-memory pending for idempotent retry', async () => {
     const harness = createHarness({ pendingSessionEnergy: 8 });
     const manager = await createInitializedManager(harness);
     const originalSetStoreValue = harness.device.setStoreValue;
@@ -299,7 +327,8 @@ test('failed durable claim preserves in-memory pending energy for retry', async 
     );
     assert.equal(manager.pendingSessionEnergy, 8);
     assert.equal(harness.store.get('pendingSessionEnergy'), 8);
-    assert.equal(harness.store.get('lifetimeEnergyData').energy, 0);
+    assert.equal(harness.store.get('lifetimeEnergyData').energy, 8);
+    assert.equal(harness.store.get('energySettlementTransaction').targets.lifetimeData.energy, 8);
 
     assert.equal(await manager.processEnergyData(
         { chargeEnergy: 0 },
@@ -308,6 +337,153 @@ test('failed durable claim preserves in-memory pending energy for retry', async 
     ), 0);
     assert.equal(harness.store.get('pendingSessionEnergy'), 0);
     assert.equal(harness.store.get('lifetimeEnergyData').energy, 8);
+    assert.equal(harness.store.get('energySettlementTransaction'), null);
+});
+
+test('partial settlement write persists absolute targets and restart replays exactly once', async () => {
+    const now = new Date();
+    const harness = createHarness({
+        pendingSessionEnergy: 8,
+        monthlyEnergyData: { month: now.getMonth() + 1, energy: 2 },
+        yearlyEnergyData: { year: now.getFullYear(), energy: 3 },
+        lifetimeEnergyData: { energy: 10, since: '2026-01-01T00:00:00.000Z' }
+    });
+    const manager = await createInitializedManager(harness);
+    const originalSetStoreValue = harness.device.setStoreValue;
+    const storeWrites = [];
+    let failYearlyOnce = true;
+    harness.device.setStoreValue = async (key, value) => {
+        storeWrites.push(key);
+        if (failYearlyOnce && key === 'yearlyEnergyData') {
+            failYearlyOnce = false;
+            throw new Error('simulated partial settlement failure');
+        }
+        return await originalSetStoreValue(key, value);
+    };
+
+    await assert.rejects(
+        () => manager.processEnergyData(
+            { chargeEnergy: 0 },
+            CONSTANTS.CHARGE_STATES.CONNECTED,
+            CONSTANTS.CHARGE_STATES.DISCONNECTED
+        ),
+        /partial settlement/
+    );
+
+    const transaction = harness.store.get('energySettlementTransaction');
+    assert.equal(storeWrites.indexOf('energySettlementTransaction') < storeWrites.indexOf('monthlyEnergyData'), true);
+    assert.equal(transaction.targets.monthlyData.energy, 10);
+    assert.equal(transaction.targets.yearlyData.energy, 11);
+    assert.equal(transaction.targets.lifetimeData.energy, 18);
+    assert.equal(harness.store.get('pendingSessionEnergy'), 8);
+
+    harness.device.setStoreValue = originalSetStoreValue;
+    await createInitializedManager(harness);
+
+    assert.equal(harness.store.get('monthlyEnergyData').energy, 10);
+    assert.equal(harness.store.get('yearlyEnergyData').energy, 11);
+    assert.equal(harness.store.get('lifetimeEnergyData').energy, 18);
+    assert.equal(harness.capabilities.get('measure_monthly_energy'), 10);
+    assert.equal(harness.capabilities.get('measure_yearly_energy'), 11);
+    assert.equal(harness.capabilities.get('meter_power'), 18);
+    assert.equal(harness.store.get('pendingSessionEnergy'), 0);
+    assert.equal(harness.store.get('energySettlementTransaction'), null);
+});
+
+test('restart replays applied absolute targets when pending was not yet cleared without double counting', async () => {
+    const transaction = createSettlementTransaction();
+    const harness = createHarness({
+        pendingSessionEnergy: 8,
+        energySettlementTransaction: transaction,
+        monthlyEnergyData: transaction.targets.monthlyData,
+        yearlyEnergyData: transaction.targets.yearlyData,
+        lifetimeEnergyData: transaction.targets.lifetimeData
+    });
+
+    await createInitializedManager(harness);
+
+    assert.equal(harness.store.get('monthlyEnergyData').energy, 10);
+    assert.equal(harness.store.get('yearlyEnergyData').energy, 11);
+    assert.equal(harness.store.get('lifetimeEnergyData').energy, 18);
+    assert.equal(harness.store.get('pendingSessionEnergy'), 0);
+    assert.equal(harness.store.get('energySettlementTransaction'), null);
+    assert.equal(harness.capabilities.get('meter_power'), 18);
+});
+
+test('initialize discards malformed settlement transaction without applying corrupt targets', async () => {
+    const now = new Date();
+    const harness = createHarness({
+        pendingSessionEnergy: 8,
+        energySettlementTransaction: createSettlementTransaction({ lifetimeEnergy: Number.POSITIVE_INFINITY }),
+        monthlyEnergyData: { month: now.getMonth() + 1, energy: 2 },
+        yearlyEnergyData: { year: now.getFullYear(), energy: 3 },
+        lifetimeEnergyData: { energy: 10, since: '2026-01-01T00:00:00.000Z' }
+    });
+
+    await createInitializedManager(harness);
+
+    assert.equal(harness.store.get('monthlyEnergyData').energy, 2);
+    assert.equal(harness.store.get('yearlyEnergyData').energy, 3);
+    assert.equal(harness.store.get('lifetimeEnergyData').energy, 10);
+    assert.equal(harness.store.get('pendingSessionEnergy'), 0);
+    assert.equal(harness.store.get('energySettlementTransaction'), null);
+    assert.equal(harness.capabilities.get('meter_power'), 10);
+});
+
+test('settlement transaction sanitizes corrupt existing period totals before persisting targets', async () => {
+    const now = new Date();
+    const harness = createHarness({
+        pendingSessionEnergy: 8,
+        monthlyEnergyData: { month: now.getMonth() + 1, energy: Number.NaN },
+        yearlyEnergyData: { year: now.getFullYear(), energy: -1 },
+        lifetimeEnergyData: { energy: 10, since: '2026-01-01T00:00:00.000Z' }
+    });
+    const manager = await createInitializedManager(harness);
+
+    await manager.processEnergyData(
+        { chargeEnergy: 0 },
+        CONSTANTS.CHARGE_STATES.CONNECTED,
+        CONSTANTS.CHARGE_STATES.DISCONNECTED
+    );
+
+    assert.equal(harness.store.get('monthlyEnergyData').energy, 8);
+    assert.equal(harness.store.get('yearlyEnergyData').energy, 8);
+    assert.equal(harness.store.get('lifetimeEnergyData').energy, 18);
+    assert.equal(harness.store.get('energySettlementTransaction'), null);
+});
+
+test('lifetime correction resumes a failed settlement before applying the correction', async () => {
+    const now = new Date();
+    const harness = createHarness({
+        pendingSessionEnergy: 8,
+        monthlyEnergyData: { month: now.getMonth() + 1, energy: 2 },
+        yearlyEnergyData: { year: now.getFullYear(), energy: 3 },
+        lifetimeEnergyData: { energy: 10, since: '2026-01-01T00:00:00.000Z' }
+    });
+    const manager = await createInitializedManager(harness);
+    const originalSetStoreValue = harness.device.setStoreValue;
+    let failYearlyOnce = true;
+    harness.device.setStoreValue = async (key, value) => {
+        if (failYearlyOnce && key === 'yearlyEnergyData') {
+            failYearlyOnce = false;
+            throw new Error('simulated settlement failure before correction');
+        }
+        return await originalSetStoreValue(key, value);
+    };
+
+    await assert.rejects(() => manager.processEnergyData(
+        { chargeEnergy: 0 },
+        CONSTANTS.CHARGE_STATES.CONNECTED,
+        CONSTANTS.CHARGE_STATES.DISCONNECTED
+    ));
+
+    assert.equal(await manager.setLifetimeEnergy(100), true);
+    assert.equal(harness.store.get('monthlyEnergyData').energy, 10);
+    assert.equal(harness.store.get('yearlyEnergyData').energy, 11);
+    assert.equal(harness.store.get('lifetimeEnergyData').energy, 100);
+    assert.equal(harness.capabilities.get('meter_power'), 100);
+    assert.equal(harness.store.get('pendingSessionEnergy'), 0);
+    assert.equal(harness.store.get('energySettlementTransaction'), null);
 });
 
 test('pending session energy survives restart and settles when first observed state is disconnected', async () => {
