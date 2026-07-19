@@ -465,14 +465,24 @@ test('migrates system capabilities before EnergyManager initialization', () => {
 });
 
 test('EnergyManager initializes meter_power to stored lifetime energy or zero', async () => {
-    for (const [storedLifetime, expected] of [
-        [{ energy: 17.5, since: '2026-01-01T00:00:00.000Z' }, 17.5],
-        [null, 0],
-        [{ energy: Number.NaN, since: '2026-01-01T00:00:00.000Z' }, 0]
+    for (const { storedLifetime, yearlyEnergy, lastYearEnergy, expected } of [
+        { storedLifetime: { energy: 17.5, since: '2026-01-01T00:00:00.000Z' }, expected: 17.5 },
+        { storedLifetime: null, expected: 0 },
+        { storedLifetime: null, yearlyEnergy: 8, lastYearEnergy: 3, expected: 0 },
+        {
+            storedLifetime: { energy: Number.NaN, since: '2026-01-01T00:00:00.000Z' },
+            yearlyEnergy: 8,
+            lastYearEnergy: 3,
+            expected: 0
+        }
     ]) {
         const capabilityWrites = [];
         const store = new Map();
         if (storedLifetime) store.set('lifetimeEnergyData', storedLifetime);
+        if (yearlyEnergy !== undefined) {
+            store.set('yearlyEnergyData', { energy: yearlyEnergy });
+        }
+        if (lastYearEnergy !== undefined) store.set('lastYearEnergy', lastYearEnergy);
         const device = {
             getStoreValue: async (key) => store.get(key),
             setStoreValue: async (key, value) => store.set(key, value),
@@ -487,6 +497,7 @@ test('EnergyManager initializes meter_power to stored lifetime energy or zero', 
 
         assert.deepEqual(capabilityWrites, [['meter_power', expected]]);
         assert.equal(Number.isFinite(capabilityWrites[0][1]), true);
+        assert.equal(store.get('lifetimeEnergyData').energy, expected);
     }
 });
 
