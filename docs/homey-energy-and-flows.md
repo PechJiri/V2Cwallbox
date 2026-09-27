@@ -22,7 +22,7 @@ V2C `ChargeEnergy` is a current-session counter. While a session is observed, th
 
 ## Wallbox status widget
 
-The widget uses an app-owned picker keyed by the paired wallbox's Homey pairing key. After upgrading to 2.0.5, an existing widget may ask you to select its wallbox again. Choose it in the widget settings; keep the paired device in Homey.
+The widget uses an app-owned picker keyed by the paired wallbox's Homey pairing key. After the widget upgrade, an existing widget may ask you to select its wallbox again. Choose it in the widget settings; keep the paired device in Homey.
 
 The widget shows primary wallbox faults separately from network-offline status. Primary charge states 4, 5, and 6 represent system/leakage fault, CP/ground fault, and ventilation required. States 0, 1, and 2 represent waiting, connected, and charging. Inverter `SlaveError` remains a separate V2C communication diagnostic and does not by itself mark the primary wallbox faulted or offline.
 
@@ -31,6 +31,8 @@ Settlement uses a persisted transaction containing validated monthly, yearly, an
 ## Home quick action
 
 The driver exposes Homey's standard, writable `evcharger_charging` and `locked` capabilities. Their listeners write the matching V2C `Paused` and `Locked` parameters. Where the installed Homey UI/OS supports choosing a device quick action, the user can therefore select charging on/off or lock/unlock. The app does not declare a custom `uiQuickAction` or override Homey's selection.
+
+Standalone Pause/Resume from the widget, quick action or charging capability only changes V2C `Paused`. Resume retains the wallbox's configured amps; it does not require a new watts target or change the power controller. A Homey request that explicitly changes `target_power` remains separate: zero pauses charging, and a positive combined start applies the requested current before unpausing.
 
 When Homey controls charging, `device.js` converts `target_power` watts to V2C `Intensity` amps using:
 

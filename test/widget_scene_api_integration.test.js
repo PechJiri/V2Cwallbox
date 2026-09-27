@@ -17,6 +17,7 @@ const capabilityForRaw = {
     locked: (raw) => raw.locked,
     timer_state: (raw) => raw.timerActive,
     target_power_mode: (raw) => raw.targetPowerMode,
+    measure_intensity: (raw) => raw.intensity,
     measure_slave_error: (raw) => raw.slaveError,
     target_power: (_raw, options) => options.targetPower
 };
@@ -314,25 +315,32 @@ test('explicit unknown selection cannot write; legacy fallback requires exactly 
     }
 });
 
-test('Homey target guard through the widget API preserves the accepted target and owner', async () => {
-    const device = makeDevice('guarded-resume', fixtures.paused, {
+test('Homey zero target does not block selected-wallbox Resume or change target ownership', async () => {
+    const device = makeDevice('zero-target-resume', { ...fixtures.paused, intensity: 16 }, {
         targetPower: 0,
         realChargerControl: true
     });
-    const widget = makeWidget([device], 'guarded-resume');
+    const widget = makeWidget([device], 'zero-target-resume');
 
     try {
         await widget.controller.refresh();
         assert.equal(widget.view.last.state, 'paused');
         await widget.controller.act('resume');
 
-        assert.deepEqual(widget.requests.map(({ method }) => method), ['GET', 'POST']);
-        assert.deepEqual(widget.requests[1].body, { paused: false, deviceId: 'guarded-resume' });
-        assert.ok(widget.view.messages.includes('targetRequired'));
-        assert.equal(device.raw.paused, true);
+        assert.deepEqual(widget.requests.map(({ method }) => method), ['GET', 'POST', 'GET']);
+        assert.deepEqual(widget.requests[1].body, { paused: false, deviceId: 'zero-target-resume' });
+        assert.match(widget.requests[2].path, /deviceId=zero-target-resume/);
+        assert.match(widget.requests[2].path, /force=true/);
+        assert.equal(device.raw.paused, false);
         assert.equal(device.raw.targetPowerMode, 'homey');
         assert.equal(device.getCapabilityValue('target_power'), 0);
-        assert.deepEqual(device.controlWrites, []);
+        assert.equal(device.getCapabilityValue('measure_intensity'), 16);
+        assert.equal(widget.view.last.state, 'ready');
+        assert.equal(widget.view.last.owner, 'homey');
+        assert.equal(widget.view.messages.includes('targetRequired'), false);
+        assert.deepEqual(device.controlWrites.filter(([kind]) => ['intensity', 'dynamic', 'dynamicPowerMode'].includes(kind)), []);
+        assert.deepEqual(device.controlWrites.filter(([kind]) => kind === 'parameter'), [['parameter', 'Paused', '0']]);
+        assert.deepEqual(device.controlWrites.filter(([kind, id]) => kind === 'capability' && id === 'target_power'), []);
     } finally {
         widget.controller.destroy();
     }
