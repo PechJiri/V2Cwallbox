@@ -29,7 +29,7 @@ Two GPT-6 LUNA agents at MAX worked on disjoint production/test files. An indepe
 - Existing widget API tests: 10/10 passed.
 - Full repository suite: `node --test` — 210/210 passed (208 top-level tests and two nested tests), zero failures/skips. This includes the imported 60 tests; results are not added twice.
 - Production modules and scene test files: eight `node --check` checks passed. `git diff --check` passed.
-- Independent review of `caebc609..7913118` and fault refinement `7913118..0d6cfa7`: no actionable findings; code/spec/visual checks approved. The later language cleanup receives a separate scoped review.
+- Independent LUNA MAX review of `caebc609..7913118`, fault refinement `7913118..0d6cfa7`, and language cleanup `0d6cfa7..86c4efb`: no actionable findings. Code/spec/visual checks approved; the reviewer independently ran the language verifier and confirmed the metadata removes only Czech keys. Real Homey/WebView and hardware limits remain explicit.
 - `HOMEY_SKIP_STARTUP_NOTIFIERS=1 homey app build` — exit 0.
 - `HOMEY_SKIP_STARTUP_NOTIFIERS=1 homey app validate --level publish` — exit 0; validation only.
 - Node v22.21.0, Windows x64 runtime, Homey CLI 4.2.0. The repository has no configured lint command or linter; syntax checks and diff whitespace checks are used without claiming a lint run.
