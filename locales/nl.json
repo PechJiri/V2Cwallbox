@@ -19,5 +19,38 @@
       "saved": "IP-adres succesvol opgeslagen.",
       "hint": "Wijzig het IP-adres als je wallbox naar een ander adres op je netwerk is verhuisd. De apparaatgeschiedenis, instellingen en Flows blijven behouden."
     }
+  },
+  "v2c_scene_widget": {
+    "waiting": "Geen auto verbonden",
+    "ready": "Auto verbonden",
+    "charging": "Aan het laden",
+    "paused": "Gepauzeerd",
+    "offline": "Offline",
+    "unknown": "Status niet beschikbaar",
+    "loading": "Wordt geladen…",
+    "stale": "Niet bevestigd",
+    "fault": "Storing",
+    "faultF": "Systeemstoring / lekstroom",
+    "faultE": "CP-fout / aardfout",
+    "faultD": "Ventilatie vereist",
+    "selection": "Wallbox kiezen",
+    "power": "Vermogen",
+    "energy": "Sessie",
+    "pause": "Laden pauzeren",
+    "resume": "Laden hervatten",
+    "refresh": "Status vernieuwen",
+    "busy": "Bijwerken…",
+    "idle": "Klaar voor je volgende rit",
+    "loadingNote": "Wallboxstatus ophalen",
+    "requestFailed": "Opdracht mislukt",
+    "awaiting": "Effect onbevestigd",
+    "targetRequired": "Vermogensdoel ontbreekt",
+    "requestFailedDetail": "De opdracht is mislukt of het resultaat is onbekend. Vernieuw de status; de opdracht wordt niet automatisch herhaald.",
+    "awaitingDetail": "De opdracht is verzonden, maar het gevraagde effect is niet bevestigd. Vernieuw de status; de opdracht wordt niet opnieuw uitgevoerd.",
+    "targetRequiredDetail": "Homey vereist een positief, haalbaar vermogensdoel. Stel dit in via de apparaatbediening. Deze knop vernieuwt alleen de status.",
+    "ownerHomey": "Vermogen wordt door Homey geregeld",
+    "ownerWallbox": "Vermogen wordt rechtstreeks door de wallbox geregeld",
+    "ownerUnknown": "Vermogensregeling niet bevestigd",
+    "lastKnown": "Laatst bekende waarden; geen bevestigde actuele meting"
   }
 }

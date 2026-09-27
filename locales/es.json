@@ -19,5 +19,38 @@
       "saved": "Dirección IP guardada correctamente.",
       "hint": "Cambia la IP si tu wallbox se ha trasladado a otra dirección de tu red. Se conservan el historial del dispositivo, los ajustes y los flujos."
     }
+  },
+  "v2c_scene_widget": {
+    "waiting": "Sin vehículo conectado",
+    "ready": "Vehículo conectado",
+    "charging": "Cargando",
+    "paused": "En pausa",
+    "offline": "Sin conexión",
+    "unknown": "Estado no disponible",
+    "loading": "Cargando…",
+    "stale": "Sin confirmar",
+    "fault": "Avería",
+    "faultF": "Fallo del sistema / fuga de corriente",
+    "faultE": "Error de CP / fallo a tierra",
+    "faultD": "Se requiere ventilación",
+    "selection": "Seleccionar wallbox",
+    "power": "Potencia",
+    "energy": "Sesión",
+    "pause": "Pausar la carga",
+    "resume": "Reanudar la carga",
+    "refresh": "Actualizar estado",
+    "busy": "Actualizando…",
+    "idle": "Listo para tu próximo viaje",
+    "loadingNote": "Leyendo el estado del wallbox",
+    "requestFailed": "Error al enviar el comando",
+    "awaiting": "Sin confirmar",
+    "targetRequired": "Falta la potencia objetivo",
+    "requestFailedDetail": "El comando ha fallado o se desconoce su resultado. Actualiza el estado; no se volverá a enviar.",
+    "awaitingDetail": "Comando enviado, pero su efecto solicitado aún no está confirmado. Actualiza el estado; no se volverá a enviar.",
+    "targetRequiredDetail": "Homey requiere una potencia objetivo positiva y alcanzable. Configúrala en los controles del dispositivo. Este botón solo actualiza el estado.",
+    "ownerHomey": "Potencia controlada por Homey",
+    "ownerWallbox": "Potencia controlada directamente por la wallbox",
+    "ownerUnknown": "No se ha confirmado quién controla la potencia",
+    "lastKnown": "Últimos valores conocidos; no son una lectura en directo confirmada"
   }
 }

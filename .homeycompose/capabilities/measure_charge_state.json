@@ -73,22 +73,19 @@
     {
       "id": "4",
       "title": {
-        "en": "F — System failure / leakage",
-        "cs": "F — Chyba systému / únik proudu"
+        "en": "F — System failure / leakage"
       }
     },
     {
       "id": "5",
       "title": {
-        "en": "E — CP state E / ground fault",
-        "cs": "E — CP stav E / zemní chyba"
+        "en": "E — CP state E / ground fault"
       }
     },
     {
       "id": "6",
       "title": {
-        "en": "D — Ventilation required",
-        "cs": "D — Nutné větrání"
+        "en": "D — Ventilation required"
       }
     }
   ],

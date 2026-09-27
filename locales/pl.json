@@ -19,5 +19,38 @@
       "saved": "Adres IP został pomyślnie zapisany.",
       "hint": "Zmień adres IP, jeśli wallbox przeniósł się pod inny adres w Twojej sieci. Historia urządzenia, ustawienia i Flows zostaną zachowane."
     }
+  },
+  "v2c_scene_widget": {
+    "waiting": "Brak podłączonego samochodu",
+    "ready": "Samochód podłączony",
+    "charging": "Ładowanie",
+    "paused": "Wstrzymano",
+    "offline": "Brak połączenia",
+    "unknown": "Status niedostępny",
+    "loading": "Wczytywanie…",
+    "stale": "Niepotwierdzone",
+    "fault": "Usterka",
+    "faultF": "Awaria systemu / upływ prądu",
+    "faultE": "Błąd CP / błąd uziemienia",
+    "faultD": "Wymagana wentylacja",
+    "selection": "Wybierz ładowarkę",
+    "power": "Moc",
+    "energy": "Sesja",
+    "pause": "Wstrzymaj ładowanie",
+    "resume": "Wznów ładowanie",
+    "refresh": "Odśwież status",
+    "busy": "Aktualizowanie…",
+    "idle": "Gotowy na kolejną podróż",
+    "loadingNote": "Odczytywanie stanu ładowarki",
+    "requestFailed": "Polecenie nie powiodło się",
+    "awaiting": "Niepotwierdzone",
+    "targetRequired": "Wymagana moc docelowa",
+    "requestFailedDetail": "Polecenie nie powiodło się lub jego wynik jest nieznany. Odśwież status; polecenie nie zostanie ponowione.",
+    "awaitingDetail": "Polecenie wysłano, ale żądany efekt nie został potwierdzony. Odśwież status; polecenie nie zostanie ponowione.",
+    "targetRequiredDetail": "Homey wymaga dodatniej, osiągalnej mocy docelowej. Ustaw ją w elementach sterujących urządzeniem. Ten przycisk tylko odświeża status.",
+    "ownerHomey": "Mocą steruje Homey",
+    "ownerWallbox": "Mocą steruje bezpośrednio ładowarka",
+    "ownerUnknown": "Nie wiadomo, co steruje mocą",
+    "lastKnown": "Ostatnie znane wartości; to nie jest potwierdzony odczyt bieżący"
   }
 }

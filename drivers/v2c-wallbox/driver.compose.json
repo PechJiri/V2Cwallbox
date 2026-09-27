@@ -59,22 +59,22 @@
   ],
   "capabilitiesOptions": {
     "measure_current.l1": {
-      "title": { "en": "Current L1", "cs": "Proud L1" }
+      "title": { "en": "Current L1" }
     },
     "measure_current.l2": {
-      "title": { "en": "Current L2", "cs": "Proud L2" }
+      "title": { "en": "Current L2" }
     },
     "measure_current.l3": {
-      "title": { "en": "Current L3", "cs": "Proud L3" }
+      "title": { "en": "Current L3" }
     },
     "measure_voltage.l1": {
-      "title": { "en": "Voltage L1", "cs": "Napětí L1" }
+      "title": { "en": "Voltage L1" }
     },
     "measure_voltage.l2": {
-      "title": { "en": "Voltage L2", "cs": "Napětí L2" }
+      "title": { "en": "Voltage L2" }
     },
     "measure_voltage.l3": {
-      "title": { "en": "Voltage L3", "cs": "Napětí L3" }
+      "title": { "en": "Voltage L3" }
     },
     "target_power": {
       "min": 0,
@@ -101,8 +101,7 @@
             "pl": "Homey",
             "ru": "Homey",
             "ko": "Homey",
-            "ar": "هوميي",
-            "cs": "Homey ovládá"
+            "ar": "هوميي"
           }
         },
         {
@@ -120,8 +119,7 @@
             "pl": "V2C Dynamic — Tryb czasowy włączony",
             "ru": "V2C Dynamic — Включено по времени",
             "ko": "V2C Dynamic — 타이머 전력 활성화",
-            "ar": "V2C Dynamic — تمكين الطاقة المؤقتة",
-            "cs": "V2C Dynamic — Časovaný výkon zapnut"
+            "ar": "V2C Dynamic — تمكين الطاقة المؤقتة"
           }
         },
         {
@@ -139,8 +137,7 @@
             "pl": "V2C Dynamic — Tryb czasowy wyłączony",
             "ru": "V2C Dynamic — Отключено по времени",
             "ko": "V2C Dynamic — 타이머 전력 비활성화",
-            "ar": "V2C Dynamic — تم تعطيل الطاقة المؤقتة",
-            "cs": "V2C Dynamic — Časovaný výkon vypnut"
+            "ar": "V2C Dynamic — تم تعطيل الطاقة المؤقتة"
           }
         },
         {
@@ -158,8 +155,7 @@
             "pl": "V2C Dynamic — Ekskluzywny FV",
             "ru": "V2C Dynamic — Эксклюзивный FV",
             "ko": "V2C Dynamic — FV 독점",
-            "ar": "V2C Dynamic — FV Exclusive",
-            "cs": "V2C Dynamic — Výhradně FV"
+            "ar": "V2C Dynamic — FV Exclusive"
           }
         },
         {
@@ -177,8 +173,7 @@
             "pl": "V2C Dynamic — FV + Min Moc",
             "ru": "V2C Dynamic — FV + Мин мощность",
             "ko": "V2C Dynamic — FV + 최소 전력",
-            "ar": "V2C ديناميكي — FV + الحد الأدنى للطاقة",
-            "cs": "V2C Dynamic — FV + Minimální výkon"
+            "ar": "V2C ديناميكي — FV + الحد الأدنى للطاقة"
           }
         },
         {
@@ -196,8 +191,7 @@
             "pl": "V2C Dynamic — Sieć + FV",
             "ru": "V2C Dynamic — Сеть + FV",
             "ko": "V2C Dynamic — 그리드 + FV",
-            "ar": "V2C ديناميكي — الشبكة + FV",
-            "cs": "V2C Dynamic — Síť + FV"
+            "ar": "V2C ديناميكي — الشبكة + FV"
           }
         },
         {
@@ -215,8 +209,7 @@
             "pl": "V2C Dynamic — Bez ładowania",
             "ru": "V2C Dynamic — Без зарядки",
             "ko": "V2C Dynamic — 충전 없음",
-            "ar": "V2C ديناميكي — بدون شحن",
-            "cs": "V2C Dynamic — Bez nabíjení"
+            "ar": "V2C ديناميكي — بدون شحن"
           }
         }
       ]
