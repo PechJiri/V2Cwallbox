@@ -37,6 +37,7 @@ class MyDevice extends Device {
     // Internal V2C state cache, including documented primary faults. The custom raw-state
     // capability preserves values that the native Homey EV state enum cannot represent.
     _lastChargeState = CONSTANTS.CHARGE_STATES.DISCONNECTED;
+    _lastChargePaused = null;
 
     async onInit() {
         try {
@@ -625,7 +626,12 @@ class MyDevice extends Device {
         let baseInterval;
         switch(chargeState) {
             case CONSTANTS.CHARGE_STATES.CHARGING: // '2'
-                baseInterval = CONSTANTS.INTERVALS.CHARGING;
+                baseInterval = this._consecutivePollErrors === 0 &&
+                    this._statusStale === false &&
+                    this._lastChargePaused === true &&
+                    this.getCapabilityValue('evcharger_charging_state') === CONSTANTS.EVCHARGER_STATES.PLUGGED_IN_PAUSED
+                    ? CONSTANTS.INTERVALS.CONNECTED
+                    : CONSTANTS.INTERVALS.CHARGING;
                 break;
             case CONSTANTS.CHARGE_STATES.CONNECTED: // '1'
                 baseInterval = CONSTANTS.INTERVALS.CONNECTED;
@@ -856,7 +862,7 @@ class MyDevice extends Device {
             const importedChargePower = Number.isFinite(deviceData.chargePower)
                 ? Math.max(0, deviceData.chargePower)
                 : 0;
-            const evChargerState = this._mapEvChargerState(currentState, deviceData.paused);
+            const evChargerState = this._mapEvChargerState(currentState, deviceData.paused, deviceData.chargePower);
             const hasSelectableIntensity = Number.isInteger(deviceData.intensity) &&
                 deviceData.intensity >= CONSTANTS.DEVICE.INTENSITY.MIN &&
                 deviceData.intensity <= CONSTANTS.DEVICE.INTENSITY.MAX;
@@ -903,6 +909,7 @@ class MyDevice extends Device {
             // Commit internal charge state only after the full sample publishes. It also drives
             // freshness fault metadata, polling cadence, and the existing Flow state helpers.
             this._lastChargeState = currentState;
+            this._lastChargePaused = deviceData.paused;
     
             this.logger.debug('Capabilities byly úspěšně aktualizovány', { 
                 deviceData, 
@@ -943,14 +950,15 @@ class MyDevice extends Device {
         };
     }
 
-    _mapEvChargerState(chargeState, paused) {
+    _mapEvChargerState(chargeState, paused, chargePower) {
         switch (chargeState) {
-            case CONSTANTS.CHARGE_STATES.CHARGING:
-                return CONSTANTS.EVCHARGER_STATES.PLUGGED_IN_CHARGING;
             case CONSTANTS.CHARGE_STATES.CONNECTED:
+            case CONSTANTS.CHARGE_STATES.CHARGING:
                 if (paused === null || paused === undefined) return null;
-                return paused
-                    ? CONSTANTS.EVCHARGER_STATES.PLUGGED_IN_PAUSED
+                if (paused) return CONSTANTS.EVCHARGER_STATES.PLUGGED_IN_PAUSED;
+                if (!Number.isFinite(chargePower) || chargePower < 0) return null;
+                return chargePower > 0
+                    ? CONSTANTS.EVCHARGER_STATES.PLUGGED_IN_CHARGING
                     : CONSTANTS.EVCHARGER_STATES.PLUGGED_IN;
             case CONSTANTS.CHARGE_STATES.DISCONNECTED:
                 return CONSTANTS.EVCHARGER_STATES.PLUGGED_OUT;

@@ -125,37 +125,19 @@
         {
           "id": "v2c_timed_off",
           "title": {
-            "en": "V2C Dynamic — Timed Power Disabled",
-            "nl": "V2C Dynamic — Getimede voeding uitgeschakeld",
-            "da": "V2C Dynamic — Tidstaget strøm deaktiveret",
-            "de": "V2C Dynamic — Zeitgesteuerte Leistung deaktiviert",
-            "es": "V2C Dynamic — Potencia cronometrada deshabilitada",
-            "fr": "V2C Dynamic — Puissance minutée désactivée",
-            "it": "V2C Dynamic — Potenza temporizzata disabilitata",
-            "no": "V2C Dynamic — Tidsstyrt kraft deaktivert",
-            "sv": "V2C Dynamic — Tidsstyrd kraft avaktiverad",
-            "pl": "V2C Dynamic — Tryb czasowy wyłączony",
-            "ru": "V2C Dynamic — Отключено по времени",
-            "ko": "V2C Dynamic — 타이머 전력 비활성화",
-            "ar": "V2C Dynamic — تم تعطيل الطاقة المؤقتة"
-          }
-        },
-        {
-          "id": "v2c_fv_exclusive",
-          "title": {
-            "en": "V2C Dynamic — FV Exclusive",
-            "nl": "V2C Dynamic — FV Exclusief",
-            "da": "V2C Dynamic — FV eksklusiv",
-            "de": "V2C Dynamic — FV Exklusiv",
-            "es": "V2C Dynamic — Exclusivo FV",
-            "fr": "V2C Dynamic — FV Exclusif",
-            "it": "V2C Dynamic — FV Esclusivo",
-            "no": "V2C Dynamic — FV Eksklusiv",
-            "sv": "V2C Dynamic — FV Exklusiv",
-            "pl": "V2C Dynamic — Ekskluzywny FV",
-            "ru": "V2C Dynamic — Эксклюзивный FV",
-            "ko": "V2C Dynamic — FV 독점",
-            "ar": "V2C Dynamic — FV Exclusive"
+            "en": "V2C Dynamic — Timed Power Disabled (deprecated)",
+            "nl": "V2C Dynamic — Getimede voeding uitgeschakeld (verouderd)",
+            "da": "V2C Dynamic — Tidstaget strøm deaktiveret (forældet)",
+            "de": "V2C Dynamic — Zeitgesteuerte Leistung deaktiviert (veraltet)",
+            "es": "V2C Dynamic — Potencia cronometrada deshabilitada (obsoleto)",
+            "fr": "V2C Dynamic — Puissance minutée désactivée (obsolète)",
+            "it": "V2C Dynamic — Potenza temporizzata disabilitata (deprecato)",
+            "no": "V2C Dynamic — Tidsstyrt kraft deaktivert (foreldet)",
+            "sv": "V2C Dynamic — Tidsstyrd kraft avaktiverad (föråldrat)",
+            "pl": "V2C Dynamic — Tryb czasowy wyłączony (przestarzały)",
+            "ru": "V2C Dynamic — Отключено по времени (устаревший)",
+            "ko": "V2C Dynamic — 타이머 전력 비활성화 (사용 중단 권장)",
+            "ar": "V2C Dynamic — تم تعطيل الطاقة المؤقتة (متقادم)"
           }
         },
         {
@@ -174,6 +156,24 @@
             "ru": "V2C Dynamic — FV + Мин мощность",
             "ko": "V2C Dynamic — FV + 최소 전력",
             "ar": "V2C ديناميكي — FV + الحد الأدنى للطاقة"
+          }
+        },
+        {
+          "id": "v2c_fv_exclusive",
+          "title": {
+            "en": "V2C Dynamic — FV Exclusive",
+            "nl": "V2C Dynamic — FV Exclusief",
+            "da": "V2C Dynamic — FV eksklusiv",
+            "de": "V2C Dynamic — FV Exklusiv",
+            "es": "V2C Dynamic — Exclusivo FV",
+            "fr": "V2C Dynamic — FV Exclusif",
+            "it": "V2C Dynamic — FV Esclusivo",
+            "no": "V2C Dynamic — FV Eksklusiv",
+            "sv": "V2C Dynamic — FV Exklusiv",
+            "pl": "V2C Dynamic — Ekskluzywny FV",
+            "ru": "V2C Dynamic — Эксклюзивный FV",
+            "ko": "V2C Dynamic — FV 독점",
+            "ar": "V2C Dynamic — FV Exclusive"
           }
         },
         {

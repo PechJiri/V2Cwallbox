@@ -220,3 +220,31 @@ test('a paused zero-amp V2C dynamic sample keeps V2C strategy ownership and reco
     assert.ok(Number.isFinite(metadata.lastUpdated));
     assert.deepEqual(harness.hardwareWrites, []);
 });
+
+test('poll readback maps official DynamicPowerMode codes 2 and 3 to their matching strategies', async () => {
+    const setIntensityCapability = JSON.parse(fs.readFileSync(
+        path.join(__dirname, '../.homeycompose/capabilities/set_intensity.json'),
+        'utf8'
+    ));
+    const enumIds = new Set(setIntensityCapability.values.map(({ id }) => id));
+
+    for (const [dynamicPowerMode, targetPowerMode] of [
+        [2, 'v2c_fv_min'],
+        [3, 'v2c_fv_exclusive']
+    ]) {
+        const MyDevice = loadDeviceWithHomeyStub();
+        const harness = createPollingDevice(MyDevice, {
+            enumIds,
+            rawSample: {
+                ...createPausedZeroSample(),
+                Dynamic: 1,
+                DynamicPowerMode: dynamicPowerMode
+            }
+        });
+
+        await harness.device.getProductionData({ force: true, throwOnError: true });
+
+        assert.equal(harness.values.get('target_power_mode'), targetPowerMode);
+        assert.deepEqual(harness.hardwareWrites, []);
+    }
+});

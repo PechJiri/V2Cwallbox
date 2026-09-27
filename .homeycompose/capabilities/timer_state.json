@@ -16,7 +16,7 @@
     "ar": "مؤقت"
   },
   "getable": true,
-  "setable": true,
+  "setable": false,
   "insights": true,
   "insightsTitleTrue": {
     "en": "Timer turned On",
