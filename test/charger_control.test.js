@@ -84,6 +84,26 @@ test('manual Stop wins over a positive target in Homey’s combined batch', asyn
     assert.equal(calls.some((call) => call[0] === 'parameter' && call[1] === 'Paused' && call[2] === '1'), true);
 });
 
+test('combined Homey Stop reaches Paused=1 when the unrelated target Intensity write would fail', async () => {
+    const { calls, listener } = createDevice({ failIntensity: true });
+
+    await listener.callback({ target_power: 6000, evcharger_charging: false }).catch(() => {});
+
+    assert.equal(calls.some((call) => call[0] === 'parameter' && call[1] === 'Paused' && call[2] === '1'), true);
+    assert.equal(calls.some((call) => call[0] === 'intensity'), false);
+});
+
+test('standalone Homey Stop reaches Paused=1 without writing the retained positive target', async () => {
+    const { calls, listener } = createDevice({ failIntensity: true });
+
+    await listener.callback({ evcharger_charging: false }).catch(() => {});
+
+    assert.equal(calls.some((call) => call[0] === 'parameter' && call[1] === 'Paused' && call[2] === '1'), true);
+    assert.equal(calls.some((call) => call[0] === 'intensity'), false);
+    assert.equal(calls.some((call) => call[0] === 'store' && call[2] === false), true);
+    assert.equal(calls.some((call) => call[0] === 'capability' && call[1] === 'evcharger_charging' && call[2] === false), true);
+});
+
 test('changing a positive target while manually paused keeps charging paused', async () => {
     const { calls, listener } = createDevice({
         capabilities: { evcharger_charging: false }
