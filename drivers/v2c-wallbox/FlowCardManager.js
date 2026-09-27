@@ -2,6 +2,7 @@
 
 const PowerCalculator = require('../../lib/power_calculator');
 const CONSTANTS = require('../../lib/constants');
+const registeredCardsByFlowManager = new WeakMap();
 
 class FlowCardManager {
     constructor(homey, device) {
@@ -159,16 +160,10 @@ class FlowCardManager {
             // Registrace základních triggerů
             for (const trigger of this._basicTriggers) {
                 const card = this.homey.flow.getDeviceTriggerCard(trigger.id);
-                
-                // Odregistrace starého listeneru pokud existuje
-                if (card.listenerCount('run') > 0) {
-                    card.removeAllListeners('run');
-                }
-    
                 // Pokud má trigger argumenty, registrujeme runListener
                 if (trigger.hasArgs) {
-                    card.registerRunListener(async (args) => {
-                        const currentValue = await this.device.getCapabilityValue(trigger.capability);
+                    this._registerRunListener('trigger', trigger.id, card, async (args) => {
+                        const currentValue = await args.device.getCapabilityValue(trigger.capability);
                         return trigger.comparison(currentValue, args);
                     });
                 }
@@ -191,29 +186,27 @@ class FlowCardManager {
         try {
             for (const condition of this._basicConditions) {
                 const card = this.homey.flow.getConditionCard(condition.id);
-                
-                if (card.listenerCount('run') > 0) {
-                    card.removeAllListeners('run');
-                }
-     
                 // Speciální handler pro compare_calculated_current
                 if (condition.id === 'compare_calculated_current') {
-                    card.registerRunListener(async (args) => {
+                    this._registerRunListener('condition', condition.id, card, async (args) => {
                         return condition.comparison(args);
                     });
                 } else {
                     // Generický handler — data bere buď z capability, nebo z interního state getteru
                     // (podle source fieldu) pro deprekované karty po odstranění measure_charge_state
                     const conditionRef = condition;
-                    card.registerRunListener(async (args) => {
+                    this._registerRunListener('condition', condition.id, card, async (args) => {
                         let currentValue;
                         if (conditionRef.source === 'internalChargeState') {
-                            currentValue = this.device.getInternalChargeState();
+                            currentValue = args.device.getInternalChargeState();
                         } else {
-                            currentValue = await this.device.getCapabilityValue(conditionRef.capability);
+                            currentValue = await args.device.getCapabilityValue(conditionRef.capability);
                         }
-                        if (args.value !== undefined) {
-                            return conditionRef.comparison(currentValue, args.value);
+                        const argument = args[conditionRef.id === 'power-greater-than' || conditionRef.id === 'power-less-than'
+                            ? 'power'
+                            : 'value'];
+                        if (argument !== undefined) {
+                            return conditionRef.comparison(currentValue, argument);
                         }
                         return conditionRef.comparison(currentValue);
                     });
@@ -244,9 +237,7 @@ class FlowCardManager {
                     id: 'set_paused',
                     handler: async (args) => {
                         const paused = args.paused === '1';
-                        await this.device.v2cApi.setParameter('Paused', paused ? '1' : '0');
-                        // evcharger_charging je invertem paused (true = nabíjí)
-                        await this.device.setCapabilityValue('evcharger_charging', !paused);
+                        await args.device.setChargingPaused(paused);
                         if (this.logger) {
                             this.logger.debug('Capability evcharger_charging nastavena', { paused, charging: !paused });
                         }
@@ -259,7 +250,7 @@ class FlowCardManager {
                     // Zachováváme handler kvůli zpětné kompatibilitě existujících Flow u uživatelů.
                     handler: async (args) => {
                         const locked = args.locked === '1';
-                        await this.device.triggerCapabilityListener('locked', locked);
+                        await args.device.triggerCapabilityListener('locked', locked);
                         return true;
                     }
                 },
@@ -270,7 +261,7 @@ class FlowCardManager {
                             args.intensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
                             throw new Error(`Intensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
                         }
-                        await this.device.v2cApi.setIntensity(args.intensity);
+                        await args.device.setChargingIntensity(args.intensity);
                         return true;
                     }
                 },
@@ -278,10 +269,11 @@ class FlowCardManager {
                     id: 'set_dynamic',
                     handler: async (args) => {
                         const dynamic = args.dynamic;
-                        const currentSettings = this.device.getSettings();
+                        const device = args.device;
+                        const currentSettings = device.getSettings();
     
                         if (dynamic === '0') {
-                            await this.device.setSettings({
+                            await device.setSettings({
                                 dynamic_power_mode: CONSTANTS.DYNAMIC_POWER_MODES.DISABLED
                             });
                         } else {
@@ -289,7 +281,7 @@ class FlowCardManager {
                                 ? CONSTANTS.DYNAMIC_POWER_MODES.TIMED_ENABLED
                                 : currentSettings.dynamic_power_mode;
                             
-                            await this.device.setSettings({
+                            await device.setSettings({
                                 dynamic_power_mode: mode
                             });
                         }
@@ -301,7 +293,7 @@ class FlowCardManager {
                     handler: async (args) => {
                         const mode = args.DynamicPowerMode;
                         
-                        await this.device.setSettings({
+                        await args.device.setSettings({
                             dynamic_power_mode: mode
                         });
                         return true;
@@ -310,7 +302,7 @@ class FlowCardManager {
                 {
                     id: 'set_min_intensity',
                     handler: async (args) => {
-                        await this.device.setSettings({
+                        await args.device.setSettings({
                             min_intensity: args.MinIntensity
                         });
                         return true;
@@ -319,7 +311,7 @@ class FlowCardManager {
                 {
                     id: 'set_max_intensity',
                     handler: async (args) => {
-                        await this.device.setSettings({
+                        await args.device.setSettings({
                             max_intensity: args.MaxIntensity
                         });
                         return true;
@@ -328,17 +320,18 @@ class FlowCardManager {
                 {
                     id: 'set_phase_mode',
                     handler: async (args) => {
-                        const wasCharging = await this._isDeviceActivelyCharging();
+                        const device = args.device;
+                        const wasCharging = await this._isDeviceActivelyCharging(device);
 
                         if (!wasCharging) {
-                            return await this.device.setInstallationPhaseMode(args.phase_mode);
+                            return await device.setInstallationPhaseMode(args.phase_mode);
                         }
 
-                        await this._setChargingPaused(true);
+                        await this._setChargingPaused(device, true);
                         try {
-                            return await this.device.setInstallationPhaseMode(args.phase_mode);
+                            return await device.setInstallationPhaseMode(args.phase_mode);
                         } finally {
-                            await this._setChargingPaused(false);
+                            await this._setChargingPaused(device, false);
                         }
                     }
                 },
@@ -352,14 +345,14 @@ class FlowCardManager {
 
                         switch (args.led_target) {
                             case 'display':
-                                await this.device.v2cApi.setParameter('LightLED', brightness);
+                                await args.device.v2cApi.setParameter('LightLED', brightness);
                                 break;
                             case 'logo':
-                                await this.device.v2cApi.setParameter('LogoLED', brightness);
+                                await args.device.v2cApi.setParameter('LogoLED', brightness);
                                 break;
                             case 'both':
-                                await this.device.v2cApi.setParameter('LightLED', brightness);
-                                await this.device.v2cApi.setParameter('LogoLED', brightness);
+                                await args.device.v2cApi.setParameter('LightLED', brightness);
+                                await args.device.v2cApi.setParameter('LogoLED', brightness);
                                 break;
                             default:
                                 throw new Error('led_target must be "display", "logo", or "both"');
@@ -376,7 +369,7 @@ class FlowCardManager {
                             power, phase_mode, voltage, voltage_type, maxAmps, rounding
                         );
                         
-                        await this.device.v2cApi.setParameter('Intensity', calculatedCurrent);
+                        await args.device.setChargingIntensity(calculatedCurrent);
                         
                         if (this.logger) {
                             this.logger.debug('Výpočet proudu a nastavení Intensity', {
@@ -464,12 +457,7 @@ class FlowCardManager {
             // Registrace všech základních akcí
             for (const action of basicActions) {
                 const card = this.homey.flow.getActionCard(action.id);
-                
-                if (card.listenerCount('run') > 0) {
-                    card.removeAllListeners('run');
-                }
-                
-                card.registerRunListener(async (args) => {
+                this._registerRunListener('action', action.id, card, async (args) => {
                     try {
                         if (this.logger) {
                             this.logger.debug(`Spouštím akci ${action.id}`, { 
@@ -500,30 +488,42 @@ class FlowCardManager {
         }
     }
 
-    async _isDeviceActivelyCharging() {
-        if (!this.device || typeof this.device.getInternalChargeState !== 'function') {
+    _registerRunListener(type, id, card, listener) {
+        const flowManager = this.homey.flow;
+        let registeredIds = registeredCardsByFlowManager.get(flowManager);
+        if (!registeredIds) {
+            registeredIds = new Set();
+            registeredCardsByFlowManager.set(flowManager, registeredIds);
+        }
+
+        const key = `${type}:${id}`;
+        if (registeredIds.has(key)) return false;
+        if (card.listenerCount('run') > 0) card.removeAllListeners('run');
+        card.registerRunListener(listener);
+        registeredIds.add(key);
+        return true;
+    }
+
+    async _isDeviceActivelyCharging(device) {
+        if (!device || typeof device.getInternalChargeState !== 'function') {
             return false;
         }
 
-        const chargeState = this.device.getInternalChargeState();
+        const chargeState = device.getInternalChargeState();
         if (chargeState !== CONSTANTS.CHARGE_STATES.CHARGING) {
             return false;
         }
 
-        if (typeof this.device.getCapabilityValue !== 'function') {
+        if (typeof device.getCapabilityValue !== 'function') {
             return true;
         }
 
-        const chargingIntent = await this.device.getCapabilityValue('evcharger_charging');
+        const chargingIntent = await device.getCapabilityValue('evcharger_charging');
         return chargingIntent !== false;
     }
 
-    async _setChargingPaused(paused) {
-        await this.device.v2cApi.setParameter('Paused', paused ? '1' : '0');
-
-        if (typeof this.device.setCapabilityValue === 'function') {
-            await this.device.setCapabilityValue('evcharger_charging', !paused);
-        }
+    async _setChargingPaused(device, paused) {
+        await device.setChargingPaused(paused);
     }
 
     // Veřejné metody pro triggery

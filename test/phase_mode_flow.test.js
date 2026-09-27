@@ -54,7 +54,7 @@ test('set_phase_mode flow action updates the device installation phase mode', as
     await manager.initialize();
     assert.equal(listeners.has('set_phase_mode'), true);
 
-    const result = await listeners.get('set_phase_mode')({ phase_mode: '1' });
+    const result = await listeners.get('set_phase_mode')({ phase_mode: '1', device });
 
     assert.equal(result, true);
     assert.deepEqual(calls, ['1']);
@@ -69,13 +69,9 @@ test('set_phase_mode flow action restarts charging when switching phases during 
             if (capabilityId === 'evcharger_charging') return true;
             return null;
         },
-        v2cApi: {
-            setParameter: async (parameter, value) => {
-                calls.push(['setParameter', parameter, value]);
-            }
-        },
-        setCapabilityValue: async (capabilityId, value) => {
-            calls.push(['setCapabilityValue', capabilityId, value]);
+        setChargingPaused: async (paused) => {
+            calls.push(['setParameter', 'Paused', paused ? '1' : '0']);
+            calls.push(['setCapabilityValue', 'evcharger_charging', !paused]);
         },
         setInstallationPhaseMode: async (phaseMode) => {
             calls.push(['setInstallationPhaseMode', phaseMode]);
@@ -86,7 +82,7 @@ test('set_phase_mode flow action restarts charging when switching phases during 
 
     await manager.initialize();
 
-    const result = await listeners.get('set_phase_mode')({ phase_mode: '3' });
+    const result = await listeners.get('set_phase_mode')({ phase_mode: '3', device });
 
     assert.equal(result, true);
     assert.deepEqual(calls, [
@@ -197,7 +193,8 @@ test('set_led_brightness flow action writes display and logo brightness sequenti
 
     const result = await listeners.get('set_led_brightness')({
         led_target: 'both',
-        brightness: 42
+        brightness: 42,
+        device
     });
 
     assert.equal(result, true);
@@ -221,7 +218,8 @@ test('set_led_brightness flow action rejects brightness outside 0-100 percent', 
     await assert.rejects(
         () => listeners.get('set_led_brightness')({
             led_target: 'logo',
-            brightness: 101
+            brightness: 101,
+            device
         }),
         /brightness/
     );

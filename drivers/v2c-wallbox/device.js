@@ -4,6 +4,7 @@ const { Device } = require('homey');
 const { v2cAPI } = require('./api');
 const FlowCardManager = require('./FlowCardManager');
 const PowerCalculator = require('../../lib/power_calculator');
+const ChargerControl = require('../../lib/ChargerControl');
 const DataValidator = require('../../lib/DataValidator');
 const Logger = require('../../lib/Logger');
 const EnergyManager = require('../../lib/EnergyManager');
@@ -333,92 +334,59 @@ class MyDevice extends Device {
         // Debounce 500 ms dle doporučení docs.
         this.registerMultipleCapabilityListener(
             ['target_power', 'target_power_mode', 'evcharger_charging'],
-            async (values) => {
-                const modeChanged = values.target_power_mode !== undefined;
-                const powerChanged = values.target_power !== undefined;
-                const chargingChanged = values.evcharger_charging !== undefined;
-
-                const mode = values.target_power_mode
-                    ?? this.getCapabilityValue('target_power_mode')
-                    ?? CONSTANTS.TARGET_POWER_MODES.HOMEY;
-                const power = values.target_power
-                    ?? this.getCapabilityValue('target_power')
-                    ?? 0;
-                const charging = values.evcharger_charging
-                    ?? this.getCapabilityValue('evcharger_charging')
-                    ?? true;
-
-                this.logger.debug('target_power/mode/charging listener', {
-                    values, effectiveMode: mode, effectivePower: power, effectiveCharging: charging
-                });
-
-                // 1) Přepnutí módu → Dynamic + (volitelně) DynamicPowerMode
-                if (modeChanged) {
-                    if (mode === CONSTANTS.TARGET_POWER_MODES.HOMEY) {
-                        await this.v2cApi.setDynamic('0');
-                    } else {
-                        const v2cMode = CONSTANTS.TARGET_MODE_TO_V2C[mode];
-                        if (!v2cMode) {
-                            throw new Error(`Neznámý target_power_mode: ${mode}`);
-                        }
-                        await this.v2cApi.setDynamic('1');
-                        await this.v2cApi.setDynamicPowerMode(v2cMode);
-                    }
-                }
-
-                // 2) evcharger_charging (samostatná změna — user pause/resume) se projevuje vždy
-                if (chargingChanged) {
-                    await this.v2cApi.setParameter('Paused', charging ? '0' : '1');
-                }
-
-                // 3) V 'device' režimu V2C ignoruje Intensity — target_power nepropagujeme
-                if (mode !== CONSTANTS.TARGET_POWER_MODES.HOMEY) {
-                    return;
-                }
-
-                // 4) Aplikace target_power (při změně hodnoty nebo při přepnutí do homey módu).
-                //    _applyTargetPower si sama řídí Paused flag (0 → pauza, >0 → nabíjet).
-                if (powerChanged || modeChanged) {
-                    await this._applyTargetPower(power);
-                }
-            },
+            async (values) => this.applyChargingChanges(values),
             500
         );
     }
 
-    async _applyTargetPower(watts) {
-        // target_power === 0 znamená idle — pauza nabíjení přes V2C Paused flag.
-        // evcharger_charging capability se aktualizuje až polling cyclem z V2C dat.
-        if (!watts || watts <= 0) {
-            this.logger.debug('target_power = 0 → pauza nabíjení');
-            await this.v2cApi.setParameter('Paused', '1');
-            return;
+    _getChargerControl() {
+        if (!this.chargerControl) {
+            this.chargerControl = new ChargerControl(this);
         }
+        return this.chargerControl;
+    }
 
-        const phaseMode = this.getSetting('phase_mode') || '3';
+    async setChargingPaused(paused) {
+        return this._getChargerControl().setChargingPaused(paused);
+    }
+
+    async applyChargingChanges(values) {
+        return this._getChargerControl().applyChargingChanges(values);
+    }
+
+    async setDynamicPowerMode(mode) {
+        return this._getChargerControl().setDynamicPowerMode(mode);
+    }
+
+    async setIntensityLimit(kind, amps) {
+        return this._getChargerControl().setIntensityLimit(kind, amps);
+    }
+
+    async setChargingIntensity(amps) {
+        return this._getChargerControl().setChargingIntensity(amps);
+    }
+
+    getChargingVoltage() {
         const voltageType = this.getSetting('voltage_type') || 'line_to_neutral';
-        const voltage = this.getCapabilityValue('measure_voltage_installation') || 230;
-        // V2C má vlastní MaxIntensity (z API) i uživatelský setting max_intensity.
-        // Oba mohou být nižší než konstantní MAX 32A — bereme nejnižší.
-        const settingMax = this.getSetting('max_intensity') || CONSTANTS.DEVICE.INTENSITY.MAX;
-        const capMax = this.getCapabilityValue('max_intensity') || CONSTANTS.DEVICE.INTENSITY.MAX;
-        const maxIntensity = Math.min(settingMax, capMax, CONSTANTS.DEVICE.INTENSITY.MAX);
+        const isMatchingVoltage = (value) => {
+            const voltage = Number(value);
+            if (!Number.isFinite(voltage)) return false;
+            return voltageType === 'line_to_line'
+                ? voltage >= 300 && voltage <= 500
+                : voltage >= 180 && voltage < 300;
+        };
 
-        const intensity = PowerCalculator.calculateCurrent(
-            watts,
-            phaseMode,
-            voltage,
-            voltageType,
-            maxIntensity,
-            CONSTANTS.ROUNDING_TYPES.FLOOR
-        );
+        const measuredVoltage = this.getCapabilityValue('measure_voltage_installation');
+        if (isMatchingVoltage(measuredVoltage)) return Number(measuredVoltage);
 
-        this.logger.debug('Aplikuji target_power', {
-            watts, phaseMode, voltage, maxIntensity, intensity
-        });
+        const installationVoltage = this.getSetting('installation_voltage');
+        if (isMatchingVoltage(installationVoltage)) return Number(installationVoltage);
 
-        await this.v2cApi.setParameter('Paused', '0');
-        await this.v2cApi.setIntensity(intensity);
+        return voltageType === 'line_to_line' ? 400 : 230;
+    }
+
+    async _applyTargetPower(watts) {
+        return this.applyChargingChanges({ target_power: watts });
     }
 
     async _applyCapabilityOptionsForPhaseMode(phaseModeOverride = null) {
@@ -726,12 +694,20 @@ class MyDevice extends Device {
             const targetMode = this._mapV2CToTargetMode(deviceData.dynamic, deviceData.dynamicPowerMode);
             const phaseMode = this.getSetting('phase_mode') || '3';
             const voltageType = this.getSetting('voltage_type') || 'line_to_neutral';
-            const targetPowerW = PowerCalculator.calculatePower(
+            const measuredTargetPowerW = PowerCalculator.calculatePower(
                 deviceData.intensity,
                 phaseMode,
                 deviceData.voltageInstallation,
                 voltageType
             );
+            const storedHomeyTarget = typeof this.getCapabilityValue === 'function'
+                ? this.getCapabilityValue('target_power')
+                : undefined;
+            const targetPowerW = targetMode === CONSTANTS.TARGET_POWER_MODES.HOMEY &&
+                storedHomeyTarget !== undefined && storedHomeyTarget !== null &&
+                Number.isFinite(Number(storedHomeyTarget))
+                ? Number(storedHomeyTarget)
+                : measuredTargetPowerW;
 
             // Fuzzy validace phase_mode settingu proti skutečně měřenému výkonu
             this._validatePhaseMode(deviceData.chargePower, deviceData.intensity, deviceData.voltageInstallation, phaseMode, voltageType, deviceData.maxIntensity);
@@ -885,7 +861,7 @@ class MyDevice extends Device {
                             newSettings.min_intensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
                             throw new Error(`Intensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
                         }
-                        await this.v2cApi.setMinIntensity(newSettings.min_intensity);
+                        await this.setIntensityLimit('min', newSettings.min_intensity);
                         break;
                         
                     case 'max_intensity':
@@ -893,16 +869,11 @@ class MyDevice extends Device {
                             newSettings.max_intensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
                             throw new Error(`Intensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
                         }
-                        await this.v2cApi.setMaxIntensity(newSettings.max_intensity);
+                        await this.setIntensityLimit('max', newSettings.max_intensity);
                         break;
                         
                     case 'dynamic_power_mode':
-                        if (newSettings.dynamic_power_mode === CONSTANTS.DYNAMIC_POWER_MODES.DISABLED) {
-                            await this.v2cApi.setDynamic('0');
-                        } else {
-                            await this.v2cApi.setDynamic('1');
-                            await this.v2cApi.setDynamicPowerMode(newSettings.dynamic_power_mode);
-                        }
+                        await this.setDynamicPowerMode(newSettings.dynamic_power_mode);
                         break;
 
                     case 'phase_mode':
