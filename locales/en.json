@@ -19,5 +19,38 @@
       "saved": "IP address saved successfully.",
       "hint": "Change the IP if your wallbox moved to a different address on your network. The device history, settings and flows are preserved."
     }
+  },
+  "v2c_scene_widget": {
+    "waiting": "No car connected",
+    "ready": "Car connected",
+    "charging": "Charging",
+    "paused": "Paused",
+    "offline": "Offline",
+    "unknown": "Status unavailable",
+    "loading": "Loading…",
+    "stale": "Unconfirmed",
+    "fault": "Fault",
+    "faultF": "Fault F",
+    "faultE": "Fault E",
+    "faultD": "Ventilation D",
+    "selection": "Select wallbox",
+    "power": "Power",
+    "energy": "Session",
+    "pause": "Pause charging",
+    "resume": "Resume charging",
+    "refresh": "Try again",
+    "busy": "Updating…",
+    "idle": "Ready for your next drive",
+    "loadingNote": "Reading wallbox status",
+    "requestFailed": "Command failed",
+    "awaiting": "Unconfirmed",
+    "targetRequired": "Target required",
+    "requestFailedDetail": "Command failed or its result is unknown. Refresh status; the command will not be repeated.",
+    "awaitingDetail": "Command sent but its requested effect is not confirmed. Refresh status; the command will not be repeated.",
+    "targetRequiredDetail": "Homey requires a positive achievable power target. Set it in the device controls. This button only refreshes status.",
+    "ownerHomey": "Power controlled by Homey",
+    "ownerWallbox": "Power controlled directly by the wallbox",
+    "ownerUnknown": "Power controller is not confirmed",
+    "lastKnown": "Last known values; not a confirmed live reading"
   }
 }
