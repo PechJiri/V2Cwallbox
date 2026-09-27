@@ -163,6 +163,46 @@ test('first disconnect settles pending energy once and repeated disconnected pol
     assert.equal(harness.store.get('lifetimeEnergyData').energy, 8);
 });
 
+test('first disconnect supplements an observed session and repeated stale energy adds nothing', async () => {
+    const harness = createHarness();
+    const manager = await createInitializedManager(harness);
+
+    await processAndDisplay(
+        manager,
+        harness,
+        0.2,
+        CONSTANTS.CHARGE_STATES.CONNECTED,
+        CONSTANTS.CHARGE_STATES.CHARGING
+    );
+
+    await processAndDisplay(
+        manager,
+        harness,
+        0.4,
+        CONSTANTS.CHARGE_STATES.CHARGING,
+        CONSTANTS.CHARGE_STATES.DISCONNECTED
+    );
+
+    assert.equal(harness.store.get('pendingSessionEnergy'), 0);
+    assert.equal(harness.store.get('monthlyEnergyData').energy, 0.4);
+    assert.equal(harness.store.get('yearlyEnergyData').energy, 0.4);
+    assert.equal(harness.store.get('lifetimeEnergyData').energy, 0.4);
+    assert.equal(harness.capabilities.get('meter_power'), 0.4);
+
+    await processAndDisplay(
+        manager,
+        harness,
+        0.4,
+        CONSTANTS.CHARGE_STATES.DISCONNECTED,
+        CONSTANTS.CHARGE_STATES.DISCONNECTED
+    );
+
+    assert.equal(harness.store.get('monthlyEnergyData').energy, 0.4);
+    assert.equal(harness.store.get('yearlyEnergyData').energy, 0.4);
+    assert.equal(harness.store.get('lifetimeEnergyData').energy, 0.4);
+    assert.equal(harness.capabilities.get('meter_power'), 0.4);
+});
+
 test('concurrent disconnected polls claim and settle pending energy only once', async () => {
     const harness = createHarness({ pendingSessionEnergy: 8 });
     const manager = await createInitializedManager(harness);
