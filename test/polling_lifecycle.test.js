@@ -167,6 +167,70 @@ test('forced widget confirmation drains the pre-command poll after the widget PO
     }
 });
 
+test('manual Stop publishes after the pre-command poll so stale telemetry cannot restore charging', async () => {
+    const { device, reads, writes, capabilities } = makeRealDevice();
+    device._lastChargeState = '2';
+    device._lastChargePaused = false;
+    capabilities.evcharger_charging = true;
+    capabilities.evcharger_charging_state = 'plugged_in_charging';
+    const preCommandPoll = device.getProductionData();
+    let stop;
+
+    try {
+        await nextTurn();
+        assert.equal(reads.length, 1, 'the pre-command telemetry read should be held by the API fixture');
+
+        stop = device.setChargingPaused(true);
+        await nextTurn();
+        assert.deepEqual(writes, [['Paused', '1']], 'Stop reaches the wallbox before waiting for publication');
+
+        reads[0].resolve(validPayload({
+            ChargeState: 2,
+            ChargePower: 11040,
+            Intensity: 16,
+            Paused: 0
+        }));
+        await Promise.all([preCommandPoll, stop]);
+
+        assert.equal(capabilities.evcharger_charging, false);
+        assert.equal(capabilities.evcharger_charging_state, 'plugged_in_paused');
+    } finally {
+        for (const request of reads) request.resolve(validPayload());
+        await Promise.allSettled([preCommandPoll, stop].filter(Boolean));
+    }
+});
+
+test('manual Stop still applies when the captured pre-command telemetry poll fails', async () => {
+    const { device, reads, writes, capabilities } = makeRealDevice();
+    device._lastChargeState = '2';
+    capabilities.evcharger_charging = true;
+    capabilities.evcharger_charging_state = 'plugged_in_charging';
+    const preCommandPoll = device.getProductionData({ throwOnError: true });
+    let stop;
+    let stopSettled = false;
+
+    try {
+        await nextTurn();
+        assert.equal(reads.length, 1, 'the pre-command telemetry read should be held by the API fixture');
+
+        stop = device.setChargingPaused(true);
+        stop.then(() => { stopSettled = true; }, () => { stopSettled = true; });
+        await nextTurn();
+        assert.deepEqual(writes, [['Paused', '1']], 'Stop reaches the wallbox before draining telemetry');
+        assert.equal(stopSettled, false, 'Homey publication waits for the older poll to settle');
+
+        reads[0].resolve(validPayload({ ChargeState: 3, Paused: 0 }));
+        await assert.rejects(preCommandPoll, /invalid/i);
+        await stop;
+
+        assert.equal(capabilities.evcharger_charging, false);
+        assert.equal(capabilities.evcharger_charging_state, 'plugged_in_paused');
+    } finally {
+        for (const request of reads) request.resolve(validPayload());
+        await Promise.allSettled([preCommandPoll, stop].filter(Boolean));
+    }
+});
+
 test('ordinary reads coalesce and concurrent forced reads share one fresh request', async () => {
     const { device, reads } = makeRealDevice();
     const ordinaryA = device.getProductionData();
