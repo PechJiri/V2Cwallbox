@@ -46,9 +46,11 @@
 
 ## Task 2: Widget commands, synchronization, and exact device selection
 
-**Files:** Modify `widgets/wallbox-status/api.js`, `widgets/wallbox-status/public/index.html`; create `test/widget_api.test.js`, `test/widget_frontend.test.js`. Create a small shared widget selection helper only if justified by documented SDK resolver.
+**Files:** Modify `widgets/wallbox-status/api.js`, `widgets/wallbox-status/public/index.html`, `widgets/wallbox-status/widget.compose.json`, and `app.js`; create `test/widget_api.test.js`, `test/widget_frontend.test.js`. Create a small shared widget selection helper only if justified by documented SDK resolver.
 
 **Interfaces:** Existing `/status` and `/paused` endpoints stay. `/paused` body contains explicit `paused:boolean` and selected `deviceId`; calls `device.setChargingPaused(paused)`. `/status` retains old fields and adds physical EV state, known locked/timer/mode/fault flags and last-valid/stale metadata from device. A missing selection may fall back only when exactly one device exists; explicit unknown/deleted ID is an error. Use the documented SDK resolver discovered by research; do not use private fields or invent getId() if unavailable.
+
+**Resolver decision:** Replace the built-in widget device picker with app-owned autocomplete, registered through `homey.dashboards.getWidget('wallbox-status').registerSettingAutocompleteListener`. Suggestions carry the app pairing key in their documented `id` field; frontend reads it through `Homey.getSettings()` and backend resolves `driver.getDevice({id: key})`. This avoids adding broad `homey:manager:api` permission to resolve Homey-managed IDs. Existing widgets without the new selection may fall back only when exactly one wallbox is paired; multiple-device installations require visible reselection guidance. An explicit invalid pairing key never falls back.
 
 - [ ] Write failing tests for two-device selection, invalid explicit selector, legacy no-selector single device, malformed command body, and delegation that leaves ownership/lock/timer untouched. Frontend VM/DOM tests reproduce old GET after command, repeated Start, failed POST, and refresh already in flight.
 - [ ] Verify RED via `node --test test/widget_api.test.js test/widget_frontend.test.js`.
