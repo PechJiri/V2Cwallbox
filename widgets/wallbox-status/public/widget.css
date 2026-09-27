@@ -66,6 +66,9 @@
 .v2c-status { display:inline-flex; align-items:center; gap:5px; min-height:24px; padding:3px 9px; margin-top:7px; border-radius:20px; background:var(--soft); color:var(--ink); font-size:12px; line-height:18px; font-weight:600; white-space:nowrap; max-width:100%; }
 .v2c-status svg { width:13px; height:13px; flex:none; }
 .v2c-metrics { display:grid; grid-template-columns:1fr 1fr; gap:9px; width:100%; margin-top:9px; }
+[data-state='fault'] .v2c-status { width:fit-content; min-width:0; margin-top:4px; padding:3px 8px; white-space:normal; }
+[data-state='fault'] .v2c-status-text { min-width:0; line-height:14px; white-space:normal; }
+[data-state='fault'] .v2c-metrics { margin-top:4px; }
 .v2c-metric { min-width:0; }
 .v2c-metric-number { display:flex; align-items:baseline; gap:3px; white-space:nowrap; }
 .v2c-value { font-size:var(--homey-font-size-xxlarge,32px); font-weight:700; line-height:35px; letter-spacing:-1.1px; font-variant-numeric:tabular-nums; }
