@@ -9,7 +9,7 @@ The app uses Homey's EV charger capabilities as the primary integration surface:
 - `target_power_mode` selects whether Homey controls charging power or whether V2C dynamic modes are active.
 - `target_power` is the requested charging power in watts when Homey controls charging.
 - `evcharger_charging` is the user's charge/pause intent. In V2C terms it maps inversely to the `Paused` parameter.
-- `evcharger_charging_state` represents physical EV state derived from V2C `ChargeState` and `Paused`.
+- `evcharger_charging_state` represents physical EV state derived from V2C `ChargeState`, `Paused`, and measured `ChargePower`.
 
 The driver also uses Homey's system energy capabilities:
 
@@ -33,6 +33,8 @@ Settlement uses a persisted transaction containing validated monthly, yearly, an
 The driver exposes Homey's standard, writable `evcharger_charging` and `locked` capabilities. Their listeners write the matching V2C `Paused` and `Locked` parameters. Where the installed Homey UI/OS supports choosing a device quick action, the user can therefore select charging on/off or lock/unlock. The app does not declare a custom `uiQuickAction` or override Homey's selection.
 
 Standalone Pause/Resume from the widget, quick action or charging capability only changes V2C `Paused`. Resume retains the wallbox's configured amps; it does not require a new watts target or change the power controller. A Homey request that explicitly changes `target_power` remains separate: zero pauses charging, and a positive combined start applies the requested current before unpausing.
+
+The firmware can keep reporting CP state C (`2`) while paused. Homey's native EV state gives the pause flag priority; after Resume it reports plugged-in until positive measured power confirms charging. A successful Pause command updates the native paused state immediately for a known connected, non-faulted charger, including commands from Flow. A fresh telemetry-confirmed pause uses the 10-second connected-car polling interval; active charging remains at 5 seconds, with the existing error backoff unchanged. The separate raw charge-point capability retains the firmware's CP code.
 
 When Homey controls charging, `device.js` converts `target_power` watts to V2C `Intensity` amps using:
 
@@ -69,12 +71,12 @@ The current mode mapping is defined in `lib/constants.js`:
 | --- | --- |
 | `v2c_timed_on` | `0` |
 | `v2c_timed_off` | `1` |
-| `v2c_fv_exclusive` | `2` |
-| `v2c_fv_min` | `3` |
+| `v2c_fv_min` | `2` |
+| `v2c_fv_exclusive` | `3` |
 | `v2c_grid_fv` | `4` |
 | `v2c_no_charge` | `5` |
 
-The app preserves the existing numeric choices for codes `2` and `3`; their firmware-specific labels remain unverified, so saved choices are not remapped.
+Codes `2` (minimum power) and `3` (exclusive) follow the published HTTP table reviewed on 14 July 2026. Existing numeric settings and Flow values are not migrated: they retain their wire value, with the corrected label. Review saved FV Flow selections if they were chosen using the old reversed labels. Semantic Homey mode IDs remain unchanged and now write the corresponding documented code. Code `1` is deprecated by V2C and remains available for compatibility; firmware 2.5.1 returned code `4` after the live test requested code `1`.
 
 ## Custom Flow Cards
 

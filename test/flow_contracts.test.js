@@ -236,22 +236,27 @@ test('Flow set_dynamic disables V2C and restores Homey ownership on args.device'
     assert.deepEqual(decoy.calls, []);
 });
 
-test('Flow set_dynamic_power_mode applies and synchronizes the selected V2C mode', async () => {
-    const { homey, listeners } = createFlowHarness();
-    const selected = createSelectedControlDevice({ targetPower: 0 });
-    const decoy = createSelectedControlDevice({ targetPower: 0 });
-    const manager = new FlowCardManager(homey, decoy.device);
-    await manager.initialize();
+test('Flow numeric modes 2 and 3 write their official V2C strategy and synchronize the matching capability', async () => {
+    for (const [dynamicPowerMode, targetPowerMode] of [
+        ['2', 'v2c_fv_min'],
+        ['3', 'v2c_fv_exclusive']
+    ]) {
+        const { homey, listeners } = createFlowHarness();
+        const selected = createSelectedControlDevice({ targetPower: 0 });
+        const decoy = createSelectedControlDevice({ targetPower: 0 });
+        const manager = new FlowCardManager(homey, decoy.device);
+        await manager.initialize();
 
-    await listeners.get('set_dynamic_power_mode')({ DynamicPowerMode: '3', device: selected.device });
+        await listeners.get('set_dynamic_power_mode')({ DynamicPowerMode: dynamicPowerMode, device: selected.device });
 
-    assert.deepEqual(selected.calls.filter((call) => call[0] === 'dynamic' || call[0] === 'dynamicPowerMode'), [
-        ['dynamic', '1'],
-        ['dynamicPowerMode', '3']
-    ]);
-    assert.equal(selected.settings.dynamic_power_mode, '3');
-    assert.equal(selected.capabilities.target_power_mode, 'v2c_fv_min');
-    assert.deepEqual(decoy.calls, []);
+        assert.deepEqual(selected.calls.filter((call) => call[0] === 'dynamic' || call[0] === 'dynamicPowerMode'), [
+            ['dynamic', '1'],
+            ['dynamicPowerMode', dynamicPowerMode]
+        ]);
+        assert.equal(selected.settings.dynamic_power_mode, dynamicPowerMode);
+        assert.equal(selected.capabilities.target_power_mode, targetPowerMode);
+        assert.deepEqual(decoy.calls, []);
+    }
 });
 
 test('Flow min-intensity limit applies V2C and uses the effective bounds in target_power options', async () => {

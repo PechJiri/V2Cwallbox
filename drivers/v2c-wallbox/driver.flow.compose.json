@@ -2274,41 +2274,23 @@
             {
               "id": "1",
               "label": {
-                "en": "Timed Power Disabled",
-                "nl": "Getimede stroom uitgeschakeld",
-                "da": "Tidstaget strøm deaktiveret",
-                "de": "Zeitgesteuerte Leistung deaktiviert",
-                "es": "Potencia programada deshabilitada",
-                "fr": "Puissance minutée désactivée",
-                "it": "Potenza temporizzata disabilitata",
-                "no": "Tidtaktsstyrt strøm deaktivert",
-                "sv": "Tidnivånsläge inaktiverat",
-                "pl": "Wyłączona moc czasowa",
-                "ru": "Временная мощность отключена",
-                "ko": "시한 전원 비활성화",
-                "ar": "تم تعطيل الطاقة المؤقتة"
+                "en": "Timed Power Disabled (deprecated)",
+                "nl": "Getimede stroom uitgeschakeld (verouderd)",
+                "da": "Tidstaget strøm deaktiveret (forældet)",
+                "de": "Zeitgesteuerte Leistung deaktiviert (veraltet)",
+                "es": "Potencia programada deshabilitada (obsoleto)",
+                "fr": "Puissance minutée désactivée (obsolète)",
+                "it": "Potenza temporizzata disabilitata (deprecato)",
+                "no": "Tidtaktsstyrt strøm deaktivert (foreldet)",
+                "sv": "Tidnivånsläge inaktiverat (föråldrat)",
+                "pl": "Wyłączona moc czasowa (przestarzały)",
+                "ru": "Временная мощность отключена (устаревший)",
+                "ko": "시한 전원 비활성화 (사용 중단 권장)",
+                "ar": "تم تعطيل الطاقة المؤقتة (متقادم)"
               }
             },
             {
               "id": "2",
-              "label": {
-                "en": "FV Exclusive mode",
-                "nl": "FV Exclusieve modus",
-                "da": "FV-eksklusiv tilstand",
-                "de": "FV-Exklusiver Modus",
-                "es": "Modo exclusivo FV",
-                "fr": "Mode exclusif FV",
-                "it": "Modalità esclusiva FV",
-                "no": "FV-eksklusiv modus",
-                "sv": "FV-exklusivt läge",
-                "pl": "Tryb wyłączny FV",
-                "ru": "Эксклюзивный режим FV",
-                "ko": "FV 전용 모드",
-                "ar": "وضع FV الحصري"
-              }
-            },
-            {
-              "id": "3",
               "label": {
                 "en": "FV+Min Power mode",
                 "nl": "FV+Minimale stroom modus",
@@ -2323,6 +2305,24 @@
                 "ru": "Режим минимальной мощности FV+",
                 "ko": "FV+최소 전력 모드",
                 "ar": "وضع FV+Min Power"
+              }
+            },
+            {
+              "id": "3",
+              "label": {
+                "en": "FV Exclusive mode",
+                "nl": "FV Exclusieve modus",
+                "da": "FV-eksklusiv tilstand",
+                "de": "FV-Exklusiver Modus",
+                "es": "Modo exclusivo FV",
+                "fr": "Mode exclusif FV",
+                "it": "Modalità esclusiva FV",
+                "no": "FV-eksklusiv modus",
+                "sv": "FV-exklusivt läge",
+                "pl": "Tryb wyłączny FV",
+                "ru": "Эксклюзивный режим FV",
+                "ko": "FV 전용 모드",
+                "ar": "وضع FV الحصري"
               }
             },
             {

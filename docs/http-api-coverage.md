@@ -27,20 +27,20 @@ The supplied PDF identifies these endpoints:
 | `FVPower` | No | Read and mapped | Exposed as `measure_fv_power`. |
 | `Paused` | Yes | Read and write | Exposed through `evcharger_charging`, flow cards, widget pause/resume, and direct V2C writes. |
 | `Locked` | Yes | Read and write | Exposed through Homey's `locked` capability and compatibility flow action. |
-| `Timer` | Yes | Read only in runtime | `timer_state` is exposed, but there is no setting, capability listener, widget control, or Flow action for changing it. No Timer control is added in 2.0.5. |
+| `Timer` | Yes | Read only in runtime | `timer_state` is a read-only indicator; there is no setting, capability listener, widget control, or Flow action for changing it. No Timer control is added in 2.0.4. |
 | `Intensity` | Yes | Read and write | Exposed as `measure_intensity` and `set_intensity`; also written from `target_power`. |
 | `Dynamic` | Yes | Read and write | Used when switching between Homey control and V2C dynamic modes. |
 | `MinIntensity` | Yes | Read and write | Exposed as capability, setting, and flow action. |
 | `MaxIntensity` | Yes | Read and write | Exposed as capability, setting, and flow action. |
 | `PauseDynamic` | Yes | Not used | Candidate for pausing/resuming V2C dynamic modulation without necessarily pausing charging. Needs real-device semantics verification. |
 | `LightLED` | Yes | Write via flow | Flow action can set display brightness from 0-100%. |
-| `LogoLED` | Yes | Write via flow | Flow action can set logo brightness from 0-100%. |
+| `LogoLED` | Yes | Write via flow | Firmware 2.5.1 exposes logo on/off, distinct from display brightness. The existing shared display/logo Flow card is retained. |
 | `DynamicPowerMode` | Yes | Read and write | Mapped to `target_power_mode`, settings, and flow action. |
 | `ContractedPower` | Yes | Not used | Candidate for grid contract/current limit configuration in watts. Relevant to dynamic power management. |
 | `IntensityMeasure_L1`–`L3` | No | Read and mapped | Exposed as read-only `measure_current.l1`–`l3` with distinct Current L1/L2/L3 titles when recent firmware provides the values. |
 | `VoltageMeasure_L1`–`L3` | No | Read and mapped | Exposed as read-only `measure_voltage.l1`–`l3` with distinct Voltage L1/L2/L3 titles when recent firmware provides the values. |
 
-The existing Homey mode labels for V2C dynamic mode codes `2` and `3` remain unchanged. Their firmware-specific mapping discrepancy is unresolved, so the app does not migrate saved choices or claim a verified label.
+The published HTTP table reviewed on 14 July 2026 defines code `2` as minimum power and code `3` as exclusive. Runtime mappings and numeric option labels follow that contract. Saved numeric settings and Flow values are not migrated; users should review FV selections chosen using the former reversed labels. Deprecated code `1` remains supported for compatibility, although firmware 2.5.1 returned code `4` after it was requested in the live test.
 
 The PDF response example also includes `ID`, `SSID`, `IP`, and `SignalStatus`. The current app uses `ID`/`IP` during pairing and exposes `SignalStatus`; `SSID` is not exposed.
 
@@ -52,7 +52,7 @@ The driver remains an `evcharger` and declares both `energy.evCharger = true` an
 
 Disconnect settlement uses a persisted high-water mark and an idempotent transaction with validated baselines and absolute monthly, yearly, and lifetime targets. One valid first-disconnect sample can supplement positive pending session energy; later disconnected polls do not resurrect or settle it again. Partial storage or capability failures leave the transaction available for retry without adding the session twice. Pending energy is cleared only after all targets succeed; malformed transactions fail closed. Users can correct monthly, yearly, both-period, or lifetime energy through the existing serialized `set_energy_counter` Flow action; monthly and yearly corrections do not automatically change lifetime energy.
 
-## Candidate Future Features (deferred from 2.0.5)
+## Candidate Future Features (deferred from 2.0.4)
 
 ### 1. Mixed Charge Mode Control
 

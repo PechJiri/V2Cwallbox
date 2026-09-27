@@ -153,6 +153,24 @@ test('Homey power-only changes do not write Intensity while a V2C strategy owns 
     assert.equal(calls.some((call) => call[0] === 'intensity'), false);
 });
 
+test('selecting either FV capability writes its official DynamicPowerMode without intensity or pause writes', async () => {
+    for (const [targetPowerMode, dynamicPowerMode] of [
+        ['v2c_fv_min', '2'],
+        ['v2c_fv_exclusive', '3']
+    ]) {
+        const { calls, listener } = createDevice();
+
+        await listener.callback({ target_power_mode: targetPowerMode });
+
+        assert.deepEqual(calls.filter((call) => call[0] === 'dynamic' || call[0] === 'dynamicPowerMode'), [
+            ['dynamic', '1'],
+            ['dynamicPowerMode', dynamicPowerMode]
+        ]);
+        assert.equal(calls.some((call) => call[0] === 'intensity'), false);
+        assert.equal(calls.some((call) => call[0] === 'parameter' && call[1] === 'Paused'), false);
+    }
+});
+
 test('Homey Set target power batch disables V2C, applies Intensity, then resumes', async () => {
     const { calls, listener } = createDevice({
         capabilities: { evcharger_charging: false }

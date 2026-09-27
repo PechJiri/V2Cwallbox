@@ -4,6 +4,10 @@ const Logger = require('../../lib/Logger');
 const DataValidator = require('../../lib/DataValidator');
 const CONSTANTS = require('../../lib/constants');
 
+function isTimeoutError(error) {
+    return error?.name === 'TimeoutError' || error?.name === 'AbortError';
+}
+
 class v2cAPI {
     constructor(homey, ip) {
         this.ip = ip;
@@ -58,7 +62,10 @@ class v2cAPI {
                 this.logger.log('Session úspěšně inicializována', { data: responseData });
                 return true;
             } catch (error) {
-                this.logger.error('Selhala inicializace session', error, { ip: this.ip });
+                const message = isTimeoutError(error)
+                    ? 'Timeout při inicializaci session'
+                    : 'Selhala inicializace session';
+                this.logger.error(message, error, { ip: this.ip });
                 throw error;
             }
         });
@@ -101,15 +108,17 @@ class v2cAPI {
 
         } catch (error) {
             // Specifická zpráva pro timeout
-            if (error.name === 'AbortError') {
+            if (isTimeoutError(error)) {
                 this._apiErrorCount++;
-                this.logger.debug(`API timeout #${this._apiErrorCount} z ${this._maxConsecutiveErrors}`);
+                this.logger.debug(`API timeout #${this._apiErrorCount} z ${this._maxConsecutiveErrors}`, {
+                    errorName: error.name
+                });
                 
                 if (this._apiErrorCount >= this._maxConsecutiveErrors) {
                     throw new Error('API_MAX_ERRORS_EXCEEDED');
                 }
                 
-                throw new Error('API timeout - device did not respond in time');
+                throw new Error('API timeout - device did not respond in time', { cause: error });
             }
 
             this._apiErrorCount++;
@@ -204,7 +213,10 @@ class v2cAPI {
 
             return responseData;
         } catch (error) {
-            this.logger.error(`Chyba při nastavování parametru ${parameter}`, error, {
+            const message = isTimeoutError(error)
+                ? `Timeout při nastavování parametru ${parameter}; výsledek zápisu není potvrzen`
+                : `Chyba při nastavování parametru ${parameter}`;
+            this.logger.error(message, error, {
                 parametr: parameter,
                 hodnota: value
             });
