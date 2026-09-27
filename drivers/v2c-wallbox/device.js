@@ -759,9 +759,10 @@ class MyDevice extends Device {
 
     async updateCapabilities(deviceData, currentState, chargeEnergy) {
         try {
-            // Aktualizace interní proměnné — využívá se v _getRequiredInterval
-            // a v FlowCardManager pro deprekované condition karty (car-connected, car-is-charging)
-            this._lastChargeState = currentState;
+            const hasPrimaryFault = Object.prototype.hasOwnProperty.call(
+                CONSTANTS.CHARGE_STATE_FAULT_DESCRIPTIONS,
+                currentState
+            );
 
             // Lifetime energie pro Homey Energy tab (monotónní, nikdy neklesá při odpojení)
             const lifetimeEnergy = this.energyManager.getLifetimeEnergy();
@@ -826,7 +827,7 @@ class MyDevice extends Device {
                 safeSetNullable('measure_voltage.l3', deviceData.voltageL3),
                 safeSetNullable('measure_slave_error', deviceData.slaveError),
                 safeSetNullable('measure_charge_state', currentState),
-                safeSet('alarm_generic', this.getFaultDescriptor() !== null),
+                safeSet('alarm_generic', hasPrimaryFault),
                 this.setCapabilityValue('measure_charge_time', Math.floor(deviceData.chargeTime / 60)),
                 safeSetNullable('locked', deviceData.locked),
                 this.setCapabilityValue('measure_intensity', deviceData.intensity),
@@ -849,6 +850,10 @@ class MyDevice extends Device {
                 safeSetNullable('timer_state', deviceData.timer_state),
                 this.setCapabilityValue('set_intensity', deviceData.intensity.toString())
             ]);
+
+            // Commit internal charge state only after the full sample publishes. It also drives
+            // freshness fault metadata, polling cadence, and the existing Flow state helpers.
+            this._lastChargeState = currentState;
     
             this.logger.debug('Capabilities byly úspěšně aktualizovány', { 
                 deviceData, 

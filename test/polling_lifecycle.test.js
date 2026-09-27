@@ -79,6 +79,9 @@ function makeRealDevice() {
     device.flowCardManager = { triggerConnectionStateChanged: async () => {} };
     device.getCapabilityValue = (id) => capabilities[id];
     device.setCapabilityValue = async (id, value) => {
+        if (device.failCapabilityId === id) {
+            throw new Error(`${id} publication failed`);
+        }
         capabilities[id] = value;
         return true;
     };
@@ -266,6 +269,43 @@ test('failed reads mark status stale without clearing a primary fault, then vali
         Date.now = originalNow;
         for (const request of reads) request.resolve(validPayload());
         await Promise.allSettled([faultSample, failedRead, recovery].filter(Boolean));
+    }
+});
+
+test('failed capability publication keeps the last committed primary fault', async () => {
+    const originalNow = Date.now;
+    let clock = 2000;
+    Date.now = () => clock++;
+    const { device, reads, capabilities } = makeRealDevice();
+    let faultSample;
+    let rejectedSample;
+
+    try {
+        faultSample = device.getProductionData();
+        await nextTurn();
+        reads[0].resolve(validPayload({ ChargeState: 4, ChargeEnergy: 4 }));
+        await faultSample;
+        const faultMetadata = await device.getStatusMetadata();
+
+        device.failCapabilityId = 'measure_charge_energy';
+        rejectedSample = device.getProductionData({ force: true, throwOnError: true });
+        await nextTurn();
+        reads[1].resolve(validPayload({ ChargeState: 1, ChargeEnergy: 5 }));
+        await assert.rejects(rejectedSample, /measure_charge_energy publication failed/);
+
+        const metadata = await device.getStatusMetadata();
+        assert.equal(metadata.lastUpdated, faultMetadata.lastUpdated);
+        assert.equal(metadata.stale, true);
+        assert.equal(metadata.connectionError, true);
+        assert.deepEqual(metadata.fault, faultMetadata.fault);
+        assert.equal(metadata.fault.state, 4);
+        assert.equal(capabilities.alarm_generic, false, 'the alarm capability should use the candidate healthy state');
+        assert.equal(device.lastResponse.ChargeState, 4, 'a partially published sample must not replace the last good response');
+    } finally {
+        Date.now = originalNow;
+        device.failCapabilityId = null;
+        for (const request of reads) request.resolve(validPayload());
+        await Promise.allSettled([faultSample, rejectedSample].filter(Boolean));
     }
 });
 
