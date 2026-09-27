@@ -19,26 +19,40 @@ function loadDeviceWithHomeyStub() {
     }
 }
 
-function createSelectedControlDevice({ targetPower = 6000, failIntensity = false } = {}) {
+function createSelectedControlDevice({
+    targetPower = 6000,
+    failIntensity = false,
+    targetPowerMode = 'homey',
+    dynamicPowerMode = 'disabled',
+    minIntensity = 6,
+    maxIntensity = 32,
+    reportedMinIntensity = minIntensity,
+    reportedMaxIntensity = maxIntensity,
+    voltageType = 'line_to_neutral',
+    installationVoltage = '230',
+    measureVoltage = 230
+} = {}) {
     const MyDevice = loadDeviceWithHomeyStub();
     const device = Object.create(MyDevice.prototype);
     const calls = [];
     const capabilities = {
-        target_power_mode: 'homey',
+        target_power_mode: targetPowerMode,
         target_power: targetPower,
         evcharger_charging: false,
-        min_intensity: 6,
-        max_intensity: 32,
-        measure_voltage_installation: 230
+        min_intensity: reportedMinIntensity,
+        max_intensity: reportedMaxIntensity,
+        measure_voltage_installation: measureVoltage
     };
     const store = new Map();
     const settings = {
         phase_mode: '3',
-        voltage_type: 'line_to_neutral',
-        installation_voltage: '230',
-        min_intensity: 6,
-        max_intensity: 32
+        voltage_type: voltageType,
+        installation_voltage: installationVoltage,
+        dynamic_power_mode: dynamicPowerMode,
+        min_intensity: minIntensity,
+        max_intensity: maxIntensity
     };
+    const capabilityOptions = [];
     device.getCapabilityValue = (id) => capabilities[id];
     device.setCapabilityValue = async (id, value) => {
         calls.push(['capability', id, value]);
@@ -47,6 +61,11 @@ function createSelectedControlDevice({ targetPower = 6000, failIntensity = false
     device.getSetting = (id) => settings[id];
     device.getSettings = () => ({ ...settings });
     device.setSettings = async (values) => Object.assign(settings, values);
+    device.setCapabilityOptions = async (id, options) => {
+        capabilityOptions.push([id, options]);
+        calls.push(['capabilityOptions', id, options]);
+    };
+    device.logger = { debug: () => {}, warn: () => {} };
     device.getStoreValue = async (key) => store.get(key);
     device.setStoreValue = async (key, value) => {
         calls.push(['store', key, value]);
@@ -63,7 +82,7 @@ function createSelectedControlDevice({ targetPower = 6000, failIntensity = false
         setMinIntensity: async (value) => calls.push(['minIntensity', value]),
         setMaxIntensity: async (value) => calls.push(['maxIntensity', value])
     };
-    return { device, calls, capabilities };
+    return { device, calls, capabilities, settings, capabilityOptions };
 }
 
 function createFlowHarness() {
@@ -169,31 +188,178 @@ test('set_power keeps explicit calculator inputs and writes Intensity on args.de
     assert.deepEqual(calls, [['selected', 26]]);
 });
 
-test('dynamic and intensity-limit setting actions update args.device', async () => {
+test('Flow set_dynamic applies the selected V2C strategy and hands ownership back', async () => {
     const { homey, listeners } = createFlowHarness();
-    const decoyWrites = [];
-    const selectedWrites = [];
-    const decoy = {
-        getSettings: () => ({ dynamic_power_mode: 'disabled' }),
-        setSettings: async (values) => decoyWrites.push(values)
-    };
-    const selected = {
-        getSettings: () => ({ dynamic_power_mode: '4' }),
-        setSettings: async (values) => selectedWrites.push(values)
-    };
-    const manager = new FlowCardManager(homey, decoy);
+    const selected = createSelectedControlDevice({ targetPower: 0 });
+    const decoy = createSelectedControlDevice({ targetPower: 0 });
+    const manager = new FlowCardManager(homey, decoy.device);
     await manager.initialize();
 
-    await listeners.get('set_dynamic_power_mode')({ DynamicPowerMode: '5', device: selected });
-    await listeners.get('set_min_intensity')({ MinIntensity: 8, device: selected });
-    await listeners.get('set_max_intensity')({ MaxIntensity: 24, device: selected });
+    await listeners.get('set_dynamic')({ dynamic: '1', device: selected.device });
 
-    assert.deepEqual(selectedWrites, [
-        { dynamic_power_mode: '5' },
-        { min_intensity: 8 },
-        { max_intensity: 24 }
+    assert.deepEqual(selected.calls.filter((call) => call[0] === 'dynamic' || call[0] === 'dynamicPowerMode'), [
+        ['dynamic', '1'],
+        ['dynamicPowerMode', '0']
     ]);
-    assert.deepEqual(decoyWrites, []);
+    assert.equal(selected.settings.dynamic_power_mode, '0');
+    assert.equal(selected.capabilities.target_power_mode, 'v2c_timed_on');
+    assert.equal(selected.capabilities.target_power, 0);
+    assert.deepEqual(decoy.calls, []);
+});
+
+test('Flow set_dynamic disables V2C and restores Homey ownership on args.device', async () => {
+    const { homey, listeners } = createFlowHarness();
+    const selected = createSelectedControlDevice({
+        targetPower: 0,
+        targetPowerMode: 'v2c_grid_fv',
+        dynamicPowerMode: '4'
+    });
+    const decoy = createSelectedControlDevice({ targetPower: 0 });
+    const manager = new FlowCardManager(homey, decoy.device);
+    await manager.initialize();
+
+    await listeners.get('set_dynamic')({ dynamic: '0', device: selected.device });
+
+    assert.deepEqual(selected.calls.filter((call) => call[0] === 'dynamic'), [['dynamic', '0']]);
+    assert.equal(selected.settings.dynamic_power_mode, 'disabled');
+    assert.equal(selected.capabilities.target_power_mode, 'homey');
+    assert.deepEqual(decoy.calls, []);
+});
+
+test('Flow set_dynamic_power_mode applies and synchronizes the selected V2C mode', async () => {
+    const { homey, listeners } = createFlowHarness();
+    const selected = createSelectedControlDevice({ targetPower: 0 });
+    const decoy = createSelectedControlDevice({ targetPower: 0 });
+    const manager = new FlowCardManager(homey, decoy.device);
+    await manager.initialize();
+
+    await listeners.get('set_dynamic_power_mode')({ DynamicPowerMode: '3', device: selected.device });
+
+    assert.deepEqual(selected.calls.filter((call) => call[0] === 'dynamic' || call[0] === 'dynamicPowerMode'), [
+        ['dynamic', '1'],
+        ['dynamicPowerMode', '3']
+    ]);
+    assert.equal(selected.settings.dynamic_power_mode, '3');
+    assert.equal(selected.capabilities.target_power_mode, 'v2c_fv_min');
+    assert.deepEqual(decoy.calls, []);
+});
+
+test('Flow min-intensity limit applies V2C and uses the effective bounds in target_power options', async () => {
+    const { homey, listeners } = createFlowHarness();
+    const selected = createSelectedControlDevice({
+        targetPower: 0,
+        maxIntensity: 32,
+        reportedMaxIntensity: 28
+    });
+    const decoy = createSelectedControlDevice({ targetPower: 0 });
+    const manager = new FlowCardManager(homey, decoy.device);
+    await manager.initialize();
+
+    await listeners.get('set_min_intensity')({ MinIntensity: 8, device: selected.device });
+
+    assert.deepEqual(selected.calls.filter((call) => call[0] === 'minIntensity'), [['minIntensity', 8]]);
+    assert.equal(selected.settings.min_intensity, 8);
+    assert.equal(selected.capabilities.min_intensity, 8);
+    assert.deepEqual(selected.capabilityOptions, [['target_power', {
+        min: 0, max: 19320, step: 690, excludeMin: 0, excludeMax: 5520, decimals: 0
+    }]]);
+    assert.deepEqual(decoy.calls, []);
+});
+
+test('Flow max-intensity limit applies V2C and uses the effective bounds in target_power options', async () => {
+    const { homey, listeners } = createFlowHarness();
+    const selected = createSelectedControlDevice({
+        targetPower: 0,
+        minIntensity: 8,
+        reportedMinIntensity: 10
+    });
+    const decoy = createSelectedControlDevice({ targetPower: 0 });
+    const manager = new FlowCardManager(homey, decoy.device);
+    await manager.initialize();
+
+    await listeners.get('set_max_intensity')({ MaxIntensity: 24, device: selected.device });
+
+    assert.deepEqual(selected.calls.filter((call) => call[0] === 'maxIntensity'), [['maxIntensity', 24]]);
+    assert.equal(selected.settings.max_intensity, 24);
+    assert.equal(selected.capabilities.max_intensity, 24);
+    assert.deepEqual(selected.capabilityOptions, [['target_power', {
+        min: 0, max: 16560, step: 690, excludeMin: 0, excludeMax: 6900, decimals: 0
+    }]]);
+    assert.deepEqual(decoy.calls, []);
+});
+
+test('target_power options use the selected configured line-to-line installation voltage', async () => {
+    const { homey, listeners } = createFlowHarness();
+    const selected = createSelectedControlDevice({
+        targetPower: 0,
+        voltageType: 'line_to_line',
+        installationVoltage: '415',
+        measureVoltage: 0
+    });
+    const manager = new FlowCardManager(homey, {});
+    await manager.initialize();
+
+    await listeners.get('set_max_intensity')({ MaxIntensity: 24, device: selected.device });
+
+    assert.deepEqual(selected.capabilityOptions, [['target_power', {
+        min: 0, max: 17256, step: 719, excludeMin: 0, excludeMax: 4313, decimals: 0
+    }]]);
+
+    await selected.device.applyChargingChanges({ target_power: 17256 });
+    assert.deepEqual(selected.calls.filter((call) => call[0] === 'intensity'), [['intensity', 24]]);
+});
+
+test('Homey target just below configured minimum watts leaves charging paused', async () => {
+    const selected = createSelectedControlDevice({
+        targetPower: 0,
+        voltageType: 'line_to_line',
+        installationVoltage: '415',
+        measureVoltage: 0
+    });
+
+    await selected.device.applyChargingChanges({ target_power: 4312 });
+
+    assert.equal(selected.calls.some((call) => call[0] === 'intensity'), false);
+    assert.deepEqual(selected.calls.filter((call) => call[0] === 'parameter' && call[1] === 'Paused'), [
+        ['parameter', 'Paused', '1']
+    ]);
+});
+
+test('Flow dynamic mode write failure propagates without claiming new ownership', async () => {
+    const { homey, listeners } = createFlowHarness();
+    const selected = createSelectedControlDevice({ targetPower: 0 });
+    const manager = new FlowCardManager(homey, {});
+    await manager.initialize();
+    selected.device.v2cApi.setDynamicPowerMode = async (value) => {
+        selected.calls.push(['dynamicPowerMode', value]);
+        throw new Error('DynamicPowerMode write failed');
+    };
+
+    await assert.rejects(
+        () => listeners.get('set_dynamic_power_mode')({ DynamicPowerMode: '5', device: selected.device }),
+        /DynamicPowerMode write failed/
+    );
+    assert.equal(selected.settings.dynamic_power_mode, 'disabled');
+    assert.equal(selected.capabilities.target_power_mode, 'homey');
+});
+
+test('Flow intensity-limit write failure leaves settings, capability, and options unchanged', async () => {
+    const { homey, listeners } = createFlowHarness();
+    const selected = createSelectedControlDevice({ targetPower: 0 });
+    const manager = new FlowCardManager(homey, {});
+    await manager.initialize();
+    selected.device.v2cApi.setMaxIntensity = async (value) => {
+        selected.calls.push(['maxIntensity', value]);
+        throw new Error('MaxIntensity write failed');
+    };
+
+    await assert.rejects(
+        () => listeners.get('set_max_intensity')({ MaxIntensity: 24, device: selected.device }),
+        /MaxIntensity write failed/
+    );
+    assert.equal(selected.settings.max_intensity, 32);
+    assert.equal(selected.capabilities.max_intensity, 32);
+    assert.deepEqual(selected.capabilityOptions, []);
 });
 
 test('phase change pause, setting, and resume all use args.device', async () => {

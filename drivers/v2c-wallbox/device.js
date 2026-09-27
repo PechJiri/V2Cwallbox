@@ -391,15 +391,38 @@ class MyDevice extends Device {
 
     async _applyCapabilityOptionsForPhaseMode(phaseModeOverride = null) {
         // Zúží rozsah target_power capability podle počtu fází.
-        // Používáme konstantní referenční napětí 230 V (kolísání V se neřeší,
-        // capabilitiesOptions je expensive operation dle docs).
+        // Keep the advertised range aligned with Homey's selected voltage/current calculation.
         const phaseMode = phaseModeOverride || this.getSetting('phase_mode') || '3';
-        const V_REF = 230;
-        const phaseFactor = phaseMode === '1' ? 1 : 3;
-
-        const max = CONSTANTS.DEVICE.INTENSITY.MAX * V_REF * phaseFactor;
-        const excludeMax = CONSTANTS.DEVICE.INTENSITY.MIN * V_REF * phaseFactor;
-        const step = phaseMode === '1' ? 230 : 690;
+        const voltageType = this.getSetting('voltage_type') || 'line_to_neutral';
+        const voltage = typeof this.getChargingVoltage === 'function' && typeof this.getCapabilityValue === 'function'
+            ? this.getChargingVoltage()
+            : voltageType === 'line_to_line' ? 400 : 230;
+        const configuredMin = Number(this.getSetting('min_intensity')) || CONSTANTS.DEVICE.INTENSITY.MIN;
+        const configuredMax = Number(this.getSetting('max_intensity')) || CONSTANTS.DEVICE.INTENSITY.MAX;
+        const reportedMin = typeof this.getCapabilityValue === 'function'
+            ? Number(this.getCapabilityValue('min_intensity')) || CONSTANTS.DEVICE.INTENSITY.MIN
+            : CONSTANTS.DEVICE.INTENSITY.MIN;
+        const reportedMax = typeof this.getCapabilityValue === 'function'
+            ? Number(this.getCapabilityValue('max_intensity')) || CONSTANTS.DEVICE.INTENSITY.MAX
+            : CONSTANTS.DEVICE.INTENSITY.MAX;
+        const maxIntensity = Math.min(
+            CONSTANTS.DEVICE.INTENSITY.MAX,
+            Math.max(CONSTANTS.DEVICE.INTENSITY.MIN, configuredMax),
+            Math.max(CONSTANTS.DEVICE.INTENSITY.MIN, reportedMax)
+        );
+        const minIntensity = Math.min(
+            maxIntensity,
+            Math.max(CONSTANTS.DEVICE.INTENSITY.MIN, configuredMin, reportedMin)
+        );
+        const phaseFactor = phaseMode === '1'
+            ? 1
+            : voltageType === 'line_to_line' ? Math.sqrt(3) : 3;
+        const wattsPerAmp = voltage * phaseFactor;
+        // The Homey target is an integer watt value and current commands floor the conversion.
+        // Use a whole-watt amp step so the advertised maximum can still command the configured max.
+        const step = Math.ceil(wattsPerAmp);
+        const max = maxIntensity * step;
+        const excludeMax = Math.ceil(minIntensity * wattsPerAmp);
 
         try {
             await this.setCapabilityOptions('target_power', {

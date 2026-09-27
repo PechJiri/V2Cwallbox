@@ -271,20 +271,16 @@ class FlowCardManager {
                         const dynamic = args.dynamic;
                         const device = args.device;
                         const currentSettings = device.getSettings();
-    
+
+                        let mode;
                         if (dynamic === '0') {
-                            await device.setSettings({
-                                dynamic_power_mode: CONSTANTS.DYNAMIC_POWER_MODES.DISABLED
-                            });
+                            mode = CONSTANTS.DYNAMIC_POWER_MODES.DISABLED;
                         } else {
-                            const mode = currentSettings.dynamic_power_mode === CONSTANTS.DYNAMIC_POWER_MODES.DISABLED 
+                            mode = currentSettings.dynamic_power_mode === CONSTANTS.DYNAMIC_POWER_MODES.DISABLED
                                 ? CONSTANTS.DYNAMIC_POWER_MODES.TIMED_ENABLED
                                 : currentSettings.dynamic_power_mode;
-                            
-                            await device.setSettings({
-                                dynamic_power_mode: mode
-                            });
                         }
+                        await device.setDynamicPowerMode(mode);
                         return true;
                     }
                 },
@@ -292,28 +288,21 @@ class FlowCardManager {
                     id: 'set_dynamic_power_mode',
                     handler: async (args) => {
                         const mode = args.DynamicPowerMode;
-                        
-                        await args.device.setSettings({
-                            dynamic_power_mode: mode
-                        });
+                        await args.device.setDynamicPowerMode(mode);
                         return true;
                     }
                 },
                 {
                     id: 'set_min_intensity',
                     handler: async (args) => {
-                        await args.device.setSettings({
-                            min_intensity: args.MinIntensity
-                        });
+                        await args.device.setIntensityLimit('min', args.MinIntensity);
                         return true;
                     }
                 },
                 {
                     id: 'set_max_intensity',
                     handler: async (args) => {
-                        await args.device.setSettings({
-                            max_intensity: args.MaxIntensity
-                        });
+                        await args.device.setIntensityLimit('max', args.MaxIntensity);
                         return true;
                     }
                 },
