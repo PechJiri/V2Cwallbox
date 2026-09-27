@@ -321,6 +321,7 @@
         .state-error { --accent: var(--v2c-red); --accent-soft: var(--v2c-red-soft); }
         .state-fault { --accent: var(--v2c-red); --accent-soft: var(--v2c-red-soft); }
         .state-stale { --accent: var(--v2c-amber); --accent-soft: var(--v2c-amber-soft); }
+        .state-unknown { --accent: var(--v2c-grey); --accent-soft: var(--v2c-grey-soft); }
 
         /* Pulzující dot při charging */
         .state-charging .state-dot {
@@ -429,13 +430,14 @@
             return null;
         }
 
-        // Priority: error > disconnected (no car) > paused > charging > connected (ready)
+        // Missing physical or permission inputs remain unknown instead of implying Ready.
         function classifyState(chargeState, paused, connectionError, physicalCharging, fault) {
             if (connectionError) return 'error';
             if (fault) return 'fault';
             if (chargeState === STATE.DISCONNECTED) return 'disconnected';
-            if (paused) return 'paused';
+            if (paused === true) return 'paused';
             if (physicalCharging === true) return 'charging';
+            if (paused === null || physicalCharging === null) return 'unknown';
             return 'connected';
         }
 
@@ -447,6 +449,7 @@
                 case 'error':        return 'Offline';
                 case 'fault':        return 'Fault';
                 case 'stale':        return 'Unconfirmed';
+                case 'unknown':      return 'Unknown';
                 case 'disconnected':
                 default:             return 'Idle';
             }
@@ -464,11 +467,20 @@
             const svg = button.querySelector('svg');
 
             // Tlačítko má smysl jen když je auto připojené (nebo nabíjí / paused)
-            const shouldShow = kind === 'charging' || kind === 'connected' || kind === 'paused';
+            const permissionKnown = typeof paused === 'boolean';
+            const shouldShow = permissionKnown &&
+                (kind === 'charging' || kind === 'connected' || kind === 'paused');
             button.classList.toggle('visible', shouldShow);
-            button.dataset.desiredPaused = paused ? 'false' : 'true';
-            button.setAttribute('aria-label', paused ? 'Start charging' : 'Pause charging');
+            button.dataset.desiredPaused = permissionKnown ? (paused ? 'false' : 'true') : '';
+            button.setAttribute(
+                'aria-label',
+                permissionKnown ? (paused ? 'Start charging' : 'Pause charging') : 'Charging permission unavailable'
+            );
 
+            if (!permissionKnown) {
+                label.textContent = 'Unavailable';
+                return;
+            }
             if (paused) {
                 label.textContent = 'Resume';
                 svg.innerHTML = ICONS.play;
@@ -479,11 +491,16 @@
         }
 
         function updateUI(status) {
-            const paused = Boolean(status.paused);
-            const chargePower = Number(status.chargePower);
-            const physicalCharging = typeof status.physicalCharging === 'boolean'
-                ? status.physicalCharging
-                : Number.isFinite(chargePower) && chargePower > 0;
+            const paused = typeof status.paused === 'boolean' ? status.paused : null;
+            const chargePower = status.chargePower === null || status.chargePower === undefined || status.chargePower === ''
+                ? null
+                : Number(status.chargePower);
+            const measuredPowerKnown = chargePower !== null && Number.isFinite(chargePower);
+            const physicalCharging = !measuredPowerKnown
+                ? null
+                : typeof status.physicalCharging === 'boolean'
+                    ? status.physicalCharging
+                    : chargePower > 0;
             const kind = classifyState(
                 String(status.chargeState ?? STATE.DISCONNECTED),
                 paused,
@@ -520,8 +537,12 @@
 
         function updateStatusDetails(status, physicalCharging, unconfirmed) {
             const details = [];
-            details.push(physicalCharging ? 'Measured power draw' : 'No measured power draw');
-            details.push(status.paused ? 'Permission paused' : 'Permission enabled');
+            details.push(physicalCharging === null
+                ? 'Measured power unavailable'
+                : physicalCharging ? 'Measured power draw' : 'No measured power draw');
+            details.push(typeof status.paused !== 'boolean'
+                ? 'Permission unknown'
+                : status.paused ? 'Permission paused' : 'Permission enabled');
 
             const evDescription = evStateDescription(status.evState);
             if (evDescription) details.push(evDescription);
@@ -609,6 +630,7 @@
             const button = document.getElementById('controlButton');
             button.addEventListener('click', async () => {
                 if (button.disabled || commandPending) return;
+                if (button.dataset.desiredPaused !== 'true' && button.dataset.desiredPaused !== 'false') return;
                 const desiredPaused = button.dataset.desiredPaused === 'true';
                 commandPending = true;
                 commandEpoch += 1;

@@ -350,3 +350,23 @@ test('a documented primary wallbox fault takes precedence over disconnected and 
     assert.equal(widget.elements.get('stateText').textContent, 'Fault');
     assert.match(widget.elements.get('statusDetails').textContent, /fault: system failure/i);
 });
+
+test('missing permission and power readings render unknown and hide the permission-based action', async () => {
+    const widget = runWidget(async () => makeStatus({
+        paused: null,
+        chargeState: '2',
+        evState: 'plugged_in_charging',
+        chargePower: null,
+        physicalCharging: null,
+        confirmed: true
+    }));
+    await flush();
+
+    assert.equal(widget.elements.get('powerValue').textContent, '—');
+    assert.equal(widget.elements.get('stateText').textContent, 'Unknown');
+    assert.match(widget.elements.get('statusDetails').textContent, /permission unknown/i);
+    assert.match(widget.elements.get('statusDetails').textContent, /measured power unavailable/i);
+    assert.equal(widget.elements.get('controlButton').classList.contains('visible'), false);
+    await widget.elements.get('controlButton').dispatch('click');
+    assert.equal(widget.homey.calls.some((call) => call.method === 'POST'), false);
+});

@@ -231,6 +231,20 @@ test('baseline devices without the Task 4 metadata accessor do not receive inven
     assert.equal(Object.hasOwn(status, 'stale'), false);
 });
 
+test('missing permission and measured-power capabilities remain unknown', async () => {
+    const device = makeDevice('only-wallbox', {
+        evcharger_charging_state: 'plugged_in_charging',
+        measure_charge_energy: 0,
+        measure_connection_error: false
+    });
+
+    const status = await widgetApi.getStatus({ homey: makeHomey([device]), query: {} });
+
+    assert.equal(status.paused, null);
+    assert.equal(status.chargePower, null);
+    assert.equal(status.physicalCharging, null);
+});
+
 test('widget autocomplete returns app pairing keys and the widget no longer uses Homey device-record IDs', async () => {
     const devices = [
         { getName: () => 'Garage', getData: () => ({ id: 'pairing-a' }) },

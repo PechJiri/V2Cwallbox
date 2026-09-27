@@ -106,7 +106,7 @@ async function readStatus(device, { forced = false } = {}) {
         evState,
         chargePower,
         chargeEnergy,
-        paused: chargingPermission === null ? false : !Boolean(chargingPermission),
+        paused: typeof chargingPermission === 'boolean' ? !chargingPermission : null,
         connectionError,
         physicalCharging: isMeasuredPower(chargePower),
         locked,
