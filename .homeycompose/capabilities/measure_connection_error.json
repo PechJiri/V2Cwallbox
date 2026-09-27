@@ -13,8 +13,7 @@
     "pl": "Błąd komunikacji",
     "ru": "Ошибка связи",
     "ko": "통신 오류",
-    "ar": "خطأ في الاتصال",
-    "cs": "Chyba komunikace"
+    "ar": "خطأ في الاتصال"
   },
   "getable": true,
   "setable": false,

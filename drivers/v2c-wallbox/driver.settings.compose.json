@@ -69,8 +69,7 @@
       "pl": "Liczba faz instalacji",
       "ru": "Количество фаз установки",
       "ko": "설치 단계 수",
-      "ar": "عدد مراحل التثبيت",
-      "cs": "Počet fází instalace"
+      "ar": "عدد مراحل التثبيت"
     },
     "hint": {
       "en": "Number of phases the wallbox is connected to. Used to convert between Watts (target_power) and Amperes (V2C Intensity).",
@@ -85,8 +84,7 @@
       "pl": "Liczba faz, do których podłączony jest wallbox. Używane do konwersji między watami (target_power) a amperami (V2C Intensity).",
       "ru": "Количество фаз, к которым подключен wallbox. Используется для преобразования между ваттами (target_power) и амперами (V2C Intensity).",
       "ko": "월박스가 연결된 단계 수. 와트(target_power)와 암페어(V2C Intensity) 간 변환에 사용됩니다.",
-      "ar": "عدد المراحل التي يتصل بها الجدار. تُستخدم للتحويل بين الواط (الطاقة المستهدفة) والأمبير (شدة V2C).",
-      "cs": "Na kolik fází je wallbox zapojen. Používá se pro převod mezi Watty (target_power) a Ampéry (V2C Intensity)."
+      "ar": "عدد المراحل التي يتصل بها الجدار. تُستخدم للتحويل بين الواط (الطاقة المستهدفة) والأمبير (شدة V2C)."
     },
     "value": "3",
     "values": [
@@ -105,8 +103,7 @@
           "pl": "Jednofazowe (1 faza)",
           "ru": "Однофазный (1 фаза)",
           "ko": "단상 (1상)",
-          "ar": "أحادي الطور (1 طور)",
-          "cs": "Jednofázové (1 fáze)"
+          "ar": "أحادي الطور (1 طور)"
         }
       },
       {
@@ -124,8 +121,7 @@
           "pl": "Trójfazowe (3 fazy)",
           "ru": "Трёхфазный (3 фазы)",
           "ko": "삼상 (3상)",
-          "ar": "ثلاثي الطور (3 أطوار)",
-          "cs": "Třífázové (3 fáze)"
+          "ar": "ثلاثي الطور (3 أطوار)"
         }
       }
     ]
@@ -146,8 +142,7 @@
       "pl": "Typ pomiaru napięcia (tylko 3-fazowe)",
       "ru": "Тип измерения напряжения (только 3-фазное)",
       "ko": "전압 측정 유형 (3상 전용)",
-      "ar": "نوع قياس الجهد (للتيار ثلاثي الطور فقط)",
-      "cs": "Typ měření napětí (pouze 3-fázové)"
+      "ar": "نوع قياس الجهد (للتيار ثلاثي الطور فقط)"
     },
     "hint": {
       "en": "How V2C reports installation voltage: Line-to-Neutral ~230V (most common) or Line-to-Line ~400V. Ignored for single-phase installations.",
@@ -162,8 +157,7 @@
       "pl": "Jak V2C raportuje napięcie instalacji: Faza-neutralny ~230V (najczęściej) lub Faza-faza ~400V. Ignorowane dla instalacji jednofazowych.",
       "ru": "Как V2C сообщает напряжение установки: Фаза-нейтраль ~230В (наиболее распространённо) или Фаза-фаза ~400В. Игнорируется для однофазных установок.",
       "ko": "V2C가 설치 전압을 보고하는 방식: 선-중성선 ~230V(가장 일반적) 또는 선-선 ~400V. 단상 설치에서는 무시됩니다.",
-      "ar": "كيف تبلغ V2C عن جهد التركيب: من الخط إلى المحايد ~230 فولت (الأكثر شيوعًا) أو من الخط إلى الخط ~400 فولت. يتم تجاهله في التركيبات أحادية الطور.",
-      "cs": "Jak V2C hlásí napětí instalace: Fáze-neutrál ~230V (nejběžnější) nebo Fáze-fáze ~400V. U jednofázových instalací se ignoruje."
+      "ar": "كيف تبلغ V2C عن جهد التركيب: من الخط إلى المحايد ~230 فولت (الأكثر شيوعًا) أو من الخط إلى الخط ~400 فولت. يتم تجاهله في التركيبات أحادية الطور."
     },
     "value": "line_to_neutral",
     "values": [
@@ -182,8 +176,7 @@
           "pl": "Faza-neutralny (~230V)",
           "ru": "Фаза-нейтраль (~230В)",
           "ko": "선-중성선 (~230V)",
-          "ar": "خط إلى محايد (~230 فولت)",
-          "cs": "Fáze-neutrál (~230V)"
+          "ar": "خط إلى محايد (~230 فولت)"
         }
       },
       {
@@ -201,8 +194,7 @@
           "pl": "Faza-faza (~400V)",
           "ru": "Фаза-фаза (~400В)",
           "ko": "선-선 (~400V)",
-          "ar": "خط إلى خط (~400 فولت)",
-          "cs": "Fáze-fáze (~400V)"
+          "ar": "خط إلى خط (~400 فولت)"
         }
       }
     ]
@@ -211,21 +203,19 @@
     "id": "installation_voltage",
     "type": "dropdown",
     "label": {
-      "en": "Installation Voltage",
-      "cs": "Napětí instalace"
+      "en": "Installation Voltage"
     },
     "hint": {
-      "en": "Nominal installation voltage reported by V2C. Select 220/230/240 V for line-to-neutral or 380/400/415 V for line-to-line.",
-      "cs": "Jmenovité napětí instalace hlášené V2C. Vyberte 220/230/240 V pro napětí mezi fází a nulou nebo 380/400/415 V pro napětí mezi fázemi."
+      "en": "Nominal installation voltage reported by V2C. Select 220/230/240 V for line-to-neutral or 380/400/415 V for line-to-line."
     },
     "value": "230",
     "values": [
-      { "id": "220", "label": { "en": "220 V", "cs": "220 V" } },
-      { "id": "230", "label": { "en": "230 V", "cs": "230 V" } },
-      { "id": "240", "label": { "en": "240 V", "cs": "240 V" } },
-      { "id": "380", "label": { "en": "380 V", "cs": "380 V" } },
-      { "id": "400", "label": { "en": "400 V", "cs": "400 V" } },
-      { "id": "415", "label": { "en": "415 V", "cs": "415 V" } }
+      { "id": "220", "label": { "en": "220 V" } },
+      { "id": "230", "label": { "en": "230 V" } },
+      { "id": "240", "label": { "en": "240 V" } },
+      { "id": "380", "label": { "en": "380 V" } },
+      { "id": "400", "label": { "en": "400 V" } },
+      { "id": "415", "label": { "en": "415 V" } }
     ]
   },
   {

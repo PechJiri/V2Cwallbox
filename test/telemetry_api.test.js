@@ -271,7 +271,7 @@ test('SlaveError labels match the diagnostic enum and its title describes commun
     ));
 
     assert.equal(slaveErrorCapability.title.en, 'Inverter communication state');
-    assert.equal(slaveErrorCapability.title.cs, 'Stav komunikace s měničem');
+    assert.equal(Object.hasOwn(slaveErrorCapability.title, 'cs'), false);
     for (const { id, title } of slaveErrorCapability.values) {
         assert.equal(CONSTANTS.SLAVE_ERROR_DESCRIPTIONS[id], title.en, `SlaveError ${id}`);
     }

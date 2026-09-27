@@ -32,7 +32,7 @@ test('unknown control flags disable controls rather than coercing strings',()=>{
 });
 test('missing error flag is treated as unknown telemetry',()=>{assert.equal(core.normalizeStatus({...base,connectionError:null}).state,'unknown');});
 test('display numbers have one decimal and no undefined or NaN',()=>{
- assert.equal(core.formatMetric(null),'—'); assert.equal(core.formatMetric(7.4),'7.4'); assert.equal(core.formatMetric(12.6,'cs'),'12,6');
+ assert.equal(core.formatMetric(null),'—'); assert.equal(core.formatMetric(7.4),'7.4'); assert.equal(core.formatMetric(12.6,'de'),'12,6');
 });
 test('explicit pause is idempotent if another interface already paused',()=>{
  assert.equal(core.commandFor('pause', core.normalizeStatus({...base,paused:true})),null);

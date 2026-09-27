@@ -35,12 +35,10 @@
       "id": "device_id",
       "type": "autocomplete",
       "label": {
-        "en": "Wallbox",
-        "cs": "Wallbox"
+        "en": "Wallbox"
       },
       "placeholder": {
-        "en": "Search for a wallbox",
-        "cs": "Vyhledejte wallbox"
+        "en": "Search for a wallbox"
       }
     }
   ],

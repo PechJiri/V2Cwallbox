@@ -52,47 +52,14 @@
     "ownerWallbox": "Power controlled directly by the wallbox",
     "ownerUnknown": "Power controller is not confirmed",
     "lastKnown": "Last known values; not a confirmed live reading"
-  },
-  "cs": {
-    "waiting": "Auto nepřipojeno",
-    "ready": "Auto připojeno",
-    "charging": "Nabíjení",
-    "paused": "Pozastaveno",
-    "offline": "Nedostupné",
-    "unknown": "Stav není známý",
-    "loading": "Načítání…",
-    "stale": "Neověřeno",
-    "fault": "Porucha",
-    "faultF": "Porucha systému / únik proudu",
-    "faultE": "Chyba CP / uzemnění",
-    "faultD": "Vyžadováno větrání",
-    "selection": "Vyberte wallbox",
-    "power": "Výkon",
-    "energy": "Nabito",
-    "pause": "Pozastavit",
-    "resume": "Povolit nabíjení",
-    "refresh": "Zkusit znovu",
-    "busy": "Aktualizuji…",
-    "idle": "Připraveno na další cestu",
-    "loadingNote": "Načítám stav wallboxu",
-    "requestFailed": "Příkaz selhal",
-    "awaiting": "Neověřeno",
-    "targetRequired": "Chybí cíl",
-    "requestFailedDetail": "Příkaz selhal nebo jeho výsledek není známý. Obnovit stav; příkaz se nebude opakovat.",
-    "awaitingDetail": "Příkaz byl odeslán, ale požadovaný účinek není potvrzen. Obnovit stav; příkaz se nebude opakovat.",
-    "targetRequiredDetail": "Homey vyžaduje kladný dosažitelný cílový výkon. Nastavte jej v ovládání zařízení. Toto tlačítko pouze obnoví stav.",
-    "ownerHomey": "Výkon řídí Homey",
-    "ownerWallbox": "Výkon řídí přímo wallbox",
-    "ownerUnknown": "Řízení výkonu není ověřeno",
-    "lastKnown": "Poslední známé hodnoty; neověřené aktuální měření"
   }
 };
  function svg(name) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(icons[name]||icons.unknown)+'</svg>'; }
  let counter=0;
  function create(container, options) {
   const o=options||{};const id='v2c-'+(++counter);let disposed=false,busy=false,visible=true,manualMotion=true,feedback=null;
-  const locale=o.locale==='cs'?'cs':'en';
-  function t(key){ const fallback=strings[locale][key]||strings.en[key]||key; return o.translate ? o.translate(key,fallback) : fallback; }
+  const locale='en';
+  function t(key){ const fallback=strings.en[key]||key; return o.translate ? o.translate(key,fallback) : fallback; }
   const asset=(name)=>o.assets&&o.assets[name] ? o.assets[name] : (o.assetBase||'./assets/')+name;
   // Plate and vector coordinates are one shared scene-space; no floating line over an unrelated image.
   const cable="M158.00 238.00 L158.46 243.31 L158.98 248.54 L159.55 253.71 L160.18 258.80 L160.87 263.81 L161.62 268.74 L162.44 273.59 L163.32 278.35 L164.27 283.03 L165.30 287.62 L166.39 292.11 L167.57 296.51 L168.82 300.82 L170.16 305.02 L171.58 309.12 L173.08 313.12 L174.68 317.01 L176.37 320.79 L178.15 324.46 L180.02 328.02 L181.98 331.45 L183.98 334.77 L186.04 337.97 L188.14 341.05 L190.28 344.00 L192.46 346.82 L194.67 349.50 L196.90 352.06 L199.16 354.48 L201.43 356.76 L203.71 358.90 L206.00 360.89 L208.29 362.74 L210.57 364.44 L212.84 365.99 L215.10 367.39 L217.33 368.64 L219.55 369.72 L221.73 370.64 L223.89 371.40 L226.02 372.00 L226.02 372.00 L229.00 373.01 L231.76 373.71 L234.32 374.11 L236.74 374.20 L239.02 374.00 L241.21 373.50 L243.33 372.73 L245.40 371.67 L247.44 370.34 L249.48 368.74 L251.53 366.88 L253.60 364.76 L255.73 362.38 L257.91 359.77 L260.16 356.91 L262.50 353.81 L264.93 350.49 L267.47 346.94 L270.12 343.17 L272.89 339.19 L275.80 335.00 L278.84 330.61 L282.03 326.03 L285.37 321.25 L288.88 316.28 L292.54 311.13 L296.38 305.81 L300.40 300.32 L304.59 294.67 L308.98 288.85 L313.48 282.88 L317.96 276.77 L322.41 270.51 L326.82 264.12 L331.20 257.60 L335.56 250.95 L339.89 244.17 L344.19 237.29 L348.48 230.29 L352.75 223.20 L357.00 216.00 L366.00 207.00";
