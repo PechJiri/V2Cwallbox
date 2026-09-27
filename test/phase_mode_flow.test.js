@@ -440,6 +440,10 @@ test('production polling tolerates API failures by default but strict refresh re
     device.lastResponse = null;
     device.lastResponseTime = null;
     device._consecutivePollErrors = 0;
+    const capabilities = { measure_connection_error: false };
+    device.getCapabilityValue = (id) => capabilities[id];
+    device.setCapabilityValue = async (id, value) => { capabilities[id] = value; };
+    device.flowCardManager = { triggerConnectionStateChanged: async () => {} };
     device.energyManager = { resetMonthlyAndYearlyDataIfNeeded: async () => {} };
     device.v2cApi = {
         getData: async () => { throw new Error('wallbox unavailable'); },
@@ -448,10 +452,12 @@ test('production polling tolerates API failures by default but strict refresh re
     };
 
     await assert.doesNotReject(() => device.getProductionData());
+    assert.equal(capabilities.measure_connection_error, true);
     await assert.rejects(
         () => device.getProductionData({ throwOnError: true }),
         /wallbox unavailable/
     );
+    assert.equal(capabilities.measure_connection_error, true);
 });
 
 test('local-only voltage and logging settings use one tolerant refresh while offline', async () => {

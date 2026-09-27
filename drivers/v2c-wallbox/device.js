@@ -30,6 +30,10 @@ class MyDevice extends Device {
     dataFetchInterval = null;
     _currentInterval = CONSTANTS.INTERVALS.DISCONNECTED;
     _consecutivePollErrors = 0;
+    _productionDataRequest = null;
+    _forcedProductionDataRequest = null;
+    _lastSuccessfulUpdate = null;
+    _statusStale = true;
     // Internal V2C state cache, including documented primary faults. The custom raw-state
     // capability preserves values that the native Homey EV state enum cannot represent.
     _lastChargeState = CONSTANTS.CHARGE_STATES.DISCONNECTED;
@@ -47,7 +51,6 @@ class MyDevice extends Device {
                 await this.addCapability('measure_connection_error');
             }
             await this.setCapabilityValue('measure_connection_error', false);
-            this._lastSuccessfulUpdate = Date.now();
 
             // Úklid orphaned capabilities z neúspěšných migrací v pre-release buildech
             await this._cleanupOrphanedCapabilities();
@@ -609,10 +612,65 @@ class MyDevice extends Device {
         return Math.min(backoff, CONSTANTS.INTERVALS.BACKOFF_MAX);
     }
     
-    async getProductionData({ throwOnError = false } = {}) {
+    async getProductionData({ force = false, throwOnError = false } = {}) {
+        if (force) {
+            if (this._forcedProductionDataRequest) {
+                return this._forcedProductionDataRequest;
+            }
+
+            const pendingRequest = this._productionDataRequest;
+            const forcedRequest = this._refreshProductionDataAfter(pendingRequest, throwOnError);
+            this._forcedProductionDataRequest = forcedRequest;
+            forcedRequest.then(
+                () => {
+                    if (this._forcedProductionDataRequest === forcedRequest) {
+                        this._forcedProductionDataRequest = null;
+                    }
+                },
+                () => {
+                    if (this._forcedProductionDataRequest === forcedRequest) {
+                        this._forcedProductionDataRequest = null;
+                    }
+                }
+            );
+            return forcedRequest;
+        }
+
+        if (this._productionDataRequest) {
+            return this._productionDataRequest;
+        }
+        return this._startProductionDataRequest({ throwOnError });
+    }
+
+    async _refreshProductionDataAfter(pendingRequest, throwOnError) {
+        if (pendingRequest) {
+            try {
+                await pendingRequest;
+            } catch (error) {
+                // The forced refresh still needs a new sample if the older poll failed.
+            }
+        }
+        return this._startProductionDataRequest({ force: true, throwOnError });
+    }
+
+    _startProductionDataRequest(options) {
+        const request = this._fetchProductionData(options);
+        this._productionDataRequest = request;
+        request.then(
+            () => {
+                if (this._productionDataRequest === request) this._productionDataRequest = null;
+            },
+            () => {
+                if (this._productionDataRequest === request) this._productionDataRequest = null;
+            }
+        );
+        return request;
+    }
+
+    async _fetchProductionData({ force = false, throwOnError = false } = {}) {
         try {
             const now = Date.now();
-            if (this.lastResponse && this.lastResponseTime && (now - this.lastResponseTime < CONSTANTS.API.TIMEOUT)) {
+            if (!force && this.lastResponse && this.lastResponseTime && (now - this.lastResponseTime < CONSTANTS.API.CACHE_TTL)) {
                 this.logger.debug('Použita cache data');
                 return this.dataValidator.validateAndProcessData(this.lastResponse);
             }
@@ -634,9 +692,6 @@ class MyDevice extends Device {
                     this._consecutivePollErrors = 0;
                 }
 
-                this.lastResponse = baseSession;
-                this.lastResponseTime = now;
-
                 const previousState = await this.getStoreValue('previousChargeState') || CONSTANTS.CHARGE_STATES.DISCONNECTED;
                 const currentState = deviceData.chargeState;
                 const chargeEnergy = await this.energyManager.processEnergyData(deviceData, previousState, currentState);
@@ -649,8 +704,12 @@ class MyDevice extends Device {
                     await this.setCapabilityValue('measure_connection_error', false);
                     await this.flowCardManager.triggerConnectionStateChanged('ok');
                 }
-    
-                this._lastSuccessfulUpdate = now;
+
+                const successfulAt = Date.now();
+                this.lastResponse = baseSession;
+                this.lastResponseTime = successfulAt;
+                this._lastSuccessfulUpdate = successfulAt;
+                this._statusStale = false;
     
                 if (!this.getAvailable()) {
                     await this.setAvailable();
@@ -658,9 +717,10 @@ class MyDevice extends Device {
             } catch (error) {
                 // Increment error counteru pro exponential backoff pollingu
                 this._consecutivePollErrors++;
+                this._statusStale = true;
 
+                const hadError = await this.getCapabilityValue('measure_connection_error');
                 if (error.message === 'API_MAX_ERRORS_EXCEEDED') {
-                    const hadError = await this.getCapabilityValue('measure_connection_error');
                     if (!hadError) {
                         this.logger.error('API není dostupné po více pokusech', {
                             errorCount: this.v2cApi.getErrorCount(),
@@ -668,8 +728,6 @@ class MyDevice extends Device {
                             pollBackoffCount: this._consecutivePollErrors
                         });
 
-                        await this.setCapabilityValue('measure_connection_error', true);
-                        await this.flowCardManager.triggerConnectionStateChanged('error');
                     }
                 } else {
                     this.logger.debug('Dočasná chyba API', {
@@ -682,6 +740,10 @@ class MyDevice extends Device {
                     if (this.lastResponse) {
                         this.logger.debug('Použita poslední známá data kvůli chybě API');
                     }
+                }
+                if (!hadError) {
+                    await this.setCapabilityValue('measure_connection_error', true);
+                    await this.flowCardManager.triggerConnectionStateChanged('error');
                 }
                 if (throwOnError) {
                     throw error;
@@ -813,6 +875,17 @@ class MyDevice extends Device {
         return {
             state: Number(this._lastChargeState),
             description
+        };
+    }
+
+    async getStatusMetadata() {
+        return {
+            lastUpdated: Number.isFinite(this._lastSuccessfulUpdate)
+                ? this._lastSuccessfulUpdate
+                : null,
+            stale: this._statusStale !== false,
+            connectionError: Boolean(await this.getCapabilityValue('measure_connection_error')),
+            fault: this.getFaultDescriptor()
         };
     }
 
