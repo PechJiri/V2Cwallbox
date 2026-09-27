@@ -857,6 +857,9 @@ class MyDevice extends Device {
                 ? Math.max(0, deviceData.chargePower)
                 : 0;
             const evChargerState = this._mapEvChargerState(currentState, deviceData.paused);
+            const hasSelectableIntensity = Number.isInteger(deviceData.intensity) &&
+                deviceData.intensity >= CONSTANTS.DEVICE.INTENSITY.MIN &&
+                deviceData.intensity <= CONSTANTS.DEVICE.INTENSITY.MAX;
 
             await Promise.all([
                 this.setCapabilityValue('measure_charge_power', deviceData.chargePower),
@@ -890,7 +893,11 @@ class MyDevice extends Device {
                 safeSetNullable('firmware_version', deviceData.firmwareVersion),
                 safeSetNullable('signal_status', deviceData.signalStatus),
                 safeSetNullable('timer_state', deviceData.timer_state),
-                this.setCapabilityValue('set_intensity', deviceData.intensity.toString())
+                // Intensity 0 is valid paused/dynamic telemetry, but it is not a selectable
+                // value for this settable 6–32 A picker. Keep the last user-selected setting.
+                hasSelectableIntensity
+                    ? this.setCapabilityValue('set_intensity', deviceData.intensity.toString())
+                    : Promise.resolve()
             ]);
 
             // Commit internal charge state only after the full sample publishes. It also drives

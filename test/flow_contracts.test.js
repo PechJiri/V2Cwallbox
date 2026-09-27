@@ -126,31 +126,41 @@ test('Flow pause action routes through the selected args.device control API', as
     assert.deepEqual(calls, [['selected', true]]);
 });
 
-test('Flow manual resume applies the selected Homey target current before Paused=0', async () => {
+test('Flow manual Resume restores retained current with a zero Homey target', async () => {
     const { homey, listeners } = createFlowHarness();
-    const selected = createSelectedControlDevice();
+    const selected = createSelectedControlDevice({ targetPower: 0 });
+    selected.capabilities.measure_intensity = 16;
     const manager = new FlowCardManager(homey, {});
     await manager.initialize();
 
     await listeners.get('set_paused')({ paused: '0', device: selected.device });
 
-    const intensityIndex = selected.calls.findIndex((call) => call[0] === 'intensity');
-    const resumeIndex = selected.calls.findIndex((call) => call[0] === 'parameter' && call[1] === 'Paused' && call[2] === '0');
-    assert.ok(intensityIndex >= 0, 'Flow resume must apply the accepted Homey target');
-    assert.ok(resumeIndex > intensityIndex, 'Flow must wait for Intensity before unpausing');
+    assert.deepEqual(selected.calls.filter((call) => call[0] === 'parameter'), [['parameter', 'Paused', '0']]);
+    assert.equal(selected.calls.some((call) => call[0] === 'intensity'), false);
+    assert.equal(selected.capabilities.target_power, 0);
+    assert.equal(selected.capabilities.target_power_mode, 'homey');
+    assert.equal(selected.capabilities.measure_intensity, 16);
+    assert.equal(selected.capabilities.evcharger_charging, true);
 });
 
-test('Flow manual resume propagates an Intensity failure without unpausing', async () => {
+test('Flow manual Resume propagates a Paused write failure without reporting charging', async () => {
     const { homey, listeners } = createFlowHarness();
-    const selected = createSelectedControlDevice({ failIntensity: true });
+    const selected = createSelectedControlDevice();
+    selected.device.v2cApi.setParameter = async (parameter, value) => {
+        selected.calls.push(['parameter', parameter, value]);
+        if (parameter === 'Paused' && value === '0') throw new Error('Resume parameter write failed');
+    };
     const manager = new FlowCardManager(homey, {});
     await manager.initialize();
 
     await assert.rejects(
         () => listeners.get('set_paused')({ paused: '0', device: selected.device }),
-        /Intensity write failed/
+        /Resume parameter write failed/
     );
-    assert.equal(selected.calls.some((call) => call[0] === 'parameter' && call[1] === 'Paused' && call[2] === '0'), false);
+    assert.equal(selected.calls.some((call) => call[0] === 'parameter' && call[1] === 'Paused' && call[2] === '0'), true);
+    assert.equal(selected.calls.some((call) => call[0] === 'intensity'), false);
+    assert.equal(selected.calls.some((call) => call[0] === 'capability' && call[1] === 'evcharger_charging' && call[2] === true), false);
+    assert.equal(selected.capabilities.evcharger_charging, false);
 });
 
 test('power threshold conditions use the Flow power argument and selected device', async () => {
