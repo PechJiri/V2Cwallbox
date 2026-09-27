@@ -864,7 +864,7 @@ test('set_energy_counter keeps existing arguments and adds lifetime correction',
                     }
                 }
             }),
-            /energie/
+            /Invalid energy value/
         );
     }
     assert.deepEqual(calls, [42.5]);

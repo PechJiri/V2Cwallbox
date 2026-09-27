@@ -5,7 +5,19 @@
       "check": "Verifica connessione",
       "ip": "Indirizzo IP",
       "connection_ok": "Connessione riuscita",
-      "connection_error": "Connessione non possibile"
+      "connection_error": "Connessione non possibile",
+      "invalid_ip": "Indirizzo IP non valido — sono consentiti solo indirizzi IPv4 di reti private"
+    }
+  },
+  "settings": {
+    "title": "Impostazioni V2C Wallbox"
+  },
+  "repair": {
+    "v2cwallbox": {
+      "title": "Aggiorna l'indirizzo IP di V2C Wallbox",
+      "save": "Salva",
+      "saved": "Indirizzo IP salvato correttamente.",
+      "hint": "Cambia l'IP se la wallbox si è spostata a un altro indirizzo della tua rete. La cronologia del dispositivo, le impostazioni e i Flows vengono mantenuti."
     }
   }
 }
