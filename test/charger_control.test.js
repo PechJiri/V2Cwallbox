@@ -203,6 +203,58 @@ test('manual pause preserves desired target, Homey ownership, and timer state', 
     assert.equal(calls.some((call) => call[0] === 'dynamic'), false);
 });
 
+test('public Homey resume applies the accepted target before Paused=0', async () => {
+    const { device, calls } = createDevice({
+        capabilities: { evcharger_charging: false }
+    });
+
+    await device.setChargingPaused(false);
+
+    const intensityIndex = calls.findIndex((call) => call[0] === 'intensity');
+    const resumeIndex = calls.findIndex((call) => call[0] === 'parameter' && call[1] === 'Paused' && call[2] === '0');
+    assert.ok(intensityIndex >= 0, 'the public Homey resume must apply the accepted target');
+    assert.ok(resumeIndex > intensityIndex, 'the public Homey resume must wait for Intensity');
+});
+
+test('public Homey resume leaves the charger paused and provenance untouched if Intensity fails', async () => {
+    const { device, calls } = createDevice({
+        capabilities: { evcharger_charging: false },
+        failIntensity: true
+    });
+
+    await assert.rejects(() => device.setChargingPaused(false), /Intensity write failed/);
+    assert.equal(calls.some((call) => call[0] === 'parameter' && call[1] === 'Paused' && call[2] === '0'), false);
+    assert.equal(calls.some((call) => call[0] === 'store'), false);
+});
+
+test('public Homey resume rejects zero, invalid, and unachievable targets without starting', async () => {
+    for (const power of [0, -1000, Number.NaN, Number.POSITIVE_INFINITY, 100]) {
+        const { device, calls } = createDevice({
+            capabilities: { target_power: power, evcharger_charging: false }
+        });
+
+        await assert.rejects(
+            () => device.setChargingPaused(false),
+            /positive achievable Homey target required/
+        );
+        assert.equal(calls.some((call) => call[0] === 'intensity'), false);
+        assert.equal(calls.some((call) => call[0] === 'parameter' && call[1] === 'Paused' && call[2] === '0'), false);
+        assert.equal(calls.some((call) => call[0] === 'store'), false);
+    }
+});
+
+test('public V2C manual resume does not write Homey Intensity or change ownership', async () => {
+    const { device, calls } = createDevice({
+        capabilities: { target_power_mode: 'v2c_timed_on', target_power: 0, evcharger_charging: false }
+    });
+
+    await device.setChargingPaused(false);
+
+    assert.equal(calls.some((call) => call[0] === 'intensity'), false);
+    assert.deepEqual(calls.filter((call) => call[0] === 'parameter'), [['parameter', 'Paused', '0']]);
+    assert.equal(device.getCapabilityValue('target_power_mode'), 'v2c_timed_on');
+});
+
 test('a zero Homey target is released on handback only when its idle pause provenance was persisted', async () => {
     const { device, calls, listener } = createDevice();
     assert.equal(typeof device.applyChargingChanges, 'function');

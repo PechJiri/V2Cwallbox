@@ -1,8 +1,70 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const Module = require('node:module');
 const test = require('node:test');
 const FlowCardManager = require('../drivers/v2c-wallbox/FlowCardManager');
+
+function loadDeviceWithHomeyStub() {
+    const originalLoad = Module._load;
+    Module._load = function patchedLoad(request, parent, isMain) {
+        if (request === 'homey') return { Device: class Device {} };
+        return originalLoad.call(this, request, parent, isMain);
+    };
+    try {
+        delete require.cache[require.resolve('../drivers/v2c-wallbox/device')];
+        return require('../drivers/v2c-wallbox/device');
+    } finally {
+        Module._load = originalLoad;
+    }
+}
+
+function createSelectedControlDevice({ targetPower = 6000, failIntensity = false } = {}) {
+    const MyDevice = loadDeviceWithHomeyStub();
+    const device = Object.create(MyDevice.prototype);
+    const calls = [];
+    const capabilities = {
+        target_power_mode: 'homey',
+        target_power: targetPower,
+        evcharger_charging: false,
+        min_intensity: 6,
+        max_intensity: 32,
+        measure_voltage_installation: 230
+    };
+    const store = new Map();
+    const settings = {
+        phase_mode: '3',
+        voltage_type: 'line_to_neutral',
+        installation_voltage: '230',
+        min_intensity: 6,
+        max_intensity: 32
+    };
+    device.getCapabilityValue = (id) => capabilities[id];
+    device.setCapabilityValue = async (id, value) => {
+        calls.push(['capability', id, value]);
+        capabilities[id] = value;
+    };
+    device.getSetting = (id) => settings[id];
+    device.getSettings = () => ({ ...settings });
+    device.setSettings = async (values) => Object.assign(settings, values);
+    device.getStoreValue = async (key) => store.get(key);
+    device.setStoreValue = async (key, value) => {
+        calls.push(['store', key, value]);
+        store.set(key, value);
+    };
+    device.v2cApi = {
+        setParameter: async (parameter, value) => calls.push(['parameter', parameter, value]),
+        setIntensity: async (value) => {
+            calls.push(['intensity', value]);
+            if (failIntensity) throw new Error('Intensity write failed');
+        },
+        setDynamic: async (value) => calls.push(['dynamic', value]),
+        setDynamicPowerMode: async (value) => calls.push(['dynamicPowerMode', value]),
+        setMinIntensity: async (value) => calls.push(['minIntensity', value]),
+        setMaxIntensity: async (value) => calls.push(['maxIntensity', value])
+    };
+    return { device, calls, capabilities };
+}
 
 function createFlowHarness() {
     const cards = new Map();
@@ -43,6 +105,33 @@ test('Flow pause action routes through the selected args.device control API', as
     await listeners.get('set_paused')({ paused: '1', device: selected });
 
     assert.deepEqual(calls, [['selected', true]]);
+});
+
+test('Flow manual resume applies the selected Homey target current before Paused=0', async () => {
+    const { homey, listeners } = createFlowHarness();
+    const selected = createSelectedControlDevice();
+    const manager = new FlowCardManager(homey, {});
+    await manager.initialize();
+
+    await listeners.get('set_paused')({ paused: '0', device: selected.device });
+
+    const intensityIndex = selected.calls.findIndex((call) => call[0] === 'intensity');
+    const resumeIndex = selected.calls.findIndex((call) => call[0] === 'parameter' && call[1] === 'Paused' && call[2] === '0');
+    assert.ok(intensityIndex >= 0, 'Flow resume must apply the accepted Homey target');
+    assert.ok(resumeIndex > intensityIndex, 'Flow must wait for Intensity before unpausing');
+});
+
+test('Flow manual resume propagates an Intensity failure without unpausing', async () => {
+    const { homey, listeners } = createFlowHarness();
+    const selected = createSelectedControlDevice({ failIntensity: true });
+    const manager = new FlowCardManager(homey, {});
+    await manager.initialize();
+
+    await assert.rejects(
+        () => listeners.get('set_paused')({ paused: '0', device: selected.device }),
+        /Intensity write failed/
+    );
+    assert.equal(selected.calls.some((call) => call[0] === 'parameter' && call[1] === 'Paused' && call[2] === '0'), false);
 });
 
 test('power threshold conditions use the Flow power argument and selected device', async () => {
