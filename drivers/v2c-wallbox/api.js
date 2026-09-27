@@ -39,27 +39,29 @@ class v2cAPI {
     }
 
     async initializeSession() {
-        try {
-            const url = `http://${this.ip}${CONSTANTS.API.ENDPOINTS.REALTIME}`;
-            this.logger.debug('Inicializace session', { url });
+        return this._serialized(async () => {
+            try {
+                const url = `http://${this.ip}${CONSTANTS.API.ENDPOINTS.REALTIME}`;
+                this.logger.debug('Inicializace session', { url });
 
-            const response = await fetch(url, { 
-                signal: AbortSignal.timeout(CONSTANTS.API.TIMEOUT)
-            });
-            
-            const responseData = await response.json();
-            this.logger.debug('Odpověď z inicializace session', { responseData });
+                const response = await fetch(url, {
+                    signal: AbortSignal.timeout(CONSTANTS.API.TIMEOUT)
+                });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const responseData = await response.json();
+                this.logger.debug('Odpověď z inicializace session', { responseData });
+
+                this.logger.log('Session úspěšně inicializována', { data: responseData });
+                return true;
+            } catch (error) {
+                this.logger.error('Selhala inicializace session', error, { ip: this.ip });
+                throw error;
             }
-
-            this.logger.log('Session úspěšně inicializována', { data: responseData });
-            return true;
-        } catch (error) {
-            this.logger.error('Selhala inicializace session', error, { ip: this.ip });
-            throw error;
-        }
+        });
     }
 
     async getData() {
@@ -79,9 +81,17 @@ class v2cAPI {
                 signal: AbortSignal.timeout(CONSTANTS.API.TIMEOUT)
             });
 
-            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
 
-            // Reset počítadla chyb při úspěšném požadavku
+            const data = await response.json();
+            const processedData = this.validator.validateAndProcessData(data);
+            if (!processedData) {
+                throw new Error('Invalid V2C telemetry snapshot');
+            }
+
+            // Reset only when the body contains a valid telemetry snapshot.
             if (this._apiErrorCount > 0) {
                 this.logger.debug(`Reset počítadla chyb z ${this._apiErrorCount} na 0`);
                 this._apiErrorCount = 0;
@@ -99,7 +109,7 @@ class v2cAPI {
                     throw new Error('API_MAX_ERRORS_EXCEEDED');
                 }
                 
-                throw new Error('API timeout - zařízení neodpovědělo včas');
+                throw new Error('API timeout - device did not respond in time');
             }
 
             this._apiErrorCount++;
@@ -119,7 +129,7 @@ class v2cAPI {
             }
     
             this.logger.error('Selhalo načtení dat', error);
-            throw new Error(`Načtení dat selhalo: ${error.message}`);
+            throw new Error(`Failed to load data: ${error.message}`);
         }
     }
 
@@ -213,7 +223,7 @@ class v2cAPI {
 
     async setIntensity(intensity) {
         if (intensity < CONSTANTS.DEVICE.INTENSITY.MIN || intensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
-            throw new Error(`Intensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
+            throw new Error(`Intensity must be between ${CONSTANTS.DEVICE.INTENSITY.MIN} and ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
         }
         return this.setParameter('Intensity', intensity);
     }
@@ -230,14 +240,14 @@ class v2cAPI {
     // Nové SET metody
     async setMinIntensity(minIntensity) {
         if (minIntensity < CONSTANTS.DEVICE.INTENSITY.MIN || minIntensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
-            throw new Error(`MinIntensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
+            throw new Error(`MinIntensity must be between ${CONSTANTS.DEVICE.INTENSITY.MIN} and ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
         }
         return this.setParameter('MinIntensity', minIntensity);
     }
 
     async setMaxIntensity(maxIntensity) {
         if (maxIntensity < CONSTANTS.DEVICE.INTENSITY.MIN || maxIntensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
-            throw new Error(`MaxIntensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
+            throw new Error(`MaxIntensity must be between ${CONSTANTS.DEVICE.INTENSITY.MIN} and ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
         }
         return this.setParameter('MaxIntensity', maxIntensity);
     }

@@ -4,6 +4,7 @@ const { Device } = require('homey');
 const { v2cAPI } = require('./api');
 const FlowCardManager = require('./FlowCardManager');
 const PowerCalculator = require('../../lib/power_calculator');
+const ChargerControl = require('../../lib/ChargerControl');
 const DataValidator = require('../../lib/DataValidator');
 const Logger = require('../../lib/Logger');
 const EnergyManager = require('../../lib/EnergyManager');
@@ -29,9 +30,12 @@ class MyDevice extends Device {
     dataFetchInterval = null;
     _currentInterval = CONSTANTS.INTERVALS.DISCONNECTED;
     _consecutivePollErrors = 0;
-    // Interní cache V2C stavu ('0'/'1'/'2'). Už není exponováno jako Homey capability
-    // (nahrazeno systémovou evcharger_charging_state). Potřeba pro polling interval
-    // a pro runtime handlery deprekovaných flow karet.
+    _productionDataRequest = null;
+    _forcedProductionDataRequest = null;
+    _lastSuccessfulUpdate = null;
+    _statusStale = true;
+    // Internal V2C state cache, including documented primary faults. The custom raw-state
+    // capability preserves values that the native Homey EV state enum cannot represent.
     _lastChargeState = CONSTANTS.CHARGE_STATES.DISCONNECTED;
 
     async onInit() {
@@ -47,7 +51,6 @@ class MyDevice extends Device {
                 await this.addCapability('measure_connection_error');
             }
             await this.setCapabilityValue('measure_connection_error', false);
-            this._lastSuccessfulUpdate = Date.now();
 
             // Úklid orphaned capabilities z neúspěšných migrací v pre-release buildech
             await this._cleanupOrphanedCapabilities();
@@ -90,7 +93,7 @@ class MyDevice extends Device {
             if (!ip) {
                 this.logger.error('IP adresa není nastavena');
                 await this.setCapabilityValue('measure_connection_error', true);
-                return this.setUnavailable('IP adresa není nastavena');
+                return this.setUnavailable('V2C IP address is not configured');
             }
 
             const ipCheck = validateWallboxIP(ip);
@@ -108,7 +111,7 @@ class MyDevice extends Device {
             } catch (error) {
                 this.logger.error('Chyba při inicializaci V2C API', error);
                 await this.setCapabilityValue('measure_connection_error', true);
-                return this.setUnavailable('Chyba při inicializaci API');
+                return this.setUnavailable('V2C API initialization failed');
             }
     
             // Zúžení rozsahu systémové capability target_power podle phase_mode settingu
@@ -314,7 +317,7 @@ class MyDevice extends Device {
 
             // Validace
             if (intensity < 6 || intensity > 32) {
-                throw new Error('Intensity musí být mezi 6 a 32 A');
+                throw new Error('Intensity must be between 6 and 32 A');
             }
 
             // API volání
@@ -333,115 +336,140 @@ class MyDevice extends Device {
         // Debounce 500 ms dle doporučení docs.
         this.registerMultipleCapabilityListener(
             ['target_power', 'target_power_mode', 'evcharger_charging'],
-            async (values) => {
-                const modeChanged = values.target_power_mode !== undefined;
-                const powerChanged = values.target_power !== undefined;
-                const chargingChanged = values.evcharger_charging !== undefined;
-
-                const mode = values.target_power_mode
-                    ?? this.getCapabilityValue('target_power_mode')
-                    ?? CONSTANTS.TARGET_POWER_MODES.HOMEY;
-                const power = values.target_power
-                    ?? this.getCapabilityValue('target_power')
-                    ?? 0;
-                const charging = values.evcharger_charging
-                    ?? this.getCapabilityValue('evcharger_charging')
-                    ?? true;
-
-                this.logger.debug('target_power/mode/charging listener', {
-                    values, effectiveMode: mode, effectivePower: power, effectiveCharging: charging
-                });
-
-                // 1) Přepnutí módu → Dynamic + (volitelně) DynamicPowerMode
-                if (modeChanged) {
-                    if (mode === CONSTANTS.TARGET_POWER_MODES.HOMEY) {
-                        await this.v2cApi.setDynamic('0');
-                    } else {
-                        const v2cMode = CONSTANTS.TARGET_MODE_TO_V2C[mode];
-                        if (!v2cMode) {
-                            throw new Error(`Neznámý target_power_mode: ${mode}`);
-                        }
-                        await this.v2cApi.setDynamic('1');
-                        await this.v2cApi.setDynamicPowerMode(v2cMode);
-                    }
-                }
-
-                // 2) evcharger_charging (samostatná změna — user pause/resume) se projevuje vždy
-                if (chargingChanged) {
-                    await this.v2cApi.setParameter('Paused', charging ? '0' : '1');
-                }
-
-                // 3) V 'device' režimu V2C ignoruje Intensity — target_power nepropagujeme
-                if (mode !== CONSTANTS.TARGET_POWER_MODES.HOMEY) {
-                    return;
-                }
-
-                // 4) Aplikace target_power (při změně hodnoty nebo při přepnutí do homey módu).
-                //    _applyTargetPower si sama řídí Paused flag (0 → pauza, >0 → nabíjet).
-                if (powerChanged || modeChanged) {
-                    await this._applyTargetPower(power);
-                }
-            },
+            async (values) => this.applyChargingChanges(values),
             500
         );
     }
 
-    async _applyTargetPower(watts) {
-        // target_power === 0 znamená idle — pauza nabíjení přes V2C Paused flag.
-        // evcharger_charging capability se aktualizuje až polling cyclem z V2C dat.
-        if (!watts || watts <= 0) {
-            this.logger.debug('target_power = 0 → pauza nabíjení');
-            await this.v2cApi.setParameter('Paused', '1');
-            return;
+    _getChargerControl() {
+        if (!this.chargerControl) {
+            this.chargerControl = new ChargerControl(this);
         }
-
-        const phaseMode = this.getSetting('phase_mode') || '3';
-        const voltageType = this.getSetting('voltage_type') || 'line_to_neutral';
-        const voltage = this.getCapabilityValue('measure_voltage_installation') || 230;
-        // V2C má vlastní MaxIntensity (z API) i uživatelský setting max_intensity.
-        // Oba mohou být nižší než konstantní MAX 32A — bereme nejnižší.
-        const settingMax = this.getSetting('max_intensity') || CONSTANTS.DEVICE.INTENSITY.MAX;
-        const capMax = this.getCapabilityValue('max_intensity') || CONSTANTS.DEVICE.INTENSITY.MAX;
-        const maxIntensity = Math.min(settingMax, capMax, CONSTANTS.DEVICE.INTENSITY.MAX);
-
-        const intensity = PowerCalculator.calculateCurrent(
-            watts,
-            phaseMode,
-            voltage,
-            voltageType,
-            maxIntensity,
-            CONSTANTS.ROUNDING_TYPES.FLOOR
-        );
-
-        this.logger.debug('Aplikuji target_power', {
-            watts, phaseMode, voltage, maxIntensity, intensity
-        });
-
-        await this.v2cApi.setParameter('Paused', '0');
-        await this.v2cApi.setIntensity(intensity);
+        return this.chargerControl;
     }
 
-    async _applyCapabilityOptionsForPhaseMode(phaseModeOverride = null) {
-        // Zúží rozsah target_power capability podle počtu fází.
-        // Používáme konstantní referenční napětí 230 V (kolísání V se neřeší,
-        // capabilitiesOptions je expensive operation dle docs).
-        const phaseMode = phaseModeOverride || this.getSetting('phase_mode') || '3';
-        const V_REF = 230;
-        const phaseFactor = phaseMode === '1' ? 1 : 3;
+    async setChargingPaused(paused) {
+        return this._getChargerControl().setChargingPaused(paused);
+    }
 
-        const max = CONSTANTS.DEVICE.INTENSITY.MAX * V_REF * phaseFactor;
-        const excludeMax = CONSTANTS.DEVICE.INTENSITY.MIN * V_REF * phaseFactor;
-        const step = phaseMode === '1' ? 230 : 690;
+    async applyChargingChanges(values) {
+        return this._getChargerControl().applyChargingChanges(values);
+    }
 
-        try {
-            await this.setCapabilityOptions('target_power', {
+    async setDynamicPowerMode(mode) {
+        return this._getChargerControl().setDynamicPowerMode(mode);
+    }
+
+    async setIntensityLimit(kind, amps) {
+        return this._getChargerControl().setIntensityLimit(kind, amps);
+    }
+
+    async setChargingIntensity(amps) {
+        return this._getChargerControl().setChargingIntensity(amps);
+    }
+
+    getChargingVoltage() {
+        const voltageType = this.getSetting('voltage_type') || 'line_to_neutral';
+        const isMatchingVoltage = (value) => {
+            const voltage = Number(value);
+            if (!Number.isFinite(voltage)) return false;
+            return voltageType === 'line_to_line'
+                ? voltage >= 300 && voltage <= 500
+                : voltage >= 180 && voltage < 300;
+        };
+
+        const measuredVoltage = this.getCapabilityValue('measure_voltage_installation');
+        if (isMatchingVoltage(measuredVoltage)) return Number(measuredVoltage);
+
+        const installationVoltage = this.getSetting('installation_voltage');
+        if (isMatchingVoltage(installationVoltage)) return Number(installationVoltage);
+
+        return voltageType === 'line_to_line' ? 400 : 230;
+    }
+
+    async _applyTargetPower(watts) {
+        return this.applyChargingChanges({ target_power: watts });
+    }
+
+    _getPhaseModeVoltage(voltageType, voltageSettingsOverride) {
+        if (voltageSettingsOverride) {
+            const installationVoltage = Number(voltageSettingsOverride.installationVoltage);
+            const isConfiguredLineToLine = CONSTANTS.DEVICE.INSTALLATION_VOLTAGE.LINE_TO_LINE_VALUES.includes(installationVoltage);
+            const matchesVoltageType = Number.isFinite(installationVoltage)
+                && (voltageType === 'line_to_line') === isConfiguredLineToLine;
+            return matchesVoltageType
+                ? installationVoltage
+                : voltageType === 'line_to_line' ? 400 : 230;
+        }
+
+        return typeof this.getChargingVoltage === 'function' && typeof this.getCapabilityValue === 'function'
+            ? this.getChargingVoltage()
+            : voltageType === 'line_to_line' ? 400 : 230;
+    }
+
+    _getPhaseModeIntensityLimits() {
+        const configuredMin = Number(this.getSetting('min_intensity')) || CONSTANTS.DEVICE.INTENSITY.MIN;
+        const configuredMax = Number(this.getSetting('max_intensity')) || CONSTANTS.DEVICE.INTENSITY.MAX;
+        const reportedMin = typeof this.getCapabilityValue === 'function'
+            ? Number(this.getCapabilityValue('min_intensity')) || CONSTANTS.DEVICE.INTENSITY.MIN
+            : CONSTANTS.DEVICE.INTENSITY.MIN;
+        const reportedMax = typeof this.getCapabilityValue === 'function'
+            ? Number(this.getCapabilityValue('max_intensity')) || CONSTANTS.DEVICE.INTENSITY.MAX
+            : CONSTANTS.DEVICE.INTENSITY.MAX;
+        const maxIntensity = Math.min(
+            CONSTANTS.DEVICE.INTENSITY.MAX,
+            Math.max(CONSTANTS.DEVICE.INTENSITY.MIN, configuredMax),
+            Math.max(CONSTANTS.DEVICE.INTENSITY.MIN, reportedMax)
+        );
+        const minIntensity = Math.min(
+            maxIntensity,
+            Math.max(CONSTANTS.DEVICE.INTENSITY.MIN, configuredMin, reportedMin)
+        );
+        return { minIntensity, maxIntensity };
+    }
+
+    _getPhaseModeCapabilityOptions(phaseMode, voltageType, voltage, minIntensity, maxIntensity) {
+        const phaseFactor = phaseMode === '1'
+            ? 1
+            : voltageType === 'line_to_line' ? Math.sqrt(3) : 3;
+        const wattsPerAmp = voltage * phaseFactor;
+        // The Homey target is an integer watt value and current commands floor the conversion.
+        // Use a whole-watt amp step so the advertised maximum can still command the configured max.
+        const step = Math.ceil(wattsPerAmp);
+        const max = maxIntensity * step;
+        const excludeMax = Math.ceil(minIntensity * wattsPerAmp);
+
+        return {
+            options: {
                 min: 0,
                 max,
                 step,
                 excludeMin: 0,
                 excludeMax,
                 decimals: 0
-            });
+            },
+            max,
+            excludeMax,
+            step
+        };
+    }
+
+    async _applyCapabilityOptionsForPhaseMode(phaseModeOverride = null, voltageSettingsOverride = null) {
+        // Keep the advertised range aligned with Homey's selected voltage/current calculation.
+        const phaseMode = phaseModeOverride || this.getSetting('phase_mode') || '3';
+        const voltageType = voltageSettingsOverride?.voltageType || this.getSetting('voltage_type') || 'line_to_neutral';
+        const voltage = this._getPhaseModeVoltage(voltageType, voltageSettingsOverride);
+        const { minIntensity, maxIntensity } = this._getPhaseModeIntensityLimits();
+        const { options, max, excludeMax, step } = this._getPhaseModeCapabilityOptions(
+            phaseMode,
+            voltageType,
+            voltage,
+            minIntensity,
+            maxIntensity
+        );
+
+        try {
+            await this.setCapabilityOptions('target_power', options);
             this.logger.debug('target_power capability options aktualizovány', {
                 phaseMode, max, excludeMax, step
             });
@@ -549,7 +577,7 @@ class MyDevice extends Device {
                 return true;
             } catch (error) {
                 this.logger.error('Selhalo nastavení locked', error);
-                throw new Error('Selhalo nastavení stavu zámku');
+                throw new Error('Failed to set the lock state');
             }
         });
     }
@@ -619,10 +647,65 @@ class MyDevice extends Device {
         return Math.min(backoff, CONSTANTS.INTERVALS.BACKOFF_MAX);
     }
     
-    async getProductionData({ throwOnError = false } = {}) {
+    async getProductionData({ force = false, throwOnError = false } = {}) {
+        if (force) {
+            if (this._forcedProductionDataRequest) {
+                return this._forcedProductionDataRequest;
+            }
+
+            const pendingRequest = this._productionDataRequest;
+            const forcedRequest = this._refreshProductionDataAfter(pendingRequest, throwOnError);
+            this._forcedProductionDataRequest = forcedRequest;
+            forcedRequest.then(
+                () => {
+                    if (this._forcedProductionDataRequest === forcedRequest) {
+                        this._forcedProductionDataRequest = null;
+                    }
+                },
+                () => {
+                    if (this._forcedProductionDataRequest === forcedRequest) {
+                        this._forcedProductionDataRequest = null;
+                    }
+                }
+            );
+            return forcedRequest;
+        }
+
+        if (this._productionDataRequest) {
+            return this._productionDataRequest;
+        }
+        return this._startProductionDataRequest({ throwOnError });
+    }
+
+    async _refreshProductionDataAfter(pendingRequest, throwOnError) {
+        if (pendingRequest) {
+            try {
+                await pendingRequest;
+            } catch (error) {
+                // The forced refresh still needs a new sample if the older poll failed.
+            }
+        }
+        return this._startProductionDataRequest({ force: true, throwOnError });
+    }
+
+    _startProductionDataRequest(options) {
+        const request = this._fetchProductionData(options);
+        this._productionDataRequest = request;
+        request.then(
+            () => {
+                if (this._productionDataRequest === request) this._productionDataRequest = null;
+            },
+            () => {
+                if (this._productionDataRequest === request) this._productionDataRequest = null;
+            }
+        );
+        return request;
+    }
+
+    async _fetchProductionData({ force = false, throwOnError = false } = {}) {
         try {
             const now = Date.now();
-            if (this.lastResponse && this.lastResponseTime && (now - this.lastResponseTime < CONSTANTS.API.TIMEOUT)) {
+            if (!force && this.lastResponse && this.lastResponseTime && (now - this.lastResponseTime < CONSTANTS.API.CACHE_TTL)) {
                 this.logger.debug('Použita cache data');
                 return this.dataValidator.validateAndProcessData(this.lastResponse);
             }
@@ -630,72 +713,9 @@ class MyDevice extends Device {
             await this.energyManager.resetMonthlyAndYearlyDataIfNeeded();
     
             try {
-                const baseSession = await this.v2cApi.getData();
-                const deviceData = this.dataValidator.validateAndProcessData(baseSession);
-                if (!deviceData) {
-                    throw new Error('Data z API jsou neplatná.');
-                }
-    
-                // Úspěšný fetch — reset error counteru a backoffu
-                if (this._consecutivePollErrors > 0) {
-                    this.logger.debug('Polling error counter reset', {
-                        předchozí: this._consecutivePollErrors
-                    });
-                    this._consecutivePollErrors = 0;
-                }
-
-                this.lastResponse = baseSession;
-                this.lastResponseTime = now;
-
-                const previousState = await this.getStoreValue('previousChargeState') || CONSTANTS.CHARGE_STATES.DISCONNECTED;
-                const currentState = deviceData.chargeState;
-                const chargeEnergy = await this.energyManager.processEnergyData(deviceData, previousState, currentState);
-    
-                await this.updateCapabilities(deviceData, currentState, chargeEnergy);
-                await this.handleStateChanges(currentState, previousState, deviceData);
-    
-                const hadError = await this.getCapabilityValue('measure_connection_error');
-                if (hadError) {
-                    await this.setCapabilityValue('measure_connection_error', false);
-                    await this.flowCardManager.triggerConnectionStateChanged('ok');
-                }
-    
-                this._lastSuccessfulUpdate = now;
-    
-                if (!this.getAvailable()) {
-                    await this.setAvailable();
-                }
+                await this._fetchAndProcessProductionData();
             } catch (error) {
-                // Increment error counteru pro exponential backoff pollingu
-                this._consecutivePollErrors++;
-
-                if (error.message === 'API_MAX_ERRORS_EXCEEDED') {
-                    const hadError = await this.getCapabilityValue('measure_connection_error');
-                    if (!hadError) {
-                        this.logger.error('API není dostupné po více pokusech', {
-                            errorCount: this.v2cApi.getErrorCount(),
-                            maxErrors: this.v2cApi._maxConsecutiveErrors,
-                            pollBackoffCount: this._consecutivePollErrors
-                        });
-
-                        await this.setCapabilityValue('measure_connection_error', true);
-                        await this.flowCardManager.triggerConnectionStateChanged('error');
-                    }
-                } else {
-                    this.logger.debug('Dočasná chyba API', {
-                        error: error.message,
-                        errorCount: this.v2cApi.getErrorCount(),
-                        pollBackoffCount: this._consecutivePollErrors,
-                        isInErrorState: this.v2cApi.isInErrorState()
-                    });
-
-                    if (this.lastResponse) {
-                        this.logger.debug('Použita poslední známá data kvůli chybě API');
-                    }
-                }
-                if (throwOnError) {
-                    throw error;
-                }
+                await this._handleProductionDataError(error, throwOnError);
             }
         } catch (error) {
             this.logger.error('Kritická chyba při zpracování dat', error);
@@ -705,11 +725,86 @@ class MyDevice extends Device {
         }
     }
 
+    async _fetchAndProcessProductionData() {
+        const baseSession = await this.v2cApi.getData();
+        const deviceData = this.dataValidator.validateAndProcessData(baseSession);
+        if (!deviceData) {
+            throw new Error('Invalid telemetry data returned by API.');
+        }
+
+        // Úspěšný fetch — reset error counteru a backoffu
+        if (this._consecutivePollErrors > 0) {
+            this.logger.debug('Polling error counter reset', {
+                předchozí: this._consecutivePollErrors
+            });
+            this._consecutivePollErrors = 0;
+        }
+
+        const previousState = await this.getStoreValue('previousChargeState') || CONSTANTS.CHARGE_STATES.DISCONNECTED;
+        const currentState = deviceData.chargeState;
+        const chargeEnergy = await this.energyManager.processEnergyData(deviceData, previousState, currentState);
+
+        await this.updateCapabilities(deviceData, currentState, chargeEnergy);
+        await this.handleStateChanges(currentState, previousState, deviceData);
+
+        const hadError = await this.getCapabilityValue('measure_connection_error');
+        if (hadError) {
+            await this.setCapabilityValue('measure_connection_error', false);
+            await this.flowCardManager.triggerConnectionStateChanged('ok');
+        }
+
+        const successfulAt = Date.now();
+        this.lastResponse = baseSession;
+        this.lastResponseTime = successfulAt;
+        this._lastSuccessfulUpdate = successfulAt;
+        this._statusStale = false;
+
+        if (!this.getAvailable()) {
+            await this.setAvailable();
+        }
+    }
+
+    async _handleProductionDataError(error, throwOnError) {
+        // Increment error counteru pro exponential backoff pollingu
+        this._consecutivePollErrors++;
+        this._statusStale = true;
+
+        const hadError = await this.getCapabilityValue('measure_connection_error');
+        if (error.message === 'API_MAX_ERRORS_EXCEEDED') {
+            if (!hadError) {
+                this.logger.error('API není dostupné po více pokusech', {
+                    errorCount: this.v2cApi.getErrorCount(),
+                    maxErrors: this.v2cApi._maxConsecutiveErrors,
+                    pollBackoffCount: this._consecutivePollErrors
+                });
+            }
+        } else {
+            this.logger.debug('Dočasná chyba API', {
+                error: error.message,
+                errorCount: this.v2cApi.getErrorCount(),
+                pollBackoffCount: this._consecutivePollErrors,
+                isInErrorState: this.v2cApi.isInErrorState()
+            });
+
+            if (this.lastResponse) {
+                this.logger.debug('Použita poslední známá data kvůli chybě API');
+            }
+        }
+        if (!hadError) {
+            await this.setCapabilityValue('measure_connection_error', true);
+            await this.flowCardManager.triggerConnectionStateChanged('error');
+        }
+        if (throwOnError) {
+            throw error;
+        }
+    }
+
     async updateCapabilities(deviceData, currentState, chargeEnergy) {
         try {
-            // Aktualizace interní proměnné — využívá se v _getRequiredInterval
-            // a v FlowCardManager pro deprekované condition karty (car-connected, car-is-charging)
-            this._lastChargeState = currentState;
+            const hasPrimaryFault = Object.prototype.hasOwnProperty.call(
+                CONSTANTS.CHARGE_STATE_FAULT_DESCRIPTIONS,
+                currentState
+            );
 
             // Lifetime energie pro Homey Energy tab (monotónní, nikdy neklesá při odpojení)
             const lifetimeEnergy = this.energyManager.getLifetimeEnergy();
@@ -718,59 +813,89 @@ class MyDevice extends Device {
             const safeSet = (cap, val) => this.hasCapability(cap)
                 ? this.setCapabilityValue(cap, val)
                 : Promise.resolve();
-            const safeSetMeasurement = (cap, val) => Number.isFinite(val)
-                ? safeSet(cap, val)
-                : Promise.resolve();
+            const safeSetNullable = (cap, val) => {
+                if (!this.hasCapability(cap)) return Promise.resolve();
+                if (val === null || val === undefined ||
+                    (typeof val === 'number' && !Number.isFinite(val))) {
+                    return typeof this.unsetCapabilityValue === 'function'
+                        ? this.unsetCapabilityValue(cap)
+                        : this.setCapabilityValue(cap, null);
+                }
+                return this.setCapabilityValue(cap, val);
+            };
+
+            // Remove a stale voltage reading before asking getChargingVoltage() for its
+            // configured nominal fallback.
+            await safeSetNullable('measure_voltage_installation', deviceData.voltageInstallation);
+            const chargingVoltage = Number.isFinite(deviceData.voltageInstallation)
+                ? deviceData.voltageInstallation
+                : this.getChargingVoltage();
 
             // Homey systémové target_power* — mapování z V2C Dynamic + DynamicPowerMode
             const targetMode = this._mapV2CToTargetMode(deviceData.dynamic, deviceData.dynamicPowerMode);
             const phaseMode = this.getSetting('phase_mode') || '3';
             const voltageType = this.getSetting('voltage_type') || 'line_to_neutral';
-            const targetPowerW = PowerCalculator.calculatePower(
+            const measuredTargetPowerW = PowerCalculator.calculatePower(
                 deviceData.intensity,
                 phaseMode,
-                deviceData.voltageInstallation,
+                chargingVoltage,
                 voltageType
             );
+            const storedHomeyTarget = typeof this.getCapabilityValue === 'function'
+                ? this.getCapabilityValue('target_power')
+                : undefined;
+            const targetPowerW = targetMode === CONSTANTS.TARGET_POWER_MODES.HOMEY &&
+                storedHomeyTarget !== undefined && storedHomeyTarget !== null &&
+                Number.isFinite(Number(storedHomeyTarget))
+                ? Number(storedHomeyTarget)
+                : measuredTargetPowerW;
 
             // Fuzzy validace phase_mode settingu proti skutečně měřenému výkonu
-            this._validatePhaseMode(deviceData.chargePower, deviceData.intensity, deviceData.voltageInstallation, phaseMode, voltageType, deviceData.maxIntensity);
+            this._validatePhaseMode(deviceData.chargePower, deviceData.intensity, chargingVoltage, phaseMode, voltageType, deviceData.maxIntensity);
 
             const importedChargePower = Number.isFinite(deviceData.chargePower)
                 ? Math.max(0, deviceData.chargePower)
                 : 0;
+            const evChargerState = this._mapEvChargerState(currentState, deviceData.paused);
 
             await Promise.all([
                 this.setCapabilityValue('measure_charge_power', deviceData.chargePower),
                 this.setCapabilityValue('measure_power', importedChargePower),
-                this.setCapabilityValue('measure_voltage_installation', deviceData.voltageInstallation),
-                safeSetMeasurement('measure_current.l1', deviceData.intensityL1),
-                safeSetMeasurement('measure_current.l2', deviceData.intensityL2),
-                safeSetMeasurement('measure_current.l3', deviceData.intensityL3),
-                safeSetMeasurement('measure_voltage.l1', deviceData.voltageL1),
-                safeSetMeasurement('measure_voltage.l2', deviceData.voltageL2),
-                safeSetMeasurement('measure_voltage.l3', deviceData.voltageL3),
-                this.setCapabilityValue('measure_slave_error', deviceData.slaveError),
+                safeSetNullable('measure_current.l1', deviceData.intensityL1),
+                safeSetNullable('measure_current.l2', deviceData.intensityL2),
+                safeSetNullable('measure_current.l3', deviceData.intensityL3),
+                safeSetNullable('measure_voltage.l1', deviceData.voltageL1),
+                safeSetNullable('measure_voltage.l2', deviceData.voltageL2),
+                safeSetNullable('measure_voltage.l3', deviceData.voltageL3),
+                safeSetNullable('measure_slave_error', deviceData.slaveError),
+                safeSetNullable('measure_charge_state', currentState),
+                safeSet('alarm_generic', hasPrimaryFault),
                 this.setCapabilityValue('measure_charge_time', Math.floor(deviceData.chargeTime / 60)),
-                this.setCapabilityValue('locked', deviceData.locked),
+                safeSetNullable('locked', deviceData.locked),
                 this.setCapabilityValue('measure_intensity', deviceData.intensity),
                 safeSet('target_power_mode', targetMode),
                 safeSet('target_power', targetPowerW),
                 this.setCapabilityValue('measure_charge_energy', chargeEnergy),
                 this.setCapabilityValue('meter_power', lifetimeEnergy),
                 // evcharger_charging = user intent (inverzní k V2C Paused flagu); nahrazuje bývalé measure_paused
-                safeSet('evcharger_charging', !deviceData.paused),
-                safeSet('evcharger_charging_state', this._mapEvChargerState(currentState, deviceData.paused)),
-                this.setCapabilityValue('measure_house_power', deviceData.housePower),
-                this.setCapabilityValue('measure_fv_power', deviceData.fvPower),
-                this.setCapabilityValue('measure_battery_power', deviceData.batteryPower),
+                safeSetNullable('evcharger_charging', deviceData.paused === null
+                    ? null
+                    : !deviceData.paused),
+                evChargerState === null ? Promise.resolve() : safeSet('evcharger_charging_state', evChargerState),
+                safeSetNullable('measure_house_power', deviceData.housePower),
+                safeSetNullable('measure_fv_power', deviceData.fvPower),
+                safeSetNullable('measure_battery_power', deviceData.batteryPower),
                 this.setCapabilityValue('min_intensity', deviceData.minIntensity),
                 this.setCapabilityValue('max_intensity', deviceData.maxIntensity),
-                this.setCapabilityValue('firmware_version', deviceData.firmwareVersion),
-                this.setCapabilityValue('signal_status', deviceData.signalStatus),
-                this.setCapabilityValue('timer_state', deviceData.timer_state || false),
+                safeSetNullable('firmware_version', deviceData.firmwareVersion),
+                safeSetNullable('signal_status', deviceData.signalStatus),
+                safeSetNullable('timer_state', deviceData.timer_state),
                 this.setCapabilityValue('set_intensity', deviceData.intensity.toString())
             ]);
+
+            // Commit internal charge state only after the full sample publishes. It also drives
+            // freshness fault metadata, polling cadence, and the existing Flow state helpers.
+            this._lastChargeState = currentState;
     
             this.logger.debug('Capabilities byly úspěšně aktualizovány', { 
                 deviceData, 
@@ -790,17 +915,40 @@ class MyDevice extends Device {
         return this._lastChargeState || CONSTANTS.CHARGE_STATES.DISCONNECTED;
     }
 
+    getFaultDescriptor() {
+        const description = CONSTANTS.CHARGE_STATE_FAULT_DESCRIPTIONS[this._lastChargeState];
+        if (!description) return null;
+
+        return {
+            state: Number(this._lastChargeState),
+            description
+        };
+    }
+
+    async getStatusMetadata() {
+        return {
+            lastUpdated: Number.isFinite(this._lastSuccessfulUpdate)
+                ? this._lastSuccessfulUpdate
+                : null,
+            stale: this._statusStale !== false,
+            connectionError: Boolean(await this.getCapabilityValue('measure_connection_error')),
+            fault: this.getFaultDescriptor()
+        };
+    }
+
     _mapEvChargerState(chargeState, paused) {
         switch (chargeState) {
             case CONSTANTS.CHARGE_STATES.CHARGING:
                 return CONSTANTS.EVCHARGER_STATES.PLUGGED_IN_CHARGING;
             case CONSTANTS.CHARGE_STATES.CONNECTED:
+                if (paused === null || paused === undefined) return null;
                 return paused
                     ? CONSTANTS.EVCHARGER_STATES.PLUGGED_IN_PAUSED
                     : CONSTANTS.EVCHARGER_STATES.PLUGGED_IN;
             case CONSTANTS.CHARGE_STATES.DISCONNECTED:
-            default:
                 return CONSTANTS.EVCHARGER_STATES.PLUGGED_OUT;
+            default:
+                return null;
         }
     }
 
@@ -836,8 +984,9 @@ class MyDevice extends Device {
         }
     
         const previousSlaveError = await this.getStoreValue('previousSlaveError');
-        if (deviceData.slaveError !== previousSlaveError) {
-            await this.flowCardManager.triggerSlaveErrorChanged(deviceData.slaveError); 
+        if (deviceData.slaveError !== null && deviceData.slaveError !== undefined &&
+            deviceData.slaveError !== previousSlaveError) {
+            await this.flowCardManager.triggerSlaveErrorChanged(deviceData.slaveError);
             await this.setStoreValue('previousSlaveError', deviceData.slaveError);
         }
     }
@@ -860,93 +1009,129 @@ class MyDevice extends Device {
         }
     }
 
+    _getInstallationVoltageType(installationVoltage) {
+        return CONSTANTS.DEVICE.INSTALLATION_VOLTAGE.LINE_TO_LINE_VALUES.includes(Number(installationVoltage))
+            ? 'line_to_line'
+            : 'line_to_neutral';
+    }
+
+    _configureApiForSettings(newSettings, changedKeys) {
+        if (!changedKeys.includes('v2c_ip')) return;
+
+        const ipCheck = validateWallboxIP(newSettings.v2c_ip);
+        if (!ipCheck.valid) {
+            throw new Error(`Invalid IP address (${ipCheck.reason}) - only private network IPv4 addresses are allowed`);
+        }
+        this.v2cApi = new v2cAPI(this.homey, newSettings.v2c_ip);
+    }
+
+    async _applyIntensitySetting(key, newSettings) {
+        if (newSettings[key] < CONSTANTS.DEVICE.INTENSITY.MIN ||
+            newSettings[key] > CONSTANTS.DEVICE.INTENSITY.MAX) {
+            throw new Error(`Intensity must be between ${CONSTANTS.DEVICE.INTENSITY.MIN} and ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
+        }
+
+        await this.setIntensityLimit(key === 'min_intensity' ? 'min' : 'max', newSettings[key]);
+        this.homey.settings.set(key, newSettings[key]);
+        return false;
+    }
+
+    async _applyDynamicPowerModeSetting(key, newSettings) {
+        await this.setDynamicPowerMode(newSettings.dynamic_power_mode);
+        this.homey.settings.set(key, newSettings[key]);
+        return false;
+    }
+
+    async _applyPhaseModeSetting(key, newSettings) {
+        if (newSettings.phase_mode !== '1' && newSettings.phase_mode !== '3') {
+            throw new Error('phase_mode must be "1" or "3"');
+        }
+
+        await this._setV2CChargeModeForPhaseMode(newSettings.phase_mode);
+        this.homey.settings.set(key, newSettings[key]);
+        return false;
+    }
+
+    async _applyInstallationVoltageSetting(key, newSettings) {
+        await this.setInstallationVoltage(newSettings.installation_voltage);
+        const voltageType = this._getInstallationVoltageType(newSettings.installation_voltage);
+        await this.setSettings({ voltage_type: voltageType });
+        this.homey.settings.set(key, newSettings[key]);
+        return true;
+    }
+
+    _applySettingChange(key, newSettings) {
+        let clearResponseCache = false;
+
+        switch (key) {
+            case 'min_intensity':
+            case 'max_intensity':
+                return this._applyIntensitySetting(key, newSettings);
+            case 'dynamic_power_mode':
+                return this._applyDynamicPowerModeSetting(key, newSettings);
+            case 'phase_mode':
+                return this._applyPhaseModeSetting(key, newSettings);
+            case 'voltage_type':
+                if (newSettings.voltage_type !== 'line_to_neutral' && newSettings.voltage_type !== 'line_to_line') {
+                    throw new Error('voltage_type must be "line_to_neutral" or "line_to_line"');
+                }
+                clearResponseCache = true;
+                this.logger.debug('voltage_type změněn', { nový: newSettings.voltage_type });
+                break;
+            case 'installation_voltage':
+                return this._applyInstallationVoltageSetting(key, newSettings);
+            case 'v2c_ip':
+                break;
+            case 'enable_logging':
+                this.logger.setEnabled(newSettings.enable_logging);
+                this.v2cApi.setLoggingEnabled(newSettings.enable_logging);
+                break;
+        }
+
+        this.homey.settings.set(key, newSettings[key]);
+        return clearResponseCache;
+    }
+
+    _shouldRefreshCapabilityOptionsForSettings(changedKeys) {
+        return changedKeys.some((key) => ['phase_mode', 'voltage_type', 'installation_voltage'].includes(key));
+    }
+
+    async _refreshCapabilityOptionsForSettings(newSettings, changedKeys) {
+        const voltageSettingsOverride = changedKeys.includes('installation_voltage') || changedKeys.includes('voltage_type')
+            ? {
+                voltageType: changedKeys.includes('installation_voltage')
+                    ? this._getInstallationVoltageType(newSettings.installation_voltage)
+                    : newSettings.voltage_type,
+                installationVoltage: newSettings.installation_voltage
+            }
+            : null;
+        await this._applyCapabilityOptionsForPhaseMode(newSettings.phase_mode, voltageSettingsOverride);
+    }
+
     async onSettings({ oldSettings, newSettings, changedKeys }) {
-        this.logger.debug('Změna nastavení zařízení', { 
-            oldSettings, 
-            newSettings, 
-            changedKeys 
+        this.logger.debug('Změna nastavení zařízení', {
+            oldSettings,
+            newSettings,
+            changedKeys
         });
-    
+
         try {
             let clearResponseCache = false;
-
-            if (changedKeys.includes('v2c_ip')) {
-                const ipCheck = validateWallboxIP(newSettings.v2c_ip);
-                if (!ipCheck.valid) {
-                    throw new Error(`Invalid IP address (${ipCheck.reason}) - only private network IPv4 addresses are allowed`);
-                }
-                this.v2cApi = new v2cAPI(this.homey, newSettings.v2c_ip);
-            }
+            this._configureApiForSettings(newSettings, changedKeys);
 
             for (const key of changedKeys) {
-                switch (key) {
-                    case 'min_intensity':
-                        if (newSettings.min_intensity < CONSTANTS.DEVICE.INTENSITY.MIN || 
-                            newSettings.min_intensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
-                            throw new Error(`Intensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
-                        }
-                        await this.v2cApi.setMinIntensity(newSettings.min_intensity);
-                        break;
-                        
-                    case 'max_intensity':
-                        if (newSettings.max_intensity < CONSTANTS.DEVICE.INTENSITY.MIN || 
-                            newSettings.max_intensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
-                            throw new Error(`Intensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
-                        }
-                        await this.v2cApi.setMaxIntensity(newSettings.max_intensity);
-                        break;
-                        
-                    case 'dynamic_power_mode':
-                        if (newSettings.dynamic_power_mode === CONSTANTS.DYNAMIC_POWER_MODES.DISABLED) {
-                            await this.v2cApi.setDynamic('0');
-                        } else {
-                            await this.v2cApi.setDynamic('1');
-                            await this.v2cApi.setDynamicPowerMode(newSettings.dynamic_power_mode);
-                        }
-                        break;
-
-                    case 'phase_mode':
-                        if (newSettings.phase_mode !== '1' && newSettings.phase_mode !== '3') {
-                            throw new Error('phase_mode musí být "1" nebo "3"');
-                        }
-                        await this._setV2CChargeModeForPhaseMode(newSettings.phase_mode);
-                        // Přenastavíme rozsah target_power (min/max/excludeMax) podle nové fáze.
-                        // Polling cycle pak přepočítá aktuální target_power z intensity × V × fáze.
-                        await this._applyCapabilityOptionsForPhaseMode(newSettings.phase_mode);
-                        break;
-
-                    case 'voltage_type':
-                        if (newSettings.voltage_type !== 'line_to_neutral' && newSettings.voltage_type !== 'line_to_line') {
-                            throw new Error('voltage_type musí být "line_to_neutral" nebo "line_to_line"');
-                        }
-                        // Jen loggujeme — polling cycle přepočítá target_power s novým voltage_type.
-                        // Capability options (max/excludeMax) se v praxi neliší (22080W L-N vs 22170W L-L).
-                        this.logger.debug('voltage_type změněn', { nový: newSettings.voltage_type });
-                        break;
-
-                    case 'installation_voltage': {
-                        await this.setInstallationVoltage(newSettings.installation_voltage);
-                        const voltageType = CONSTANTS.DEVICE.INSTALLATION_VOLTAGE.LINE_TO_LINE_VALUES.includes(
-                            Number(newSettings.installation_voltage)
-                        ) ? 'line_to_line' : 'line_to_neutral';
-                        await this.setSettings({ voltage_type: voltageType });
-                        clearResponseCache = true;
-                        break;
-                    }
-                        
-                    case 'v2c_ip': {
-                        break;
-                    }
-                        
-                    case 'enable_logging':
-                        this.logger.setEnabled(newSettings.enable_logging);
-                        this.v2cApi.setLoggingEnabled(newSettings.enable_logging);
-                        break;
-                }
-    
-                this.homey.settings.set(key, newSettings[key]);
+                const settingUpdate = this._applySettingChange(key, newSettings);
+                // Keep synchronous setting writes synchronous between changed keys.
+                const shouldClearResponseCache = settingUpdate && typeof settingUpdate.then === 'function'
+                    ? await settingUpdate
+                    : settingUpdate;
+                if (shouldClearResponseCache) clearResponseCache = true;
             }
-    
+
+            if (this._shouldRefreshCapabilityOptionsForSettings(changedKeys)) {
+                await this._refreshCapabilityOptionsForSettings(newSettings, changedKeys);
+            }
+
             if (clearResponseCache) {
                 this.lastResponse = null;
                 this.lastResponseTime = null;
@@ -956,7 +1141,6 @@ class MyDevice extends Device {
             } else {
                 await this.getProductionData();
             }
-    
         } catch (error) {
             this.logger.error('Chyba při ukládání nastavení', error);
             throw error;

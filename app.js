@@ -16,6 +16,7 @@ class MyApp extends Homey.App {
     // For example, you can set up WebSocket connections, HTTP servers, etc.
     
     this.initializeGlobalListeners();
+    this.registerWallboxWidgetAutocomplete();
   }
 
   /**
@@ -31,6 +32,45 @@ class MyApp extends Homey.App {
     // this.homey.setInterval(this.someRecurringTask.bind(this), 10000); // Run every 10 seconds
 
     this.log('Global listeners have been initialized');
+  }
+
+  registerWallboxWidgetAutocomplete() {
+    const dashboards = this.homey?.dashboards;
+    if (typeof dashboards?.getWidget !== 'function') {
+      this.log('Dashboard widget settings are unavailable; wallbox selection autocomplete was not registered');
+      return;
+    }
+
+    const widget = dashboards.getWidget('wallbox-status');
+    if (typeof widget?.registerSettingAutocompleteListener !== 'function') {
+      this.log('Wallbox widget autocomplete listener is unavailable');
+      return;
+    }
+
+    widget.registerSettingAutocompleteListener('device_id', async (query) => {
+      const driver = this.homey.drivers.getDriver('v2c-wallbox');
+      const devices = await driver.getDevices();
+      const searchText = typeof query === 'string'
+        ? query.trim().toLocaleLowerCase()
+        : typeof query?.query === 'string'
+          ? query.query.trim().toLocaleLowerCase()
+          : '';
+
+      return devices
+        .map((device) => {
+          const pairingId = device.getData()?.id;
+          if (typeof pairingId !== 'string' || pairingId.trim() === '') return null;
+          return {
+            name: device.getName(),
+            id: pairingId
+          };
+        })
+        .filter((suggestion) => suggestion && (
+          searchText === '' ||
+          suggestion.name.toLocaleLowerCase().includes(searchText) ||
+          suggestion.id.toLocaleLowerCase().includes(searchText)
+        ));
+    });
   }
 
   /**

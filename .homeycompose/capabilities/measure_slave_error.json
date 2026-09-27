@@ -1,7 +1,8 @@
 {
   "type": "enum",
   "title": {
-    "en": "Inverter Comm Error",
+    "en": "Inverter communication state",
+    "cs": "Stav komunikace s měničem",
     "nl": "Omvormer Comm-fout",
     "da": "Inverter Komm Fejl",
     "de": "Wechselrichter-Kommunikationsfehler",

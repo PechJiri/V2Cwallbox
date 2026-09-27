@@ -5,7 +5,19 @@
       "check": "Verbinding controleren",
       "ip": "IP-adres",
       "connection_ok": "Verbinding geslaagd",
-      "connection_error": "Verbinding niet mogelijk"
+      "connection_error": "Verbinding niet mogelijk",
+      "invalid_ip": "Ongeldig IP-adres — alleen IPv4-adressen op privénetwerken zijn toegestaan"
+    }
+  },
+  "settings": {
+    "title": "V2C Wallbox-instellingen"
+  },
+  "repair": {
+    "v2cwallbox": {
+      "title": "IP-adres van V2C Wallbox bijwerken",
+      "save": "Opslaan",
+      "saved": "IP-adres succesvol opgeslagen.",
+      "hint": "Wijzig het IP-adres als je wallbox naar een ander adres op je netwerk is verhuisd. De apparaatgeschiedenis, instellingen en Flows blijven behouden."
     }
   }
 }

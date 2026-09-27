@@ -22,5 +22,8 @@
   },
   "2.0.4": {
     "en": "small fix"
+  },
+  "2.0.5": {
+    "en": "Fixed Homey charging control and target-power range refresh after voltage changes, improved widget status and fault reporting, and corrected final disconnect energy settlement. Existing widgets may need to reselect their paired wallbox in the picker. No device removal and re-pairing is needed."
   }
 }

@@ -30,13 +30,20 @@
     "ar": "يعرض الحالة الحالية لـ V2C Wallbox"
   },
   "height": 180,
-  "devices": {
-    "type": "app",
-    "singular": true,
-    "filter": {
-      "class": "evcharger"
+  "settings": [
+    {
+      "id": "device_id",
+      "type": "autocomplete",
+      "label": {
+        "en": "Wallbox",
+        "cs": "Wallbox"
+      },
+      "placeholder": {
+        "en": "Search for a wallbox",
+        "cs": "Vyhledejte wallbox"
+      }
     }
-  },
+  ],
   "api": {
     "getStatus": {
       "path": "/status",

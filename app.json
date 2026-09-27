@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.v2c.wallbox",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "brandColor": "#00275b",
@@ -303,6 +303,22 @@
       },
       {
         "id": "slave_error_changed",
+        "tokens": [
+          {
+            "name": "error_code",
+            "type": "string",
+            "title": {
+              "en": "Error code"
+            }
+          },
+          {
+            "name": "error_description",
+            "type": "string",
+            "title": {
+              "en": "Error description"
+            }
+          }
+        ],
         "title": {
           "en": "Slave Error Changed",
           "nl": "Slavefout gewijzigd",
@@ -2929,6 +2945,8 @@
         "target_power",
         "measure_charge_power",
         "measure_charge_energy",
+        "measure_charge_state",
+        "alarm_generic",
         "measure_charge_time",
         "measure_intensity",
         "measure_monthly_energy",
@@ -2996,10 +3014,10 @@
         },
         "target_power": {
           "min": 0,
-          "max": 22080,
-          "step": 230,
+          "max": 23040,
+          "step": 220,
           "excludeMin": 0,
-          "excludeMax": 1380,
+          "excludeMax": 1320,
           "decimals": 0
         },
         "target_power_mode": {
@@ -3731,13 +3749,20 @@
         "ar": "يعرض الحالة الحالية لـ V2C Wallbox"
       },
       "height": 180,
-      "devices": {
-        "type": "app",
-        "singular": true,
-        "filter": {
-          "class": "evcharger"
+      "settings": [
+        {
+          "id": "device_id",
+          "type": "autocomplete",
+          "label": {
+            "en": "Wallbox",
+            "cs": "Wallbox"
+          },
+          "placeholder": {
+            "en": "Search for a wallbox",
+            "cs": "Vyhledejte wallbox"
+          }
         }
-      },
+      ],
       "api": {
         "getStatus": {
           "path": "/status",
@@ -3748,8 +3773,7 @@
           "method": "POST"
         }
       },
-      "id": "wallbox-status",
-      "settings": []
+      "id": "wallbox-status"
     }
   },
   "capabilities": {
@@ -4190,6 +4214,27 @@
             "ko": "충전 중",
             "ar": "الشحن"
           }
+        },
+        {
+          "id": "4",
+          "title": {
+            "en": "F — System failure / leakage",
+            "cs": "F — Chyba systému / únik proudu"
+          }
+        },
+        {
+          "id": "5",
+          "title": {
+            "en": "E — CP state E / ground fault",
+            "cs": "E — CP stav E / zemní chyba"
+          }
+        },
+        {
+          "id": "6",
+          "title": {
+            "en": "D — Ventilation required",
+            "cs": "D — Nutné větrání"
+          }
         }
       ],
       "getable": true,
@@ -4423,7 +4468,8 @@
     "measure_slave_error": {
       "type": "enum",
       "title": {
-        "en": "Inverter Comm Error",
+        "en": "Inverter communication state",
+        "cs": "Stav komunikace s měničem",
         "nl": "Omvormer Comm-fout",
         "da": "Inverter Komm Fejl",
         "de": "Wechselrichter-Kommunikationsfehler",

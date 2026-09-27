@@ -54,7 +54,7 @@ test('set_phase_mode flow action updates the device installation phase mode', as
     await manager.initialize();
     assert.equal(listeners.has('set_phase_mode'), true);
 
-    const result = await listeners.get('set_phase_mode')({ phase_mode: '1' });
+    const result = await listeners.get('set_phase_mode')({ phase_mode: '1', device });
 
     assert.equal(result, true);
     assert.deepEqual(calls, ['1']);
@@ -69,13 +69,9 @@ test('set_phase_mode flow action restarts charging when switching phases during 
             if (capabilityId === 'evcharger_charging') return true;
             return null;
         },
-        v2cApi: {
-            setParameter: async (parameter, value) => {
-                calls.push(['setParameter', parameter, value]);
-            }
-        },
-        setCapabilityValue: async (capabilityId, value) => {
-            calls.push(['setCapabilityValue', capabilityId, value]);
+        setChargingPaused: async (paused) => {
+            calls.push(['setParameter', 'Paused', paused ? '1' : '0']);
+            calls.push(['setCapabilityValue', 'evcharger_charging', !paused]);
         },
         setInstallationPhaseMode: async (phaseMode) => {
             calls.push(['setInstallationPhaseMode', phaseMode]);
@@ -86,7 +82,7 @@ test('set_phase_mode flow action restarts charging when switching phases during 
 
     await manager.initialize();
 
-    const result = await listeners.get('set_phase_mode')({ phase_mode: '3' });
+    const result = await listeners.get('set_phase_mode')({ phase_mode: '3', device });
 
     assert.equal(result, true);
     assert.deepEqual(calls, [
@@ -172,11 +168,11 @@ test('phase_mode settings changes write the matching V2C ChargeMode', async () =
     });
 
     assert.deepEqual(calls[0], ['setParameter', 'ChargeMode', '1']);
-    assert.equal(calls[1][0], 'setCapabilityOptions');
-    assert.equal(calls[1][1], 'target_power');
-    assert.equal(calls[1][2].max, 22080);
-    assert.equal(calls[1][2].step, 690);
-    assert.deepEqual(calls[2], ['homey.settings.set', 'phase_mode', '3']);
+    assert.deepEqual(calls[1], ['homey.settings.set', 'phase_mode', '3']);
+    assert.equal(calls[2][0], 'setCapabilityOptions');
+    assert.equal(calls[2][1], 'target_power');
+    assert.equal(calls[2][2].max, 22080);
+    assert.equal(calls[2][2].step, 690);
     assert.deepEqual(calls[3], ['getProductionData']);
 });
 
@@ -197,7 +193,8 @@ test('set_led_brightness flow action writes display and logo brightness sequenti
 
     const result = await listeners.get('set_led_brightness')({
         led_target: 'both',
-        brightness: 42
+        brightness: 42,
+        device
     });
 
     assert.equal(result, true);
@@ -221,7 +218,8 @@ test('set_led_brightness flow action rejects brightness outside 0-100 percent', 
     await assert.rejects(
         () => listeners.get('set_led_brightness')({
             led_target: 'logo',
-            brightness: 101
+            brightness: 101,
+            device
         }),
         /brightness/
     );
@@ -315,6 +313,8 @@ test('installation_voltage settings changes write once, align voltage_type, clea
     };
     device.lastResponse = { VoltageInstallation: 230 };
     device.lastResponseTime = 12345;
+    device.getSetting = (key) => ({ phase_mode: '3', min_intensity: 6, max_intensity: 32 })[key];
+    device.setCapabilityOptions = async () => {};
     device.v2cApi = {
         setParameter: async (parameter, value) => calls.push(['setParameter', parameter, value])
     };
@@ -339,6 +339,90 @@ test('installation_voltage settings changes write once, align voltage_type, clea
     ]);
     assert.equal(device.lastResponse, null);
     assert.equal(device.lastResponseTime, null);
+});
+
+test('voltage setting changes refresh target_power options from submitted settings while getSetting is stale', async (t) => {
+    const cases = [
+        {
+            name: 'voltage_type uses the submitted voltage family',
+            changedKeys: ['voltage_type'],
+            oldSettings: {
+                phase_mode: '3',
+                voltage_type: 'line_to_neutral',
+                installation_voltage: '230'
+            },
+            newSettings: {
+                phase_mode: '3',
+                voltage_type: 'line_to_line',
+                installation_voltage: '230'
+            },
+            oldMeasuredVoltage: 230,
+            expectedOptions: {
+                min: 0,
+                max: 22176,
+                step: 693,
+                excludeMin: 0,
+                excludeMax: 4157,
+                decimals: 0
+            }
+        },
+        {
+            name: 'installation_voltage ignores the old matching telemetry sample',
+            changedKeys: ['installation_voltage'],
+            oldSettings: {
+                phase_mode: '3',
+                voltage_type: 'line_to_neutral',
+                installation_voltage: '230'
+            },
+            newSettings: {
+                phase_mode: '3',
+                voltage_type: 'line_to_neutral',
+                installation_voltage: '240'
+            },
+            oldMeasuredVoltage: 230,
+            expectedOptions: {
+                min: 0,
+                max: 23040,
+                step: 720,
+                excludeMin: 0,
+                excludeMax: 4320,
+                decimals: 0
+            }
+        }
+    ];
+
+    for (const scenario of cases) {
+        await t.test(scenario.name, async () => {
+            const MyDevice = loadDeviceWithHomeyStub();
+            const settings = { ...scenario.oldSettings };
+            let targetPowerOptions;
+            const device = Object.create(MyDevice.prototype);
+            device.logger = { debug: () => {}, error: () => {} };
+            device.homey = { settings: { set: () => {} } };
+            device.getSetting = (key) => settings[key];
+            device.getCapabilityValue = (id) => {
+                if (id === 'measure_voltage_installation') return scenario.oldMeasuredVoltage;
+                if (id === 'min_intensity') return 6;
+                if (id === 'max_intensity') return 32;
+                return null;
+            };
+            device.setCapabilityOptions = async (id, options) => {
+                if (id === 'target_power') targetPowerOptions = options;
+            };
+            device.setSettings = async () => {};
+            device.v2cApi = { setParameter: async () => {} };
+            device.getProductionData = async () => {};
+
+            await device.onSettings({
+                oldSettings: scenario.oldSettings,
+                newSettings: scenario.newSettings,
+                changedKeys: scenario.changedKeys
+            });
+
+            assert.deepEqual(targetPowerOptions, scenario.expectedOptions);
+            assert.deepEqual(settings, scenario.oldSettings);
+        });
+    }
 });
 
 test('multi-setting voltage saves refresh once after switching to the new V2C API', async () => {
@@ -366,6 +450,8 @@ test('multi-setting voltage saves refresh once after switching to the new V2C AP
     };
     device.lastResponse = { VoltageInstallation: 230 };
     device.lastResponseTime = 12345;
+    device.getSetting = (key) => ({ phase_mode: '3', min_intensity: 6, max_intensity: 32 })[key];
+    device.setCapabilityOptions = async () => {};
     device.v2cApi = {
         ip: '192.168.1.10',
         setParameter: async (parameter, value) => calls.push(['setParameter', '192.168.1.10', parameter, value])
@@ -409,6 +495,8 @@ test('installation_voltage settings reject when the forced refresh fails after o
     device.homey = { settings: { set: (key, value) => calls.push(['settings', key, value]) } };
     device.lastResponse = { VoltageInstallation: 230 };
     device.lastResponseTime = 12345;
+    device.getSetting = (key) => ({ phase_mode: '3', min_intensity: 6, max_intensity: 32 })[key];
+    device.setCapabilityOptions = async () => {};
     device.v2cApi = {
         setParameter: async (parameter, value) => calls.push(['write', parameter, value])
     };
@@ -442,6 +530,10 @@ test('production polling tolerates API failures by default but strict refresh re
     device.lastResponse = null;
     device.lastResponseTime = null;
     device._consecutivePollErrors = 0;
+    const capabilities = { measure_connection_error: false };
+    device.getCapabilityValue = (id) => capabilities[id];
+    device.setCapabilityValue = async (id, value) => { capabilities[id] = value; };
+    device.flowCardManager = { triggerConnectionStateChanged: async () => {} };
     device.energyManager = { resetMonthlyAndYearlyDataIfNeeded: async () => {} };
     device.v2cApi = {
         getData: async () => { throw new Error('wallbox unavailable'); },
@@ -450,10 +542,12 @@ test('production polling tolerates API failures by default but strict refresh re
     };
 
     await assert.doesNotReject(() => device.getProductionData());
+    assert.equal(capabilities.measure_connection_error, true);
     await assert.rejects(
         () => device.getProductionData({ throwOnError: true }),
         /wallbox unavailable/
     );
+    assert.equal(capabilities.measure_connection_error, true);
 });
 
 test('local-only voltage and logging settings use one tolerant refresh while offline', async () => {
@@ -470,6 +564,8 @@ test('local-only voltage and logging settings use one tolerant refresh while off
             set: (key, value) => calls.push(['settings', key, value])
         }
     };
+    device.getSetting = (key) => ({ phase_mode: '3', min_intensity: 6, max_intensity: 32 })[key];
+    device.setCapabilityOptions = async () => {};
     device.v2cApi = {
         setLoggingEnabled: (value) => calls.push(['apiLogging', value])
     };
@@ -503,6 +599,8 @@ test('installation_voltage settings changes align line-to-neutral voltages', asy
     device.homey = { settings: { set: () => {} } };
     device.lastResponse = {};
     device.lastResponseTime = 1;
+    device.getSetting = (key) => ({ phase_mode: '3', min_intensity: 6, max_intensity: 32 })[key];
+    device.setCapabilityOptions = async () => {};
     device.v2cApi = { setParameter: async () => {} };
     device.setSettings = async (settings) => calls.push(settings);
     device.getProductionData = async () => {};
@@ -766,7 +864,7 @@ test('set_energy_counter keeps existing arguments and adds lifetime correction',
                     }
                 }
             }),
-            /energie/
+            /Invalid energy value/
         );
     }
     assert.deepEqual(calls, [42.5]);
