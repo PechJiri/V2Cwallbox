@@ -182,7 +182,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 10px;
+            gap: 7px;
             min-width: 0;
         }
 
@@ -246,6 +246,30 @@
             animation: flow-shimmer 1.6s linear infinite;
         }
 
+        .status-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px 8px;
+            min-width: 0;
+            color: var(--homey-text-color-light);
+            font-size: 9px;
+            line-height: 1.2;
+        }
+
+        .command-status {
+            display: none;
+            min-width: 0;
+            font-size: 10px;
+            line-height: 1.2;
+            color: var(--homey-text-color-light);
+        }
+
+        .command-status.visible { display: block; }
+        .command-status.pending { color: var(--v2c-blue); }
+        .command-status.error,
+        .command-status.unconfirmed { color: var(--v2c-amber); }
+        .command-status.success { color: var(--v2c-green); }
+
         @keyframes flow-shimmer {
             from { background-position: 200% 0; }
             to { background-position: -200% 0; }
@@ -295,6 +319,8 @@
         .state-paused { --accent: var(--v2c-amber); --accent-soft: var(--v2c-amber-soft); }
         .state-disconnected { --accent: var(--v2c-grey); --accent-soft: var(--v2c-grey-soft); }
         .state-error { --accent: var(--v2c-red); --accent-soft: var(--v2c-red-soft); }
+        .state-fault { --accent: var(--v2c-red); --accent-soft: var(--v2c-red-soft); }
+        .state-stale { --accent: var(--v2c-amber); --accent-soft: var(--v2c-amber-soft); }
 
         /* Pulzující dot při charging */
         .state-charging .state-dot {
@@ -359,6 +385,8 @@
                 </svg>
                 <span id="controlButtonText">Pause</span>
             </button>
+            <div id="statusDetails" class="status-details" aria-live="polite"></div>
+            <div id="commandStatus" class="command-status" role="status" aria-live="polite"></div>
         </div>
     </div>
 
@@ -375,10 +403,14 @@
         };
 
         let Homey;
-        let isUpdating = false;
         let updateInterval = 5000;
         let intervalId = null;
         let selectedDeviceId = null;
+        let normalRequestsInFlight = 0;
+        let requestSequence = 0;
+        let lastAppliedRequest = 0;
+        let commandEpoch = 0;
+        let commandPending = false;
 
         function onHomeyReady(_Homey) {
             Homey = _Homey;
@@ -387,24 +419,23 @@
         }
 
         function resolveSelectedDeviceId() {
-            // Primárně settings typu "devices" vrací pole ID přes getDeviceIds()
             try {
-                if (typeof Homey.getDeviceIds === 'function') {
-                    const ids = Homey.getDeviceIds();
-                    if (Array.isArray(ids) && ids.length > 0) return ids[0];
-                }
+                const settings = Homey.getSettings();
+                const id = settings && settings.device_id;
+                return typeof id === 'string' && id.trim() !== '' ? id : null;
             } catch (e) {
-                console.warn('getDeviceIds unavailable', e);
+                console.warn('Wallbox selection unavailable', e);
             }
             return null;
         }
 
         // Priority: error > disconnected (no car) > paused > charging > connected (ready)
-        function classifyState(chargeState, paused, connectionError) {
+        function classifyState(chargeState, paused, connectionError, physicalCharging, fault) {
             if (connectionError) return 'error';
+            if (fault) return 'fault';
             if (chargeState === STATE.DISCONNECTED) return 'disconnected';
             if (paused) return 'paused';
-            if (chargeState === STATE.CHARGING) return 'charging';
+            if (physicalCharging === true) return 'charging';
             return 'connected';
         }
 
@@ -414,6 +445,8 @@
                 case 'connected':    return 'Ready';
                 case 'paused':       return 'Paused';
                 case 'error':        return 'Offline';
+                case 'fault':        return 'Fault';
+                case 'stale':        return 'Unconfirmed';
                 case 'disconnected':
                 default:             return 'Idle';
             }
@@ -433,6 +466,8 @@
             // Tlačítko má smysl jen když je auto připojené (nebo nabíjí / paused)
             const shouldShow = kind === 'charging' || kind === 'connected' || kind === 'paused';
             button.classList.toggle('visible', shouldShow);
+            button.dataset.desiredPaused = paused ? 'false' : 'true';
+            button.setAttribute('aria-label', paused ? 'Start charging' : 'Pause charging');
 
             if (paused) {
                 label.textContent = 'Resume';
@@ -444,81 +479,172 @@
         }
 
         function updateUI(status) {
+            const paused = Boolean(status.paused);
+            const chargePower = Number(status.chargePower);
+            const physicalCharging = typeof status.physicalCharging === 'boolean'
+                ? status.physicalCharging
+                : Number.isFinite(chargePower) && chargePower > 0;
             const kind = classifyState(
                 String(status.chargeState ?? STATE.DISCONNECTED),
-                Boolean(status.paused),
-                Boolean(status.connectionError)
+                paused,
+                Boolean(status.connectionError),
+                physicalCharging,
+                status.fault
             );
 
-            applyState(kind);
+            const stateIsUnconfirmed = status.stale === true || status.confirmed === false;
+            applyState(stateIsUnconfirmed ? 'stale' : kind);
 
-            const powerKw = ((status.chargePower ?? 0) / 1000);
-            const energyKwh = (status.chargeEnergy ?? 0);
+            const powerKw = Number.isFinite(chargePower) ? chargePower / 1000 : null;
+            const energyKwh = Number(status.chargeEnergy);
 
-            document.getElementById('powerValue').textContent = powerKw.toFixed(1);
-            document.getElementById('energyValue').textContent = energyKwh.toFixed(1);
+            document.getElementById('powerValue').textContent = powerKw === null ? '—' : powerKw.toFixed(1);
+            document.getElementById('energyValue').textContent = Number.isFinite(energyKwh)
+                ? energyKwh.toFixed(1)
+                : '—';
 
-            updateControlButton(kind, Boolean(status.paused));
+            updateControlButton(kind, paused);
+            updateStatusDetails(status, physicalCharging, stateIsUnconfirmed);
         }
 
-        function setError() {
+        function evStateDescription(evState) {
+            switch (evState) {
+                case 'plugged_in_charging': return 'EV reports charging';
+                case 'plugged_in_discharging': return 'EV reports discharging';
+                case 'plugged_in_paused': return 'EV reports paused';
+                case 'plugged_in': return 'EV reports connected';
+                case 'plugged_out': return 'EV reports disconnected';
+                default: return null;
+            }
+        }
+
+        function updateStatusDetails(status, physicalCharging, unconfirmed) {
+            const details = [];
+            details.push(physicalCharging ? 'Measured power draw' : 'No measured power draw');
+            details.push(status.paused ? 'Permission paused' : 'Permission enabled');
+
+            const evDescription = evStateDescription(status.evState);
+            if (evDescription) details.push(evDescription);
+            if (status.locked === true) details.push('Locked');
+            if (status.timerActive === true) details.push('Timer active');
+            if (typeof status.targetPowerMode === 'string' && status.targetPowerMode !== '') {
+                details.push('Mode: ' + status.targetPowerMode);
+            }
+
+            if (status.fault) {
+                const faultDescription = typeof status.fault === 'string'
+                    ? status.fault
+                    : status.fault.message || status.fault.description || 'Active';
+                details.push('Fault: ' + faultDescription);
+            }
+            if (status.stale === true) details.push('Status stale');
+            if (unconfirmed) details.push('Physical status unconfirmed');
+
+            const element = document.getElementById('statusDetails');
+            element.textContent = details.join(' · ');
+            element.title = details.join(' · ');
+        }
+
+        function setCommandStatus(message, kind) {
+            const element = document.getElementById('commandStatus');
+            element.textContent = message || '';
+            element.className = 'command-status';
+            if (message) {
+                element.classList.add('visible');
+                if (kind) element.classList.add(kind);
+            }
+        }
+
+        function setError(error) {
             applyState('error');
             document.getElementById('powerValue').textContent = '—';
             document.getElementById('energyValue').textContent = '—';
             document.getElementById('controlButton').classList.remove('visible');
+            const message = String(error?.message || '');
+            const guidance = /select a wallbox|selected wallbox/i.test(message)
+                ? 'Select a wallbox in this widget, then refresh.'
+                : 'Status unavailable';
+            document.getElementById('statusDetails').textContent = guidance;
         }
 
-        async function updateData() {
-            if (isUpdating) return;
-            isUpdating = true;
+        function buildStatusPath(force) {
+            const params = [];
+            if (selectedDeviceId) params.push('deviceId=' + encodeURIComponent(selectedDeviceId));
+            if (force) params.push('force=true');
+            return '/status' + (params.length ? '?' + params.join('&') : '');
+        }
+
+        async function updateData({ force = false, suppressError = false } = {}) {
+            if (!force && (normalRequestsInFlight > 0 || commandPending)) {
+                return { ok: false, skipped: true };
+            }
+
+            const requestId = ++requestSequence;
+            const requestEpoch = commandEpoch;
+            if (!force) normalRequestsInFlight += 1;
             try {
-                const path = selectedDeviceId
-                    ? '/status?deviceId=' + encodeURIComponent(selectedDeviceId)
-                    : '/status';
-                const result = await Homey.api('GET', path);
-                updateUI(result);
+                const result = await Homey.api('GET', buildStatusPath(force));
+                const isCurrent = requestEpoch === commandEpoch && requestId >= lastAppliedRequest;
+                if (isCurrent) {
+                    lastAppliedRequest = requestId;
+                    updateUI(result);
+                    if (!commandPending && !suppressError &&
+                        /failed|error|unconfirmed/i.test(document.getElementById('commandStatus').textContent)) {
+                        setCommandStatus('', null);
+                    }
+                }
+                return { ok: true, status: result, applied: isCurrent };
             } catch (error) {
                 console.error('Error fetching wallbox status:', error);
-                setError();
+                if (requestEpoch === commandEpoch && requestId >= lastAppliedRequest && !suppressError) {
+                    setError(error);
+                }
+                return { ok: false, error };
             } finally {
-                isUpdating = false;
+                if (!force) normalRequestsInFlight = Math.max(0, normalRequestsInFlight - 1);
             }
         }
 
         function setupControlButton() {
             const button = document.getElementById('controlButton');
             button.addEventListener('click', async () => {
-                if (button.disabled) return;
+                if (button.disabled || commandPending) return;
+                const desiredPaused = button.dataset.desiredPaused === 'true';
+                commandPending = true;
+                commandEpoch += 1;
+                button.disabled = true;
+                setCommandStatus(desiredPaused ? 'Sending Pause…' : 'Sending Start…', 'pending');
                 try {
-                    button.disabled = true;
-
                     if (typeof Homey.hapticFeedback === 'function') {
                         Homey.hapticFeedback();
                     }
 
-                    const statusPath = selectedDeviceId
-                        ? '/status?deviceId=' + encodeURIComponent(selectedDeviceId)
-                        : '/status';
-                    const current = await Homey.api('GET', statusPath);
-                    const newPaused = !current.paused;
-
-                    await Homey.api('POST', '/paused', {
-                        paused: newPaused,
+                    const command = await Homey.api('POST', '/paused', {
+                        paused: desiredPaused,
                         deviceId: selectedDeviceId
                     });
+                    if (!command || command.success !== true) {
+                        throw new Error('The wallbox did not accept the command.');
+                    }
 
-                    await new Promise(r => setTimeout(r, 400));
-                    await updateData();
+                    const confirmation = await updateData({ force: true, suppressError: true });
+                    if (!confirmation.ok || !confirmation.applied || confirmation.status?.confirmed !== true) {
+                        setCommandStatus('Command sent · physical status unconfirmed', 'unconfirmed');
+                    } else {
+                        setCommandStatus(desiredPaused ? 'Pause confirmed' : 'Start confirmed', 'success');
+                    }
                 } catch (error) {
                     console.error('Error toggling pause:', error);
+                    setCommandStatus('Command failed. Please retry.', 'error');
                 } finally {
+                    commandPending = false;
                     button.disabled = false;
                 }
             });
         }
 
         function loadUpdateInterval() {
-            const settings = Homey.getSettings();
+            const settings = Homey.getSettings() || {};
             if (settings && settings.update_interval) {
                 updateInterval = Math.max(3000, parseInt(settings.update_interval, 10) * 1000);
             }
@@ -530,6 +656,9 @@
             loadUpdateInterval();
             updateData();
             intervalId = setInterval(updateData, updateInterval);
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') updateData();
+            });
         }
 
         if (window.Homey) {
