@@ -39,27 +39,29 @@ class v2cAPI {
     }
 
     async initializeSession() {
-        try {
-            const url = `http://${this.ip}${CONSTANTS.API.ENDPOINTS.REALTIME}`;
-            this.logger.debug('Inicializace session', { url });
+        return this._serialized(async () => {
+            try {
+                const url = `http://${this.ip}${CONSTANTS.API.ENDPOINTS.REALTIME}`;
+                this.logger.debug('Inicializace session', { url });
 
-            const response = await fetch(url, { 
-                signal: AbortSignal.timeout(CONSTANTS.API.TIMEOUT)
-            });
-            
-            const responseData = await response.json();
-            this.logger.debug('Odpověď z inicializace session', { responseData });
+                const response = await fetch(url, {
+                    signal: AbortSignal.timeout(CONSTANTS.API.TIMEOUT)
+                });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const responseData = await response.json();
+                this.logger.debug('Odpověď z inicializace session', { responseData });
+
+                this.logger.log('Session úspěšně inicializována', { data: responseData });
+                return true;
+            } catch (error) {
+                this.logger.error('Selhala inicializace session', error, { ip: this.ip });
+                throw error;
             }
-
-            this.logger.log('Session úspěšně inicializována', { data: responseData });
-            return true;
-        } catch (error) {
-            this.logger.error('Selhala inicializace session', error, { ip: this.ip });
-            throw error;
-        }
+        });
     }
 
     async getData() {
@@ -79,9 +81,17 @@ class v2cAPI {
                 signal: AbortSignal.timeout(CONSTANTS.API.TIMEOUT)
             });
 
-            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
 
-            // Reset počítadla chyb při úspěšném požadavku
+            const data = await response.json();
+            const processedData = this.validator.validateAndProcessData(data);
+            if (!processedData) {
+                throw new Error('Invalid V2C telemetry snapshot');
+            }
+
+            // Reset only when the body contains a valid telemetry snapshot.
             if (this._apiErrorCount > 0) {
                 this.logger.debug(`Reset počítadla chyb z ${this._apiErrorCount} na 0`);
                 this._apiErrorCount = 0;

@@ -69,6 +69,27 @@
         "ko": "충전 중",
         "ar": "الشحن"
       }
+    },
+    {
+      "id": "4",
+      "title": {
+        "en": "F — System failure / leakage",
+        "cs": "F — Chyba systému / únik proudu"
+      }
+    },
+    {
+      "id": "5",
+      "title": {
+        "en": "E — CP state E / ground fault",
+        "cs": "E — CP stav E / zemní chyba"
+      }
+    },
+    {
+      "id": "6",
+      "title": {
+        "en": "D — Ventilation required",
+        "cs": "D — Nutné větrání"
+      }
     }
   ],
   "getable": true,

@@ -528,8 +528,14 @@ class FlowCardManager {
         await this._triggerCard('car-start-charging', tokens, state);
     }
 
-    async triggerSlaveErrorChanged(errorDescription) {
-        await this._triggerCard('slave_error_changed', { error_description: errorDescription });
+    async triggerSlaveErrorChanged(errorCode) {
+        const normalizedCode = String(errorCode ?? '');
+        const errorDescription = CONSTANTS.SLAVE_ERROR_DESCRIPTIONS[normalizedCode] ||
+            'Unknown inverter communication state';
+        await this._triggerCard('slave_error_changed', {
+            error_code: normalizedCode,
+            error_description: errorDescription
+        });
     }
 
     async triggerConnectionStateChanged(hasError) {

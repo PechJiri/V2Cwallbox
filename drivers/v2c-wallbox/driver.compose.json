@@ -27,6 +27,8 @@
     "target_power",
     "measure_charge_power",
     "measure_charge_energy",
+    "measure_charge_state",
+    "alarm_generic",
     "measure_charge_time",
     "measure_intensity",
     "measure_monthly_energy",

@@ -118,6 +118,18 @@
     },
     {
       "id": "slave_error_changed",
+      "tokens": [
+        {
+          "name": "error_code",
+          "type": "string",
+          "title": { "en": "Error code" }
+        },
+        {
+          "name": "error_description",
+          "type": "string",
+          "title": { "en": "Error description" }
+        }
+      ],
       "title": {
         "en": "Slave Error Changed",
         "nl": "Slavefout gewijzigd",

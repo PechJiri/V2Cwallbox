@@ -30,9 +30,8 @@ class MyDevice extends Device {
     dataFetchInterval = null;
     _currentInterval = CONSTANTS.INTERVALS.DISCONNECTED;
     _consecutivePollErrors = 0;
-    // Interní cache V2C stavu ('0'/'1'/'2'). Už není exponováno jako Homey capability
-    // (nahrazeno systémovou evcharger_charging_state). Potřeba pro polling interval
-    // a pro runtime handlery deprekovaných flow karet.
+    // Internal V2C state cache, including documented primary faults. The custom raw-state
+    // capability preserves values that the native Homey EV state enum cannot represent.
     _lastChargeState = CONSTANTS.CHARGE_STATES.DISCONNECTED;
 
     async onInit() {
@@ -709,9 +708,23 @@ class MyDevice extends Device {
             const safeSet = (cap, val) => this.hasCapability(cap)
                 ? this.setCapabilityValue(cap, val)
                 : Promise.resolve();
-            const safeSetMeasurement = (cap, val) => Number.isFinite(val)
-                ? safeSet(cap, val)
-                : Promise.resolve();
+            const safeSetNullable = (cap, val) => {
+                if (!this.hasCapability(cap)) return Promise.resolve();
+                if (val === null || val === undefined ||
+                    (typeof val === 'number' && !Number.isFinite(val))) {
+                    return typeof this.unsetCapabilityValue === 'function'
+                        ? this.unsetCapabilityValue(cap)
+                        : this.setCapabilityValue(cap, null);
+                }
+                return this.setCapabilityValue(cap, val);
+            };
+
+            // Remove a stale voltage reading before asking getChargingVoltage() for its
+            // configured nominal fallback.
+            await safeSetNullable('measure_voltage_installation', deviceData.voltageInstallation);
+            const chargingVoltage = Number.isFinite(deviceData.voltageInstallation)
+                ? deviceData.voltageInstallation
+                : this.getChargingVoltage();
 
             // Homey systémové target_power* — mapování z V2C Dynamic + DynamicPowerMode
             const targetMode = this._mapV2CToTargetMode(deviceData.dynamic, deviceData.dynamicPowerMode);
@@ -720,7 +733,7 @@ class MyDevice extends Device {
             const measuredTargetPowerW = PowerCalculator.calculatePower(
                 deviceData.intensity,
                 phaseMode,
-                deviceData.voltageInstallation,
+                chargingVoltage,
                 voltageType
             );
             const storedHomeyTarget = typeof this.getCapabilityValue === 'function'
@@ -733,41 +746,45 @@ class MyDevice extends Device {
                 : measuredTargetPowerW;
 
             // Fuzzy validace phase_mode settingu proti skutečně měřenému výkonu
-            this._validatePhaseMode(deviceData.chargePower, deviceData.intensity, deviceData.voltageInstallation, phaseMode, voltageType, deviceData.maxIntensity);
+            this._validatePhaseMode(deviceData.chargePower, deviceData.intensity, chargingVoltage, phaseMode, voltageType, deviceData.maxIntensity);
 
             const importedChargePower = Number.isFinite(deviceData.chargePower)
                 ? Math.max(0, deviceData.chargePower)
                 : 0;
+            const evChargerState = this._mapEvChargerState(currentState, deviceData.paused);
 
             await Promise.all([
                 this.setCapabilityValue('measure_charge_power', deviceData.chargePower),
                 this.setCapabilityValue('measure_power', importedChargePower),
-                this.setCapabilityValue('measure_voltage_installation', deviceData.voltageInstallation),
-                safeSetMeasurement('measure_current.l1', deviceData.intensityL1),
-                safeSetMeasurement('measure_current.l2', deviceData.intensityL2),
-                safeSetMeasurement('measure_current.l3', deviceData.intensityL3),
-                safeSetMeasurement('measure_voltage.l1', deviceData.voltageL1),
-                safeSetMeasurement('measure_voltage.l2', deviceData.voltageL2),
-                safeSetMeasurement('measure_voltage.l3', deviceData.voltageL3),
-                this.setCapabilityValue('measure_slave_error', deviceData.slaveError),
+                safeSetNullable('measure_current.l1', deviceData.intensityL1),
+                safeSetNullable('measure_current.l2', deviceData.intensityL2),
+                safeSetNullable('measure_current.l3', deviceData.intensityL3),
+                safeSetNullable('measure_voltage.l1', deviceData.voltageL1),
+                safeSetNullable('measure_voltage.l2', deviceData.voltageL2),
+                safeSetNullable('measure_voltage.l3', deviceData.voltageL3),
+                safeSetNullable('measure_slave_error', deviceData.slaveError),
+                safeSetNullable('measure_charge_state', currentState),
+                safeSet('alarm_generic', this.getFaultDescriptor() !== null),
                 this.setCapabilityValue('measure_charge_time', Math.floor(deviceData.chargeTime / 60)),
-                this.setCapabilityValue('locked', deviceData.locked),
+                safeSetNullable('locked', deviceData.locked),
                 this.setCapabilityValue('measure_intensity', deviceData.intensity),
                 safeSet('target_power_mode', targetMode),
                 safeSet('target_power', targetPowerW),
                 this.setCapabilityValue('measure_charge_energy', chargeEnergy),
                 this.setCapabilityValue('meter_power', lifetimeEnergy),
                 // evcharger_charging = user intent (inverzní k V2C Paused flagu); nahrazuje bývalé measure_paused
-                safeSet('evcharger_charging', !deviceData.paused),
-                safeSet('evcharger_charging_state', this._mapEvChargerState(currentState, deviceData.paused)),
-                this.setCapabilityValue('measure_house_power', deviceData.housePower),
-                this.setCapabilityValue('measure_fv_power', deviceData.fvPower),
-                this.setCapabilityValue('measure_battery_power', deviceData.batteryPower),
+                safeSetNullable('evcharger_charging', deviceData.paused === null
+                    ? null
+                    : !deviceData.paused),
+                evChargerState === null ? Promise.resolve() : safeSet('evcharger_charging_state', evChargerState),
+                safeSetNullable('measure_house_power', deviceData.housePower),
+                safeSetNullable('measure_fv_power', deviceData.fvPower),
+                safeSetNullable('measure_battery_power', deviceData.batteryPower),
                 this.setCapabilityValue('min_intensity', deviceData.minIntensity),
                 this.setCapabilityValue('max_intensity', deviceData.maxIntensity),
-                this.setCapabilityValue('firmware_version', deviceData.firmwareVersion),
-                this.setCapabilityValue('signal_status', deviceData.signalStatus),
-                this.setCapabilityValue('timer_state', deviceData.timer_state || false),
+                safeSetNullable('firmware_version', deviceData.firmwareVersion),
+                safeSetNullable('signal_status', deviceData.signalStatus),
+                safeSetNullable('timer_state', deviceData.timer_state),
                 this.setCapabilityValue('set_intensity', deviceData.intensity.toString())
             ]);
     
@@ -789,17 +806,29 @@ class MyDevice extends Device {
         return this._lastChargeState || CONSTANTS.CHARGE_STATES.DISCONNECTED;
     }
 
+    getFaultDescriptor() {
+        const description = CONSTANTS.CHARGE_STATE_FAULT_DESCRIPTIONS[this._lastChargeState];
+        if (!description) return null;
+
+        return {
+            state: Number(this._lastChargeState),
+            description
+        };
+    }
+
     _mapEvChargerState(chargeState, paused) {
         switch (chargeState) {
             case CONSTANTS.CHARGE_STATES.CHARGING:
                 return CONSTANTS.EVCHARGER_STATES.PLUGGED_IN_CHARGING;
             case CONSTANTS.CHARGE_STATES.CONNECTED:
+                if (paused === null || paused === undefined) return null;
                 return paused
                     ? CONSTANTS.EVCHARGER_STATES.PLUGGED_IN_PAUSED
                     : CONSTANTS.EVCHARGER_STATES.PLUGGED_IN;
             case CONSTANTS.CHARGE_STATES.DISCONNECTED:
-            default:
                 return CONSTANTS.EVCHARGER_STATES.PLUGGED_OUT;
+            default:
+                return null;
         }
     }
 
@@ -835,8 +864,9 @@ class MyDevice extends Device {
         }
     
         const previousSlaveError = await this.getStoreValue('previousSlaveError');
-        if (deviceData.slaveError !== previousSlaveError) {
-            await this.flowCardManager.triggerSlaveErrorChanged(deviceData.slaveError); 
+        if (deviceData.slaveError !== null && deviceData.slaveError !== undefined &&
+            deviceData.slaveError !== previousSlaveError) {
+            await this.flowCardManager.triggerSlaveErrorChanged(deviceData.slaveError);
             await this.setStoreValue('previousSlaveError', deviceData.slaveError);
         }
     }
