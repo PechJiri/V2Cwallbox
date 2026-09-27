@@ -19,5 +19,38 @@
       "saved": "IP-adressen har sparats.",
       "hint": "Ändra IP-adressen om din wallbox har flyttats till en annan adress i ditt nätverk. Enhetens historik, inställningar och Flows bevaras."
     }
+  },
+  "v2c_scene_widget": {
+    "waiting": "Ingen bil ansluten",
+    "ready": "Bil ansluten",
+    "charging": "Laddar",
+    "paused": "Pausad",
+    "offline": "Offline",
+    "unknown": "Status ej tillgänglig",
+    "loading": "Hämtar…",
+    "stale": "Obekräftad",
+    "fault": "Fel",
+    "faultF": "Systemfel / läckström",
+    "faultE": "CP-fel / jordfel",
+    "faultD": "Ventilation krävs",
+    "selection": "Välj wallbox",
+    "power": "Effekt",
+    "energy": "Laddsession",
+    "pause": "Pausa laddningen",
+    "resume": "Återuppta laddningen",
+    "refresh": "Uppdatera status",
+    "busy": "Uppdaterar…",
+    "idle": "Redo för nästa resa",
+    "loadingNote": "Hämtar wallbox-status",
+    "requestFailed": "Kommandot misslyckades",
+    "awaiting": "Effekt ej bekräftad",
+    "targetRequired": "Effektmål saknas",
+    "requestFailedDetail": "Kommandot misslyckades eller resultatet är okänt. Uppdatera statusen; kommandot upprepas inte automatiskt.",
+    "awaitingDetail": "Kommandot har skickats, men den önskade effekten är inte bekräftad. Uppdatera statusen; kommandot skickas inte igen.",
+    "targetRequiredDetail": "Homey kräver ett positivt effektmål som går att uppnå. Ställ in det under enhetskontrollerna. Den här knappen uppdaterar bara statusen.",
+    "ownerHomey": "Homey styr effekten",
+    "ownerWallbox": "Wallboxen styr effekten direkt",
+    "ownerUnknown": "Effektstyrningen är inte bekräftad",
+    "lastKnown": "Senast kända värden; ingen bekräftad realtidsmätning"
   }
 }

@@ -19,5 +19,38 @@
       "saved": "Indirizzo IP salvato correttamente.",
       "hint": "Cambia l'IP se la wallbox si è spostata a un altro indirizzo della tua rete. La cronologia del dispositivo, le impostazioni e i Flows vengono mantenuti."
     }
+  },
+  "v2c_scene_widget": {
+    "waiting": "Nessuna auto collegata",
+    "ready": "Auto collegata",
+    "charging": "In carica",
+    "paused": "In pausa",
+    "offline": "Non in linea",
+    "unknown": "Stato non disponibile",
+    "loading": "Caricamento…",
+    "stale": "Non confermato",
+    "fault": "Guasto",
+    "faultF": "Guasto del sistema / dispersione di corrente",
+    "faultE": "Errore CP / guasto a terra",
+    "faultD": "Ventilazione necessaria",
+    "selection": "Seleziona la wallbox",
+    "power": "Potenza",
+    "energy": "Sessione",
+    "pause": "Sospendi la ricarica",
+    "resume": "Riprendi la ricarica",
+    "refresh": "Aggiorna stato",
+    "busy": "Aggiornamento…",
+    "idle": "Pronto per il prossimo viaggio",
+    "loadingNote": "Lettura dello stato della wallbox",
+    "requestFailed": "Comando non riuscito",
+    "awaiting": "Non confermato",
+    "targetRequired": "Potenza obiettivo richiesta",
+    "requestFailedDetail": "Il comando non è riuscito oppure il risultato è sconosciuto. Aggiorna lo stato; il comando non verrà ripetuto.",
+    "awaitingDetail": "Comando inviato, ma l’effetto richiesto non è confermato. Aggiorna lo stato; il comando non verrà ripetuto.",
+    "targetRequiredDetail": "Homey richiede una potenza obiettivo positiva e raggiungibile. Impostala nei controlli del dispositivo. Questo pulsante aggiorna solo lo stato.",
+    "ownerHomey": "Potenza controllata da Homey",
+    "ownerWallbox": "Potenza controllata direttamente dalla wallbox",
+    "ownerUnknown": "Controllo della potenza non confermato",
+    "lastKnown": "Ultimi valori noti; non è una lettura in tempo reale confermata"
   }
 }

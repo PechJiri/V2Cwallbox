@@ -63,7 +63,8 @@
 }
 .v2c-brand { display:flex; align-items:center; gap:7px; margin:0; height:16px; font-size:10px; font-weight:750; letter-spacing:1.05px; line-height:16px; white-space:nowrap; }
 .v2c-brand-dot { width:6px; height:6px; border-radius:50%; background:var(--state); flex:none; }
-.v2c-status { display:inline-flex; align-items:center; gap:5px; min-height:24px; padding:3px 9px; margin-top:7px; border-radius:20px; background:var(--soft); color:var(--ink); font-size:12px; line-height:18px; font-weight:600; white-space:nowrap; max-width:100%; }
+.v2c-status { display:inline-flex; align-items:center; gap:5px; min-height:24px; padding:3px 9px; margin-top:7px; border-radius:20px; background:var(--soft); color:var(--ink); font-size:12px; line-height:18px; font-weight:600; white-space:normal; max-width:100%; }
+.v2c-status-text { min-width:0; }
 .v2c-status svg { width:13px; height:13px; flex:none; }
 .v2c-metrics { display:grid; grid-template-columns:1fr 1fr; gap:9px; width:100%; margin-top:9px; }
 [data-state='fault'] .v2c-status { width:fit-content; min-width:0; margin-top:4px; padding:3px 8px; white-space:normal; }
@@ -78,6 +79,7 @@
 .v2c-action-row { width:100%; margin-top:auto; min-height:44px; display:flex; align-items:center; }
 .v2c-button { width:100%; min-height:44px; border:0; padding:8px 10px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:7px; color:var(--button-ink); background:var(--button-bg); font:600 12px/20px var(--homey-font-family,-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif); cursor:pointer; white-space:nowrap; -webkit-tap-highlight-color:transparent; transition:opacity 120ms,transform 120ms; }
 .v2c-button svg { width:14px; height:14px; flex:none; }
+.v2c-action-text { min-width:0; white-space:normal; line-height:14px; }
 .v2c-button:hover { opacity:.9; }
 .v2c-button:active { transform:scale(.98); }
 .v2c-button:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
@@ -93,11 +95,20 @@
 @container(max-width:339px) {
  .v2c-copy { padding-left:12px; width:52%; }
  .v2c-brand { font-size:9px; letter-spacing:.7px; }
- .v2c-metrics { gap:6px; }
+ .v2c-status { margin-top:4px; }
+ .v2c-status-text { min-width:0; line-height:14px; font-size:11px; }
+ .v2c-metrics { gap:6px; margin-top:4px; }
+ .v2c-metric-label { font-size:11px; line-height:15px; }
  .v2c-value { font-size:28px; }
  .v2c-metric.secondary .v2c-value { font-size:21px; }
  .v2c-unit { font-size:10px; }
  .v2c-button { padding-left:6px; padding-right:6px; font-size:11px; }
+}
+@container (min-width:340px) and (max-width:399px) {
+ .v2c-status { margin-top:4px; }
+ .v2c-status-text { line-height:14px; }
+ .v2c-metrics { margin-top:4px; }
+ .v2c-metric-label { line-height:15px; }
 }
 @container(max-width:279px) {
  .v2c-scene { opacity:.42; }

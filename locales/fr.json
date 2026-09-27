@@ -19,5 +19,38 @@
       "saved": "Adresse IP enregistrée avec succès.",
       "hint": "Modifiez l'adresse IP si votre wallbox a changé d'adresse sur votre réseau. L'historique de l'appareil, les paramètres et les Flows sont conservés."
     }
+  },
+  "v2c_scene_widget": {
+    "waiting": "Aucun véhicule connecté",
+    "ready": "Véhicule connecté",
+    "charging": "En charge",
+    "paused": "En pause",
+    "offline": "Hors ligne",
+    "unknown": "État indisponible",
+    "loading": "Chargement…",
+    "stale": "Non confirmé",
+    "fault": "Défaut",
+    "faultF": "Défaillance du système / fuite de courant",
+    "faultE": "Erreur CP / défaut à la terre",
+    "faultD": "Ventilation requise",
+    "selection": "Choisir la borne",
+    "power": "Puissance",
+    "energy": "Session",
+    "pause": "Suspendre la charge",
+    "resume": "Reprendre la charge",
+    "refresh": "Actualiser l’état",
+    "busy": "Mise à jour…",
+    "idle": "Prêt pour votre prochain trajet",
+    "loadingNote": "Lecture de l’état de la borne",
+    "requestFailed": "Échec de la commande",
+    "awaiting": "Non confirmé",
+    "targetRequired": "Puissance cible requise",
+    "requestFailedDetail": "La commande a échoué ou son résultat est inconnu. Actualisez l’état ; elle ne sera pas renvoyée.",
+    "awaitingDetail": "La commande a été envoyée, mais l’effet demandé n’est pas confirmé. Actualisez l’état ; elle ne sera pas renvoyée.",
+    "targetRequiredDetail": "Homey exige une puissance cible positive et réalisable. Réglez-la dans les commandes de l’appareil. Ce bouton actualise uniquement l’état.",
+    "ownerHomey": "Puissance contrôlée par Homey",
+    "ownerWallbox": "Puissance contrôlée directement par la borne",
+    "ownerUnknown": "Le contrôle de la puissance n’est pas confirmé",
+    "lastKnown": "Dernières valeurs connues ; pas de lecture en direct confirmée"
   }
 }

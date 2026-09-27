@@ -19,5 +19,38 @@
       "saved": "IP-Adresse erfolgreich gespeichert.",
       "hint": "Ändere die IP-Adresse, wenn deine Wallbox an eine andere Adresse in deinem Netzwerk umgezogen ist. Geräteverlauf, Einstellungen und Flows bleiben erhalten."
     }
+  },
+  "v2c_scene_widget": {
+    "waiting": "Kein Auto verbunden",
+    "ready": "Auto verbunden",
+    "charging": "Lädt",
+    "paused": "Pausiert",
+    "offline": "Offline",
+    "unknown": "Status nicht verfügbar",
+    "loading": "Wird geladen…",
+    "stale": "Unbestätigt",
+    "fault": "Störung",
+    "faultF": "Systemfehler / Leckstrom",
+    "faultE": "CP-Fehler / Erdschluss",
+    "faultD": "Belüftung erforderlich",
+    "selection": "Wallbox wählen",
+    "power": "Leistung",
+    "energy": "Ladevorgang",
+    "pause": "Laden pausieren",
+    "resume": "Laden fortsetzen",
+    "refresh": "Status aktualisieren",
+    "busy": "Wird aktualisiert…",
+    "idle": "Bereit für die nächste Fahrt",
+    "loadingNote": "Wallbox-Status wird gelesen",
+    "requestFailed": "Befehl fehlgeschlagen",
+    "awaiting": "Wirkung offen",
+    "targetRequired": "Leistungsziel fehlt",
+    "requestFailedDetail": "Befehl fehlgeschlagen oder Ergebnis unbekannt. Aktualisiere den Status; der Befehl wird nicht automatisch wiederholt.",
+    "awaitingDetail": "Befehl gesendet, aber die gewünschte Wirkung ist nicht bestätigt. Aktualisiere den Status; der Befehl wird nicht erneut gesendet.",
+    "targetRequiredDetail": "Homey benötigt ein positives, erzielbares Leistungsziel. Lege es in den Gerätesteuerungen fest. Diese Schaltfläche aktualisiert nur den Status.",
+    "ownerHomey": "Homey steuert die Leistung",
+    "ownerWallbox": "Wallbox steuert die Leistung direkt",
+    "ownerUnknown": "Leistungssteuerung nicht bestätigt",
+    "lastKnown": "Zuletzt bekannte Werte; keine bestätigte Live-Messung"
   }
 }

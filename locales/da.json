@@ -19,5 +19,38 @@
       "saved": "IP-adressen blev gemt.",
       "hint": "Skift IP-adressen, hvis din wallbox er flyttet til en anden adresse på dit netværk. Enhedens historik, indstillinger og Flows bevares."
     }
+  },
+  "v2c_scene_widget": {
+    "waiting": "Ingen bil tilsluttet",
+    "ready": "Bil tilsluttet",
+    "charging": "Lader",
+    "paused": "Sat på pause",
+    "offline": "Offline",
+    "unknown": "Status utilgængelig",
+    "loading": "Indlæser…",
+    "stale": "Ikke bekræftet",
+    "fault": "Fejl",
+    "faultF": "Systemfejl / lækstrøm",
+    "faultE": "CP-fejl / jordfejl",
+    "faultD": "Ventilation påkrævet",
+    "selection": "Vælg wallbox",
+    "power": "Effekt",
+    "energy": "Session",
+    "pause": "Pause opladning",
+    "resume": "Genoptag opladning",
+    "refresh": "Opdater status",
+    "busy": "Opdaterer…",
+    "idle": "Klar til næste køretur",
+    "loadingNote": "Henter wallbox-status",
+    "requestFailed": "Kommando fejlede",
+    "awaiting": "Virkning afventer",
+    "targetRequired": "Effektmål mangler",
+    "requestFailedDetail": "Kommandoen mislykkedes, eller resultatet er ukendt. Opdater status; kommandoen gentages ikke automatisk.",
+    "awaitingDetail": "Kommandoen er sendt, men den ønskede virkning er ikke bekræftet. Opdater status; kommandoen gentages ikke.",
+    "targetRequiredDetail": "Homey kræver et positivt og opnåeligt effektmål. Indstil det i enhedens betjening. Denne knap henter kun status.",
+    "ownerHomey": "Effekten styres af Homey",
+    "ownerWallbox": "Effekten styres direkte af wallboxen",
+    "ownerUnknown": "Effektstyring ikke bekræftet",
+    "lastKnown": "Senest kendte værdier; ingen bekræftet aktuel måling"
   }
 }
