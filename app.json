@@ -3014,10 +3014,10 @@
         },
         "target_power": {
           "min": 0,
-          "max": 22080,
-          "step": 230,
+          "max": 23040,
+          "step": 220,
           "excludeMin": 0,
-          "excludeMax": 1380,
+          "excludeMax": 1320,
           "decimals": 0
         },
         "target_power_mode": {

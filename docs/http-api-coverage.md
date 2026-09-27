@@ -2,11 +2,9 @@
 
 ## Source
 
-This matrix is based on the supplied V2C PDF:
+This matrix is based on the supplied V2C DataManager Modbus TCP & RTU documentation and the published [V2C HTTP API spreadsheet](https://docs.google.com/spreadsheets/u/1/d/e/2PACX-1vQGA_7Z4YaSMZeHRTnAP6z_82dVPmM33NxJhvsDBEFn8LyWjX-RX_fkR7KCErqAE4aGFvPrUufooHoM/pubhtml#gid=1147522182).
 
-`C:\Users\jirip\Downloads\V2C - Datamanager Modbus TCP & RTU - Disk Google.pdf`
-
-PDF metadata visible in the document:
+The supplied PDF identifies these endpoints:
 
 - title: `V2C - Datamanager Modbus TCP & RTU`;
 - last review: `04/05/26`;
@@ -18,18 +16,18 @@ PDF metadata visible in the document:
 
 | API keyword | Write enabled in PDF | Current app coverage | Notes |
 | --- | --- | --- | --- |
-| `ChargeState` | No | Read and mapped | Drives internal charge state, `evcharger_charging_state`, polling interval, and compatibility flow triggers. |
+| `ChargeState` | No | Read and mapped | Primary states are `0` waiting, `1` connected, `2` charging, `4` system/leakage fault, `5` CP/ground fault, and `6` ventilation required. States `4`–`6` publish the existing alarm capability and widget fault descriptor. |
 | `ChargePower` | No | Read and mapped | Exposed as `measure_charge_power` and Homey's system `measure_power` capability. The positive value is used as live EV charging consumption. |
-| `VoltageInstallation` | Yes | Read and write | Exposed as `measure_voltage_installation` and configured in Advanced Settings. The dropdown accepts 220/230/240/380/400/415 V; one user change sends exactly one write, aligns local `voltage_type` to line-to-neutral or line-to-line, clears cached response data, and refreshes telemetry. Existing paired devices receive a one-time local setting migration derived from their previous `voltage_type` and last voltage telemetry; that migration sends no V2C request. There is no voltage Flow action. |
-| `ChargeEnergy` | No | Read and mapped | Exposed as current-session energy. Its highest valid connected-session reading is persisted and settled into monthly, yearly, and Homey's system lifetime `meter_power` counter only after physical disconnection; pause/resume does not settle it. |
+| `VoltageInstallation` | Yes | Read and write | Exposed as `measure_voltage_installation` and configured in Advanced Settings. A nominal-voltage change aligns local `voltage_type`, invalidates cached response data, and refreshes telemetry. The Homey target-power options use the submitted voltage configuration during that refresh. There is no voltage Flow action. |
+| `ChargeEnergy` | No | Read and mapped | Exposed as current-session energy. The highest valid observed session reading is persisted; one valid first-disconnect reading may supplement that pending session before settlement. Repeated disconnected polls cannot add the session again or create a session that was never observed. |
 | `ChargeMode` | Yes | Partially written | Written when local Homey `phase_mode` changes: `1` maps to `0` monophasic and `3` maps to `1` threephasic. `2` mixed is not exposed. |
-| `SlaveError` | No | Read and mapped | Exposed as `measure_slave_error`; triggers `slave_error_changed`. |
+| `SlaveError` | No | Read and mapped | Exposed as `measure_slave_error`; triggers `slave_error_changed`. It is an inverter communication diagnostic, separate from the primary `ChargeState` fault and Homey network-offline status. |
 | `ChargeTime` | No | Read and mapped | Exposed as `measure_charge_time` in minutes. |
 | `HousePower` | No | Read and mapped | Exposed as `measure_house_power`. Requires V2C measuring clamps or supported integration. |
 | `FVPower` | No | Read and mapped | Exposed as `measure_fv_power`. |
 | `Paused` | Yes | Read and write | Exposed through `evcharger_charging`, flow cards, widget pause/resume, and direct V2C writes. |
 | `Locked` | Yes | Read and write | Exposed through Homey's `locked` capability and compatibility flow action. |
-| `Timer` | Yes | Read only in runtime | `api.js` has `setTimer()`, and `timer_state` is exposed, but there is no setting, capability listener, widget control, or flow action for changing it. |
+| `Timer` | Yes | Read only in runtime | `timer_state` is exposed, but there is no setting, capability listener, widget control, or Flow action for changing it. No Timer control is added in 2.0.5. |
 | `Intensity` | Yes | Read and write | Exposed as `measure_intensity` and `set_intensity`; also written from `target_power`. |
 | `Dynamic` | Yes | Read and write | Used when switching between Homey control and V2C dynamic modes. |
 | `MinIntensity` | Yes | Read and write | Exposed as capability, setting, and flow action. |
@@ -42,6 +40,8 @@ PDF metadata visible in the document:
 | `IntensityMeasure_L1`–`L3` | No | Read and mapped | Exposed as read-only `measure_current.l1`–`l3` with distinct Current L1/L2/L3 titles when recent firmware provides the values. |
 | `VoltageMeasure_L1`–`L3` | No | Read and mapped | Exposed as read-only `measure_voltage.l1`–`l3` with distinct Voltage L1/L2/L3 titles when recent firmware provides the values. |
 
+The existing Homey mode labels for V2C dynamic mode codes `2` and `3` remain unchanged. Their firmware-specific mapping discrepancy is unresolved, so the app does not migrate saved choices or claim a verified label.
+
 The PDF response example also includes `ID`, `SSID`, `IP`, and `SignalStatus`. The current app uses `ID`/`IP` during pairing and exposes `SignalStatus`; `SSID` is not exposed.
 
 The code also handles `FirmwareVersion` and `BatteryPower`, which are not clearly listed in the extracted PDF table but are present in the current implementation and/or V2C responses seen by the app.
@@ -50,9 +50,9 @@ The code also handles `FirmwareVersion` and `BatteryPower`, which are not clearl
 
 The driver remains an `evcharger` and declares both `energy.evCharger = true` and `energy.meterPowerImportedCapability = "meter_power"`. `measure_power` and `meter_power` use Homey's system capability definitions. The lifetime meter is visible in Homey's device UI and Insights, and initialization writes its stored numeric value or `0`.
 
-Disconnect settlement uses a persisted high-water mark and an idempotent transaction with validated baselines and absolute monthly, yearly, and lifetime targets. Partial storage or capability failures leave the transaction available for replay during initialization or the next serialized energy operation, without adding the session twice. Pending session energy and the transaction are cleared only after all targets succeed; malformed transactions fail closed without clearing pending data. Users can correct monthly, yearly, both-period, or lifetime energy through the existing serialized `set_energy_counter` Flow action; monthly and yearly corrections do not automatically change lifetime energy.
+Disconnect settlement uses a persisted high-water mark and an idempotent transaction with validated baselines and absolute monthly, yearly, and lifetime targets. One valid first-disconnect sample can supplement positive pending session energy; later disconnected polls do not resurrect or settle it again. Partial storage or capability failures leave the transaction available for retry without adding the session twice. Pending energy is cleared only after all targets succeed; malformed transactions fail closed. Users can correct monthly, yearly, both-period, or lifetime energy through the existing serialized `set_energy_counter` Flow action; monthly and yearly corrections do not automatically change lifetime energy.
 
-## Candidate Future Features
+## Candidate Future Features (deferred from 2.0.5)
 
 ### 1. Mixed Charge Mode Control
 

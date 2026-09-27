@@ -168,11 +168,11 @@ test('phase_mode settings changes write the matching V2C ChargeMode', async () =
     });
 
     assert.deepEqual(calls[0], ['setParameter', 'ChargeMode', '1']);
-    assert.equal(calls[1][0], 'setCapabilityOptions');
-    assert.equal(calls[1][1], 'target_power');
-    assert.equal(calls[1][2].max, 22080);
-    assert.equal(calls[1][2].step, 690);
-    assert.deepEqual(calls[2], ['homey.settings.set', 'phase_mode', '3']);
+    assert.deepEqual(calls[1], ['homey.settings.set', 'phase_mode', '3']);
+    assert.equal(calls[2][0], 'setCapabilityOptions');
+    assert.equal(calls[2][1], 'target_power');
+    assert.equal(calls[2][2].max, 22080);
+    assert.equal(calls[2][2].step, 690);
     assert.deepEqual(calls[3], ['getProductionData']);
 });
 
@@ -313,6 +313,8 @@ test('installation_voltage settings changes write once, align voltage_type, clea
     };
     device.lastResponse = { VoltageInstallation: 230 };
     device.lastResponseTime = 12345;
+    device.getSetting = (key) => ({ phase_mode: '3', min_intensity: 6, max_intensity: 32 })[key];
+    device.setCapabilityOptions = async () => {};
     device.v2cApi = {
         setParameter: async (parameter, value) => calls.push(['setParameter', parameter, value])
     };
@@ -337,6 +339,90 @@ test('installation_voltage settings changes write once, align voltage_type, clea
     ]);
     assert.equal(device.lastResponse, null);
     assert.equal(device.lastResponseTime, null);
+});
+
+test('voltage setting changes refresh target_power options from submitted settings while getSetting is stale', async (t) => {
+    const cases = [
+        {
+            name: 'voltage_type uses the submitted voltage family',
+            changedKeys: ['voltage_type'],
+            oldSettings: {
+                phase_mode: '3',
+                voltage_type: 'line_to_neutral',
+                installation_voltage: '230'
+            },
+            newSettings: {
+                phase_mode: '3',
+                voltage_type: 'line_to_line',
+                installation_voltage: '230'
+            },
+            oldMeasuredVoltage: 230,
+            expectedOptions: {
+                min: 0,
+                max: 22176,
+                step: 693,
+                excludeMin: 0,
+                excludeMax: 4157,
+                decimals: 0
+            }
+        },
+        {
+            name: 'installation_voltage ignores the old matching telemetry sample',
+            changedKeys: ['installation_voltage'],
+            oldSettings: {
+                phase_mode: '3',
+                voltage_type: 'line_to_neutral',
+                installation_voltage: '230'
+            },
+            newSettings: {
+                phase_mode: '3',
+                voltage_type: 'line_to_neutral',
+                installation_voltage: '240'
+            },
+            oldMeasuredVoltage: 230,
+            expectedOptions: {
+                min: 0,
+                max: 23040,
+                step: 720,
+                excludeMin: 0,
+                excludeMax: 4320,
+                decimals: 0
+            }
+        }
+    ];
+
+    for (const scenario of cases) {
+        await t.test(scenario.name, async () => {
+            const MyDevice = loadDeviceWithHomeyStub();
+            const settings = { ...scenario.oldSettings };
+            let targetPowerOptions;
+            const device = Object.create(MyDevice.prototype);
+            device.logger = { debug: () => {}, error: () => {} };
+            device.homey = { settings: { set: () => {} } };
+            device.getSetting = (key) => settings[key];
+            device.getCapabilityValue = (id) => {
+                if (id === 'measure_voltage_installation') return scenario.oldMeasuredVoltage;
+                if (id === 'min_intensity') return 6;
+                if (id === 'max_intensity') return 32;
+                return null;
+            };
+            device.setCapabilityOptions = async (id, options) => {
+                if (id === 'target_power') targetPowerOptions = options;
+            };
+            device.setSettings = async () => {};
+            device.v2cApi = { setParameter: async () => {} };
+            device.getProductionData = async () => {};
+
+            await device.onSettings({
+                oldSettings: scenario.oldSettings,
+                newSettings: scenario.newSettings,
+                changedKeys: scenario.changedKeys
+            });
+
+            assert.deepEqual(targetPowerOptions, scenario.expectedOptions);
+            assert.deepEqual(settings, scenario.oldSettings);
+        });
+    }
 });
 
 test('multi-setting voltage saves refresh once after switching to the new V2C API', async () => {
@@ -364,6 +450,8 @@ test('multi-setting voltage saves refresh once after switching to the new V2C AP
     };
     device.lastResponse = { VoltageInstallation: 230 };
     device.lastResponseTime = 12345;
+    device.getSetting = (key) => ({ phase_mode: '3', min_intensity: 6, max_intensity: 32 })[key];
+    device.setCapabilityOptions = async () => {};
     device.v2cApi = {
         ip: '192.168.1.10',
         setParameter: async (parameter, value) => calls.push(['setParameter', '192.168.1.10', parameter, value])
@@ -407,6 +495,8 @@ test('installation_voltage settings reject when the forced refresh fails after o
     device.homey = { settings: { set: (key, value) => calls.push(['settings', key, value]) } };
     device.lastResponse = { VoltageInstallation: 230 };
     device.lastResponseTime = 12345;
+    device.getSetting = (key) => ({ phase_mode: '3', min_intensity: 6, max_intensity: 32 })[key];
+    device.setCapabilityOptions = async () => {};
     device.v2cApi = {
         setParameter: async (parameter, value) => calls.push(['write', parameter, value])
     };
@@ -474,6 +564,8 @@ test('local-only voltage and logging settings use one tolerant refresh while off
             set: (key, value) => calls.push(['settings', key, value])
         }
     };
+    device.getSetting = (key) => ({ phase_mode: '3', min_intensity: 6, max_intensity: 32 })[key];
+    device.setCapabilityOptions = async () => {};
     device.v2cApi = {
         setLoggingEnabled: (value) => calls.push(['apiLogging', value])
     };
@@ -507,6 +599,8 @@ test('installation_voltage settings changes align line-to-neutral voltages', asy
     device.homey = { settings: { set: () => {} } };
     device.lastResponse = {};
     device.lastResponseTime = 1;
+    device.getSetting = (key) => ({ phase_mode: '3', min_intensity: 6, max_intensity: 32 })[key];
+    device.setCapabilityOptions = async () => {};
     device.v2cApi = { setParameter: async () => {} };
     device.setSettings = async (settings) => calls.push(settings);
     device.getProductionData = async () => {};

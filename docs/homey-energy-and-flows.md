@@ -18,7 +18,13 @@ The driver also uses Homey's system energy capabilities:
 
 Both capabilities use Homey's built-in definitions; there are no custom `measure_power` or `meter_power` capability files. The driver declares `energy.meterPowerImportedCapability = "meter_power"`, which lets Homey use this lifetime meter in the Energy tab. The system `meter_power` component remains visible in the device UI and Insights because replacing it with a hidden custom capability would prevent Homey from treating it as the standard energy meter. On initialization, the app publishes the stored lifetime total or `0`, so the capability is not intentionally left `null`.
 
-V2C `ChargeEnergy` is a current-session counter. While the car is connected or charging, the app persists the highest valid reading as `pendingSessionEnergy`. Pausing and resuming does not settle or clear that value. On the first transition to physically disconnected, the pending value is claimed, added once to the monthly, yearly, and lifetime totals, and the displayed session energy returns to `0`. Repeated disconnected polls do not add it again, and the persisted pending value survives an app restart during a session.
+V2C `ChargeEnergy` is a current-session counter. While a session is observed, the app persists the highest valid reading as `pendingSessionEnergy`. Pausing and resuming does not settle or clear that value. On the first transition to physically disconnected, one valid final reading may supplement an already observed session before the pending value is settled once into monthly, yearly, and lifetime totals. Repeated disconnected polls cannot settle the session again, and disconnected readings cannot create a session that was never observed.
+
+## Wallbox status widget
+
+The widget uses an app-owned picker keyed by the paired wallbox's Homey pairing key. After upgrading to 2.0.5, an existing widget may ask you to select its wallbox again. Choose it in the widget settings; keep the paired device in Homey.
+
+The widget shows primary wallbox faults separately from network-offline status. Primary charge states 4, 5, and 6 represent system/leakage fault, CP/ground fault, and ventilation required. States 0, 1, and 2 represent waiting, connected, and charging. Inverter `SlaveError` remains a separate V2C communication diagnostic and does not by itself mark the primary wallbox faulted or offline.
 
 Settlement uses a persisted transaction containing validated monthly, yearly, and lifetime baselines plus absolute targets. A partial storage or capability failure leaves that transaction available for an idempotent retry during initialization or the next serialized energy operation. Replaying the same absolute targets cannot add the session twice; pending session energy and the transaction are cleared only after all target writes succeed. A malformed transaction fails closed and leaves both itself and pending energy untouched instead of applying or discarding unverifiable data. All counter corrections and period-rollover checks use the same serialization queue; the `both` correction updates monthly and yearly counters in one queued operation. Changing monthly or yearly totals does not rewrite lifetime energy.
 
@@ -33,16 +39,16 @@ When Homey controls charging, `device.js` converts `target_power` watts to V2C `
 - live `measure_voltage_installation`;
 - the lower of configured and reported max intensity.
 
-The app also narrows Homey's `target_power` capability options based on `phase_mode`, so Homey presents more realistic min/max/step values for one-phase and three-phase installations.
+The driver starts with a broad `target_power` range: zero remains selectable, and positive power spans 1,320 W (220 V × 6 A, one phase) through 23,040 W (3 × 240 V × 32 A). It narrows the options to the device's effective phase, voltage, and current limits. Phase or voltage setting changes refresh the options using the submitted configuration, even while Homey's settings getter or an older voltage sample is still cached.
 
 ## Installation voltage setting
 
 Advanced Settings contain two adjacent voltage controls:
 
-- `voltage_type` is a local choice used by the watts-to-amps calculation and sends no request by itself;
+- `voltage_type` is a local choice used by the watts-to-amps calculation and voltage interpretation; it does not write a V2C parameter;
 - `installation_voltage` writes the wallbox's nominal `VoltageInstallation` value.
 
-`installation_voltage` accepts only 220, 230, 240, 380, 400, or 415 V. One selection sends exactly one `VoltageInstallation` request, aligns the local `voltage_type` to line-to-neutral for 220/230/240 V or line-to-line for 380/400/415 V, clears the cached response, and refreshes telemetry so `measure_voltage_installation` can show the wallbox response. Installation voltage is intentionally not exposed as a Flow action.
+`installation_voltage` accepts only 220, 230, 240, 380, 400, or 415 V. One selection sends exactly one `VoltageInstallation` write, aligns the local `voltage_type` to line-to-neutral for 220/230/240 V or line-to-line for 380/400/415 V, clears the cached response, and refreshes telemetry so `measure_voltage_installation` can show the wallbox response. Changing either voltage setting refreshes `target_power` options immediately using the submitted configuration. Installation voltage is intentionally not exposed as a Flow action.
 
 On the first start after upgrading an already-paired device, the app seeds the new setting locally without writing to V2C. It keeps the existing `voltage_type` category and selects the closest supported nominal value from the last `measure_voltage_installation` reading. If no usable reading exists, it uses 230 V for line-to-neutral or 400 V for line-to-line. The migration is versioned and runs once. Only if the local settings migration fails does the app create a single English Timeline notification asking the user to verify Installation Voltage in Advanced Settings.
 
@@ -65,6 +71,8 @@ The current mode mapping is defined in `lib/constants.js`:
 | `v2c_fv_min` | `3` |
 | `v2c_grid_fv` | `4` |
 | `v2c_no_charge` | `5` |
+
+The app preserves the existing numeric choices for codes `2` and `3`; their firmware-specific labels remain unverified, so saved choices are not remapped.
 
 ## Custom Flow Cards
 

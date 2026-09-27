@@ -391,14 +391,25 @@ class MyDevice extends Device {
         return this.applyChargingChanges({ target_power: watts });
     }
 
-    async _applyCapabilityOptionsForPhaseMode(phaseModeOverride = null) {
+    async _applyCapabilityOptionsForPhaseMode(phaseModeOverride = null, voltageSettingsOverride = null) {
         // Zúží rozsah target_power capability podle počtu fází.
         // Keep the advertised range aligned with Homey's selected voltage/current calculation.
         const phaseMode = phaseModeOverride || this.getSetting('phase_mode') || '3';
-        const voltageType = this.getSetting('voltage_type') || 'line_to_neutral';
-        const voltage = typeof this.getChargingVoltage === 'function' && typeof this.getCapabilityValue === 'function'
-            ? this.getChargingVoltage()
-            : voltageType === 'line_to_line' ? 400 : 230;
+        const voltageType = voltageSettingsOverride?.voltageType || this.getSetting('voltage_type') || 'line_to_neutral';
+        let voltage;
+        if (voltageSettingsOverride) {
+            const installationVoltage = Number(voltageSettingsOverride.installationVoltage);
+            const isConfiguredLineToLine = CONSTANTS.DEVICE.INSTALLATION_VOLTAGE.LINE_TO_LINE_VALUES.includes(installationVoltage);
+            const matchesVoltageType = Number.isFinite(installationVoltage)
+                && (voltageType === 'line_to_line') === isConfiguredLineToLine;
+            voltage = matchesVoltageType
+                ? installationVoltage
+                : voltageType === 'line_to_line' ? 400 : 230;
+        } else {
+            voltage = typeof this.getChargingVoltage === 'function' && typeof this.getCapabilityValue === 'function'
+                ? this.getChargingVoltage()
+                : voltageType === 'line_to_line' ? 400 : 230;
+        }
         const configuredMin = Number(this.getSetting('min_intensity')) || CONSTANTS.DEVICE.INTENSITY.MIN;
         const configuredMax = Number(this.getSetting('max_intensity')) || CONSTANTS.DEVICE.INTENSITY.MAX;
         const reportedMin = typeof this.getCapabilityValue === 'function'
@@ -1012,17 +1023,13 @@ class MyDevice extends Device {
                             throw new Error('phase_mode musí být "1" nebo "3"');
                         }
                         await this._setV2CChargeModeForPhaseMode(newSettings.phase_mode);
-                        // Přenastavíme rozsah target_power (min/max/excludeMax) podle nové fáze.
-                        // Polling cycle pak přepočítá aktuální target_power z intensity × V × fáze.
-                        await this._applyCapabilityOptionsForPhaseMode(newSettings.phase_mode);
                         break;
 
                     case 'voltage_type':
                         if (newSettings.voltage_type !== 'line_to_neutral' && newSettings.voltage_type !== 'line_to_line') {
                             throw new Error('voltage_type musí být "line_to_neutral" nebo "line_to_line"');
                         }
-                        // Jen loggujeme — polling cycle přepočítá target_power s novým voltage_type.
-                        // Capability options (max/excludeMax) se v praxi neliší (22080W L-N vs 22170W L-L).
+                        clearResponseCache = true;
                         this.logger.debug('voltage_type změněn', { nový: newSettings.voltage_type });
                         break;
 
@@ -1047,6 +1054,20 @@ class MyDevice extends Device {
                 }
     
                 this.homey.settings.set(key, newSettings[key]);
+            }
+
+            if (changedKeys.some((key) => ['phase_mode', 'voltage_type', 'installation_voltage'].includes(key))) {
+                const voltageSettingsOverride = changedKeys.includes('installation_voltage') || changedKeys.includes('voltage_type')
+                    ? {
+                        voltageType: changedKeys.includes('installation_voltage')
+                            ? CONSTANTS.DEVICE.INSTALLATION_VOLTAGE.LINE_TO_LINE_VALUES.includes(Number(newSettings.installation_voltage))
+                                ? 'line_to_line'
+                                : 'line_to_neutral'
+                            : newSettings.voltage_type,
+                        installationVoltage: newSettings.installation_voltage
+                    }
+                    : null;
+                await this._applyCapabilityOptionsForPhaseMode(newSettings.phase_mode, voltageSettingsOverride);
             }
     
             if (clearResponseCache) {
