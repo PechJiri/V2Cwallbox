@@ -259,7 +259,7 @@ class FlowCardManager {
                     handler: async (args) => {
                         if (args.intensity < CONSTANTS.DEVICE.INTENSITY.MIN || 
                             args.intensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
-                            throw new Error(`Intensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
+                            throw new Error(`Intensity must be between ${CONSTANTS.DEVICE.INTENSITY.MIN} and ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
                         }
                         await args.device.setChargingIntensity(args.intensity);
                         return true;
@@ -421,7 +421,7 @@ class FlowCardManager {
                     handler: async (args) => {
                         const energy = parseFloat(args.energy);
                         if (isNaN(energy)) {
-                            throw new Error('Neplatná hodnota energie');
+                            throw new Error('Invalid energy value');
                         }
                         
                         switch(args.counter_type) {
@@ -433,11 +433,11 @@ class FlowCardManager {
                                 return await args.device.setMonthlyAndYearlyEnergy(energy);
                             case 'lifetime':
                                 if (!Number.isFinite(energy) || energy < 0) {
-                                    throw new Error('Neplatná hodnota energie');
+                                    throw new Error('Invalid energy value');
                                 }
                                 return await args.device.setLifetimeEnergy(energy);
                             default:
-                                throw new Error('Neplatný typ počítadla');
+                                throw new Error('Invalid counter type');
                         }
                     }
                 }

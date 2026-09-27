@@ -63,17 +63,21 @@ function isMeasuredPower(value) {
     return Number.isFinite(watts) ? watts > 0 : null;
 }
 
-async function readStatus(device, { forced = false } = {}) {
-    const chargingPermission = await getCapability(device, 'evcharger_charging');
-    const evState = await getCapability(device, 'evcharger_charging_state');
-    const chargePower = await getCapability(device, 'measure_charge_power');
-    const chargeEnergy = await getCapability(device, 'measure_charge_energy');
-    const capabilityConnectionError = await getCapability(device, 'measure_connection_error');
-    const locked = await getCapability(device, 'locked');
-    const timerActive = await getCapability(device, 'timer_state');
-    const targetPowerMode = await getCapability(device, 'target_power_mode');
-    const slaveError = await getCapability(device, 'measure_slave_error');
+async function readCapabilitiesSequentially(device) {
+    return {
+        chargingPermission: await getCapability(device, 'evcharger_charging'),
+        evState: await getCapability(device, 'evcharger_charging_state'),
+        chargePower: await getCapability(device, 'measure_charge_power'),
+        chargeEnergy: await getCapability(device, 'measure_charge_energy'),
+        capabilityConnectionError: await getCapability(device, 'measure_connection_error'),
+        locked: await getCapability(device, 'locked'),
+        timerActive: await getCapability(device, 'timer_state'),
+        targetPowerMode: await getCapability(device, 'target_power_mode'),
+        slaveError: await getCapability(device, 'measure_slave_error')
+    };
+}
 
+async function readStatusMetadata(device) {
     let metadata = null;
     if (typeof device.getStatusMetadata === 'function') {
         try {
@@ -84,35 +88,34 @@ async function readStatus(device, { forced = false } = {}) {
             metadata = null;
         }
     }
+    return metadata;
+}
 
-    let fault = metadata && Object.prototype.hasOwnProperty.call(metadata, 'fault')
-        ? metadata.fault
-        : null;
-    if (!metadata || !Object.prototype.hasOwnProperty.call(metadata, 'fault')) {
-        if (typeof device.getFaultDescriptor === 'function') {
-            try {
-                fault = await device.getFaultDescriptor();
-            } catch (error) {
-                fault = null;
-            }
-        }
+async function readFaultFallback(device) {
+    if (typeof device.getFaultDescriptor !== 'function') return null;
+    try {
+        return await device.getFaultDescriptor();
+    } catch (error) {
+        return null;
     }
+}
 
+function createStatus(capabilities, metadata, fault) {
     const connectionError = typeof metadata?.connectionError === 'boolean'
         ? metadata.connectionError
-        : Boolean(capabilityConnectionError);
+        : Boolean(capabilities.capabilityConnectionError);
     const status = {
-        chargeState: deriveChargeState(evState),
-        evState,
-        chargePower,
-        chargeEnergy,
-        paused: typeof chargingPermission === 'boolean' ? !chargingPermission : null,
+        chargeState: deriveChargeState(capabilities.evState),
+        evState: capabilities.evState,
+        chargePower: capabilities.chargePower,
+        chargeEnergy: capabilities.chargeEnergy,
+        paused: typeof capabilities.chargingPermission === 'boolean' ? !capabilities.chargingPermission : null,
         connectionError,
-        physicalCharging: isMeasuredPower(chargePower),
-        locked,
-        timerActive,
-        targetPowerMode,
-        slaveError,
+        physicalCharging: isMeasuredPower(capabilities.chargePower),
+        locked: capabilities.locked,
+        timerActive: capabilities.timerActive,
+        targetPowerMode: capabilities.targetPowerMode,
+        slaveError: capabilities.slaveError,
         fault
     };
 
@@ -125,15 +128,27 @@ async function readStatus(device, { forced = false } = {}) {
         }
     }
 
-    if (forced) {
-        status.confirmed = Boolean(
-            metadata &&
-            metadata.stale === false &&
-            metadata.lastUpdated !== null && metadata.lastUpdated !== undefined &&
-            metadata.connectionError === false
-        );
-    }
+    return status;
+}
 
+function isFreshConfirmation(metadata) {
+    return Boolean(
+        metadata &&
+        metadata.stale === false &&
+        metadata.lastUpdated !== null && metadata.lastUpdated !== undefined &&
+        metadata.connectionError === false
+    );
+}
+
+async function readStatus(device, { forced = false } = {}) {
+    const capabilities = await readCapabilitiesSequentially(device);
+    const metadata = await readStatusMetadata(device);
+    const fault = metadata && Object.prototype.hasOwnProperty.call(metadata, 'fault')
+        ? metadata.fault
+        : await readFaultFallback(device);
+    const status = createStatus(capabilities, metadata, fault);
+
+    if (forced) status.confirmed = isFreshConfirmation(metadata);
     return status;
 }
 

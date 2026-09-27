@@ -67,6 +67,11 @@ test('an explicit pairing key selects the exact second wallbox for status and co
         target_power_mode: 'homey',
         measure_slave_error: '01'
     });
+    let faultFallbackCalled = false;
+    second.getFaultDescriptor = async () => {
+        faultFallbackCalled = true;
+        return { state: 6, description: 'Fallback fault' };
+    };
     const homey = makeHomey([first, second]);
 
     const status = await widgetApi.getStatus({ homey, query: { deviceId: 'pairing-b' } });
@@ -84,6 +89,7 @@ test('an explicit pairing key selects the exact second wallbox for status and co
     assert.equal(status.targetPowerMode, 'homey');
     assert.equal(status.slaveError, '01');
     assert.equal(status.fault, null, 'an inverter communication diagnostic is not a primary wallbox fault');
+    assert.equal(faultFallbackCalled, false, 'an explicit metadata fault of null is authoritative');
     assert.equal(status.lastUpdated, 1000);
     assert.equal(status.stale, false);
     assert.deepEqual(command, { success: true });
@@ -187,6 +193,57 @@ test('forced status refresh asks the device for fresh production data and report
     assert.deepEqual(device.calls, [['getProductionData', { force: true, throwOnError: true }]]);
     assert.equal(status.confirmed, true);
     assert.equal(status.physicalCharging, false);
+});
+
+test('status reads capabilities sequentially before reading metadata', async () => {
+    const readOrder = [];
+    const capabilities = {
+        evcharger_charging: true,
+        evcharger_charging_state: 'plugged_in',
+        measure_charge_power: 0,
+        measure_charge_energy: 1,
+        measure_connection_error: false,
+        locked: false,
+        timer_state: false,
+        target_power_mode: 'homey',
+        measure_slave_error: '00'
+    };
+    const device = makeDevice('only-wallbox', capabilities);
+    device.getCapabilityValue = async (capability) => {
+        readOrder.push(capability);
+        await new Promise((resolve) => setImmediate(resolve));
+        return capabilities[capability];
+    };
+    device.getStatusMetadata = async () => {
+        readOrder.push('metadata');
+        return { lastUpdated: 1000, stale: false, connectionError: false, fault: null };
+    };
+
+    const status = await widgetApi.getStatus({ homey: makeHomey([device]), query: {} });
+
+    assert.deepEqual(readOrder, [
+        'evcharger_charging',
+        'evcharger_charging_state',
+        'measure_charge_power',
+        'measure_charge_energy',
+        'measure_connection_error',
+        'locked',
+        'timer_state',
+        'target_power_mode',
+        'measure_slave_error',
+        'metadata'
+    ]);
+    assert.equal(status.chargeEnergy, 1);
+});
+
+test('fault descriptor fallback is used only when metadata omits fault', async () => {
+    const device = makeDevice('only-wallbox');
+    device.getStatusMetadata = async () => ({ lastUpdated: 1000, stale: false, connectionError: false });
+    device.getFaultDescriptor = async () => ({ state: 4, description: 'System failure' });
+
+    const status = await widgetApi.getStatus({ homey: makeHomey([device]), query: {} });
+
+    assert.deepEqual(status.fault, { state: 4, description: 'System failure' });
 });
 
 test('the primary wallbox fault descriptor comes from the public device accessor', async () => {

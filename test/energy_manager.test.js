@@ -479,7 +479,7 @@ test('initialize fails closed on malformed transaction and preserves pending ene
 
     await assert.rejects(
         () => createInitializedManager(harness),
-        /settlement transakce/
+        /Invalid settlement transaction/
     );
 
     assert.equal(harness.store.get('monthlyEnergyData').energy, 2);
@@ -502,7 +502,7 @@ test('rejects structurally corrupt absolute targets without changing transaction
 
     await assert.rejects(
         () => createInitializedManager(harness),
-        /settlement transakce/
+        /Invalid settlement transaction/
     );
 
     assert.equal(harness.store.get('pendingSessionEnergy'), 8);

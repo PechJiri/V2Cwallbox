@@ -5,7 +5,19 @@
       "check": "Tjek forbindelse",
       "ip": "IP-adresse",
       "connection_ok": "Forbindelse vellykket",
-      "connection_error": "Forbindelse ikke mulig"
+      "connection_error": "Forbindelse ikke mulig",
+      "invalid_ip": "Ugyldig IP-adresse — kun IPv4-adresser på private netværk er tilladt"
+    }
+  },
+  "settings": {
+    "title": "V2C Wallbox-indstillinger"
+  },
+  "repair": {
+    "v2cwallbox": {
+      "title": "Opdater IP-adressen til V2C Wallbox",
+      "save": "Gem",
+      "saved": "IP-adressen blev gemt.",
+      "hint": "Skift IP-adressen, hvis din wallbox er flyttet til en anden adresse på dit netværk. Enhedens historik, indstillinger og Flows bevares."
     }
   }
 }

@@ -109,7 +109,7 @@ class v2cAPI {
                     throw new Error('API_MAX_ERRORS_EXCEEDED');
                 }
                 
-                throw new Error('API timeout - zařízení neodpovědělo včas');
+                throw new Error('API timeout - device did not respond in time');
             }
 
             this._apiErrorCount++;
@@ -129,7 +129,7 @@ class v2cAPI {
             }
     
             this.logger.error('Selhalo načtení dat', error);
-            throw new Error(`Načtení dat selhalo: ${error.message}`);
+            throw new Error(`Failed to load data: ${error.message}`);
         }
     }
 
@@ -223,7 +223,7 @@ class v2cAPI {
 
     async setIntensity(intensity) {
         if (intensity < CONSTANTS.DEVICE.INTENSITY.MIN || intensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
-            throw new Error(`Intensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
+            throw new Error(`Intensity must be between ${CONSTANTS.DEVICE.INTENSITY.MIN} and ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
         }
         return this.setParameter('Intensity', intensity);
     }
@@ -240,14 +240,14 @@ class v2cAPI {
     // Nové SET metody
     async setMinIntensity(minIntensity) {
         if (minIntensity < CONSTANTS.DEVICE.INTENSITY.MIN || minIntensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
-            throw new Error(`MinIntensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
+            throw new Error(`MinIntensity must be between ${CONSTANTS.DEVICE.INTENSITY.MIN} and ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
         }
         return this.setParameter('MinIntensity', minIntensity);
     }
 
     async setMaxIntensity(maxIntensity) {
         if (maxIntensity < CONSTANTS.DEVICE.INTENSITY.MIN || maxIntensity > CONSTANTS.DEVICE.INTENSITY.MAX) {
-            throw new Error(`MaxIntensity musí být mezi ${CONSTANTS.DEVICE.INTENSITY.MIN} a ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
+            throw new Error(`MaxIntensity must be between ${CONSTANTS.DEVICE.INTENSITY.MIN} and ${CONSTANTS.DEVICE.INTENSITY.MAX} A`);
         }
         return this.setParameter('MaxIntensity', maxIntensity);
     }
