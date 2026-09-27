@@ -2,7 +2,17 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Deliver the user's approved six stages: reliable widget commands, correct Flow/device control, compatible voltage and charging modes, truthful diagnostics, resilient disconnect-based energy accounting, and timer Flow control.
+**Goal:** Deliver a small repair release: reliable widget commands, correct existing Flow/device control, truthful primary states and telemetry, and preserved Homey Energy behavior.
+
+## Binding scope reduction approved by the user
+
+The user chose "only verified bugs, widget and correct states; defer new features" after questioning overengineering. This section supersedes the original unchecked tasks below. Completed Tasks 1/2 remain; Task 3 finishes its reproduced telemetry/state bugs with minimal existing-code edits.
+
+- Task 4 is limited to the widget's forced post-command read, cache/charging-poll mismatch, and truthful freshness/error metadata. Reproduce each retained bug before fixing it. Defer the broader Repair/IP/disposal lifecycle work and phase-operation concurrency redesign.
+- Task 5 is limited to a final disconnect sample supplementing an already observed session exactly once, without resurrecting energy from repeated disconnected samples. Preserve the existing journal, queue, restart tests and valid totals. Defer new reset/uncertainty bookkeeping, monthly-year migration and broader persistence-failure hardening.
+- Task 6 becomes integration of a **2.0.5 repair release**, documentation and verification. Add no Timer Flow cards or new Timer control service. Fix the already identified voltage-settings target-range refresh and nominal manifest range with focused tests. Keep SDK/compatibility, native energy capabilities and Flow identities.
+- No generic frameworks, ownership redesign, energy-journal replacement, unrelated cleanup or additional new features. Deferred findings stay documented for a separate decision, rather than being silently treated as fixed.
+- Final review and authorized Homey CLI installation/Start-Pause smoke test remain required. The rendered widget remains a manual user check; no browser automation.
 
 **Architecture:** Preserve Homey SDK v3 and existing device/Flow identities. A per-device serialized control service coordinates physical writes and Homey/V2C ownership; the widget and legacy Flow actions reuse that service. Polling supplies valid versioned snapshots; EnergyManager continues its disconnect-only settlement model with durable retry behavior.
 
