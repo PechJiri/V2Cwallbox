@@ -8,7 +8,7 @@ const test = require('node:test');
 
 const widgetDir = path.join(__dirname, '../widgets/wallbox-status/public');
 const html = fs.readFileSync(path.join(widgetDir, 'index.html'), 'utf8');
-const inlineBootstrap = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
+const inlineBootstrap = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script(?:[\t\n\f\r /][^>]*)?>/gi)]
     .find(([, attributes, body]) => !/\bsrc\s*=/.test(attributes) && body.trim());
 assert.ok(inlineBootstrap, 'the production page contains its Homey bootstrap');
 assert.match(html, /src="\.\/widget-core\.js"/);
